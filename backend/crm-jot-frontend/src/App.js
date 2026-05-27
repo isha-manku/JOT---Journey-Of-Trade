@@ -78,8 +78,7 @@ function Layout() {
           {/* LOGO */}
           <div className="logo-area">
             <img src="/jot.png" alt="JOT logo" className="sidebar-logo" />
-            <h2>JOT</h2>
-            <p>JOURNEY OF TRADE</p>
+          
           </div>
 
           {/* NAV */}
@@ -102,6 +101,10 @@ function Layout() {
 
           {/* USER + LOGOUT at bottom */}
           <div className="sidebar-bottom">
+             <button className="logout-btn" onClick={handleLogout}>
+              <FiLogOut size={15} />
+              Logout
+            </button>
             <div className="sidebar-user">
               <div className="sidebar-user-avatar">{initials}</div>
               <div className="sidebar-user-info">
@@ -109,10 +112,7 @@ function Layout() {
                 <span>{role}</span>
               </div>
             </div>
-            <button className="logout-btn" onClick={handleLogout}>
-              <FiLogOut size={15} />
-              Logout
-            </button>
+           
           </div>
 
         </div>
