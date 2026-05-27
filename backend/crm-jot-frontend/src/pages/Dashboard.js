@@ -306,7 +306,9 @@ useEffect(() => {
   const bonafideChange = computeChange(bonafide.length, Math.max(bonafide.length - 2, 0)); // fallback if no date on bonafide
 
   const insightLabel = ({ pct, up }) => {
-    if (pct === null) return <span className="stat-change stat-new">New this month</span>;
+    if (pct === null) return   <span className="stat-change stat-up">
+          <FiArrowUpRight size={13} /> Live data
+        </span>;
     return (
       <span className={`stat-change ${up ? "stat-up" : "stat-down"}`}>
         {up ? <FiArrowUpRight size={13} /> : <FiArrowDownRight size={13} />}
