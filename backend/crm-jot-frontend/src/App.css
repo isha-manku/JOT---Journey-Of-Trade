@@ -816,3 +816,308 @@ tr:hover { background: #fafafa; }
   .jot-stats { grid-template-columns: 1fr; }
   .jot-sparkline { display: none; }
 }
+.quick-actions-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:20px;
+}
+
+.quick-btn.improved{
+  border:none;
+  background:linear-gradient(135deg,#123524,#1f5c40);
+  color:white;
+  padding:18px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+  min-height:110px;
+}
+
+.quick-btn.improved svg{
+  font-size:24px;
+}
+
+.quick-btn.improved:hover{
+  transform:translateY(-4px);
+  background:linear-gradient(135deg,#c9a96e,#b68d4c);
+}
+/* ============================================================
+   PASTE THESE ADDITIONS AT THE BOTTOM OF YOUR App.css
+   ============================================================ */
+
+/* ── STAT INSIGHT BADGES ─────────────────────────────────── */
+
+.jot-stat-label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.jot-stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0e2318;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+/* up = green, down = red/orange, new = blue */
+.stat-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.stat-up {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.stat-down {
+  color: #9a3412;
+  background: #ffedd5;
+}
+
+.stat-new {
+  color: #1e40af;
+  background: #dbeafe;
+}
+
+/* ── QUICK ACTIONS ───────────────────────────────────────── */
+
+.jot-quick-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0e2318;
+  margin-bottom: 18px;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  background: #f9f7f2;
+  border: 1px solid #ede9df;
+  border-radius: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+  text-align: left;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.quick-action-btn:last-child {
+  margin-bottom: 0;
+}
+
+.quick-action-btn:hover {
+  background: #0e2318;
+  color: #c9a96e;
+  border-color: #0e2318;
+  transform: translateX(3px);
+}
+
+.quick-action-btn:hover .qa-icon,
+.quick-action-btn:hover .qa-arrow {
+  color: #c9a96e;
+}
+
+.qa-label {
+  flex: 1;
+}
+
+.qa-arrow {
+  color: #aaa;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+/* Icon circle per type */
+.qa-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s;
+}
+
+.qa-icon-buyer   { background: #d1fae5; color: #065f46; }
+.qa-icon-seller  { background: #fef3c7; color: #92400e; }
+.qa-icon-inquiry { background: #dbeafe; color: #1e40af; }
+.qa-icon-doc     { background: #ede9fe; color: #5b21b6; }
+
+.quick-action-btn:hover .qa-icon-buyer,
+.quick-action-btn:hover .qa-icon-seller,
+.quick-action-btn:hover .qa-icon-inquiry,
+.quick-action-btn:hover .qa-icon-doc {
+  background: rgba(201, 169, 110, 0.2);
+  color: #c9a96e;
+}
+
+/* ── ACTIVITY DOTS ───────────────────────────────────────── */
+
+.jot-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f2f0ec;
+}
+
+.jot-activity-item:last-child { border-bottom: none; }
+
+.jot-activity-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.jot-dot-buyer   { background: #d1fae5; }
+.jot-dot-inquiry { background: #fef3c7; }
+.jot-dot-seller  { background: #dbeafe; }
+.jot-dot-doc     { background: #ede9fe; }
+
+.jot-activity-text { flex: 1; }
+.jot-activity-text strong { font-size: 13px; color: #111; display: block; }
+.jot-activity-text p { font-size: 12px; color: #888; margin-top: 2px; }
+
+.jot-activity-time {
+  font-size: 11px;
+  color: #aaa;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* ── PIE LAYOUT ──────────────────────────────────────────── */
+
+.jot-pie-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jot-pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 6px;
+}
+
+.jot-pie-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.jot-leg-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.jot-leg-name { flex: 1; color: #444; }
+.jot-leg-val  { font-weight: 700; color: #0e2318; }
+
+/* ── LEGEND IN CHART HEAD ────────────────────────────────── */
+
+.jot-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+.jot-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── STATUS BADGES ───────────────────────────────────────── */
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-verified { background: #d1fae5; color: #065f46; }
+.status-pending  { background: #fef3c7; color: #92400e; }
+.status-new      { background: #dbeafe; color: #1e40af; }
+.status-interested { background: #ede9fe; color: #5b21b6; }
+
+/* ── VIEW BTN ────────────────────────────────────────────── */
+
+.view-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #0e2318;
+  color: #c9a96e;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.view-btn:hover { background: #1d3b2f; }
+
+/* ── COUNTRY BARS ────────────────────────────────────────── */
+
+.country-row    { margin-bottom: 12px; }
+.country-top    { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #333; }
+.country-bar-bg { height: 8px; background: #f0ede6; border-radius: 99px; overflow: hidden; }
+.country-bar    { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+
+/* ── DATE PILL ───────────────────────────────────────────── */
+
+.jot-date-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #ede9df;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
