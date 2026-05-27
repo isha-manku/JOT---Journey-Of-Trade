@@ -216,10 +216,51 @@ function Dashboard() {
   const [sellers,     setSellers]     = useState([]);
   const [inquiries,   setInquiries]   = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  
 
   // which quick-action modal is open
   const [modal, setModal] = useState(null); // "buyer" | "seller" | "inquiry" | null
+const [upcomingEvents, setUpcomingEvents] = useState([]);
 
+useEffect(() => {
+  const todayKey = new Date().toISOString().slice(0, 10);
+
+  // Try backend first, fallback to localStorage
+  fetch("http://localhost:5000/events")
+    .then((r) => r.json())
+    .then((data) => {
+      const normalized = data.map((e) => ({
+        id:          e.id,
+        title:       e.title || e.name || "",
+        description: e.description || "",
+        date:        e.date ? e.date.slice(0, 10) : "",
+        time:        e.time || "",
+        type:        e.type || "",
+      }));
+      const filtered = normalized
+        .filter((e) => e.date >= todayKey)
+        .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
+        .slice(0, 4);
+      setUpcomingEvents(filtered);
+    })
+    .catch(() => {
+      // fallback to localStorage (same key Calendar uses)
+      const saved = JSON.parse(localStorage.getItem("crmEvents") || "[]");
+      const filtered = saved
+        .map((e) => ({
+          id:          e.id,
+          title:       e.title || e.text || "",
+          description: e.description || "",
+          date:        e.date ? e.date.slice(0, 10) : "",
+          time:        e.time || "",
+          type:        e.type || "",
+        }))
+        .filter((e) => e.date >= todayKey)
+        .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
+        .slice(0, 4);
+      setUpcomingEvents(filtered);
+    });
+}, []);
   useEffect(() => {
     fetchData();
     const refresh = setInterval(fetchData, 5000);
@@ -601,23 +642,21 @@ function Dashboard() {
             </button>
 
           </div>
-
-          {/* EVENTS */}
-          <div className="jot-card">
-            <h3>Upcoming Events</h3>
-            <div className="event-item">
-              <h4>Dubai Trade Expo</h4>
-              <p>International buyer meeting</p>
-              <span>28 May 2026</span>
-            </div>
-            <div className="event-item">
-              <h4>Wheat Buyer Meeting</h4>
-              <p>Client follow-up discussion</p>
-              <span>2 June 2026</span>
-            </div>
-          </div>
-
-        </div>
+{/* EVENTS */}
+<div className="jot-card jot-events-card">
+  <h3>Upcoming Events</h3>
+  {upcomingEvents.length ? upcomingEvents.map((ev) => (
+    <div className="jot-event-item" key={ev.id}>
+      <h4>{ev.title}</h4>
+      {ev.description && <p>{ev.description}</p>}
+      <span className="jot-event-date">
+        📅 {ev.date}{ev.time ? ` · ${ev.time}` : ""}
+      </span>
+    </div>
+  )) : (
+    <p style={{ fontSize: 13, color: "#aaa", padding: "8px 0" }}>No upcoming events</p>
+  )}
+</div> </div>
 
       </div>
 

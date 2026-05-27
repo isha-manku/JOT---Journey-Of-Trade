@@ -401,6 +401,49 @@ db.query(
     }
   );
 });
+// ================= EVENTS =================
+
+// GET all events
+app.get("/events", (req, res) => {
+  db.query("SELECT * FROM events ORDER BY date ASC, time ASC", (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json(result);
+  });
+});
+
+// ADD event
+app.post("/events", (req, res) => {
+  const { title, description, date, time, type, user } = req.body;
+  if (!title || !date) return res.status(400).send("Title and date are required");
+  const sql = "INSERT INTO events (title, description, date, time, type, user) VALUES (?, ?, ?, ?, ?, ?)";
+  db.query(sql, [title, description || "", date, time || "00:00", type || "Meeting", user || ""], (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json({ id: result.insertId, title, description, date, time, type, user });
+  });
+});
+
+// UPDATE event
+app.put("/events/:id", (req, res) => {
+  const { id } = req.params;
+  const { title, description, date, time, type, user } = req.body;
+  const sql = "UPDATE events SET title=?, description=?, date=?, time=?, type=?, user=? WHERE id=?";
+  db.query(sql, [title, description || "", date, time || "00:00", type || "Meeting", user || "", id], (err) => {
+    if (err) return res.status(500).send(err);
+    res.send("Event updated");
+  });
+});
+
+// DELETE event
+app.delete("/events/:id", (req, res) => {
+  db.query("DELETE FROM events WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    res.send("Event deleted");
+  });
+});
+
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
+});
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
@@ -458,4 +501,18 @@ app.get("/history/:id", (req, res) => {
 
     }
   );
+});
+app.get("/activities", (req, res) => {
+
+  db.query(
+    "SELECT * FROM crm_activity ORDER BY id DESC LIMIT 5",
+    (err, result) => {
+
+      if (err) return res.send(err);
+
+      res.json(result);
+
+    }
+  );
+
 });
