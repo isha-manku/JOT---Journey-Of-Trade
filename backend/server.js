@@ -411,5 +411,70 @@ app.delete("/companies/:id", (req, res) => {
     res.send("Company Deleted");
   });
 });
+// GET messages — general channel or DM between two users
+app.get("/messages", (req, res) => {
+  const { channel, with: withUser } = req.query;
+  const userId = parseInt(req.query.userId || 0);
+ 
+  if (channel === "general") {
+    db.query(
+      `SELECT * FROM messages
+       WHERE channel = 'general'
+         AND created_at >= DATE_SUB(NOW(), INTERVAL 15 DAY)
+       ORDER BY created_at ASC`,
+      (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.json(result);
+      }
+    );
+  } else if (channel === "dm" && withUser) {
+    // DM: get messages between current user (from header) and withUser
+    // We identify sender by sender_id in the message itself
+    db.query(
+      `SELECT * FROM messages
+       WHERE channel = 'dm'
+         AND created_at >= DATE_SUB(NOW(), INTERVAL 15 DAY)
+         AND (
+           (sender_id = ? AND receiver_id = ?)
+           OR
+           (sender_id = ? AND receiver_id = ?)
+         )
+       ORDER BY created_at ASC`,
+      // We pass both directions — frontend will pass senderId via query param
+      [req.query.me, withUser, withUser, req.query.me],
+      (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.json(result);
+      }
+    );
+  } else {
+    res.json([]);
+  }
+});
+ 
+// POST /messages — send a message
+app.post("/messages", (req, res) => {
+  const { sender_id, sender_name, channel, receiver_id, message } = req.body;
+ 
+  if (!sender_id || !sender_name || !message)
+    return res.status(400).json({ error: "sender_id, sender_name and message are required" });
+ 
+  db.query(
+    "INSERT INTO messages (sender_id, sender_name, channel, receiver_id, message) VALUES (?,?,?,?,?)",
+    [sender_id, sender_name, channel || "general", receiver_id || null, message],
+    (err, result) => {
+      if (err) return res.status(500).send(err);
+      res.json({ id: result.insertId, sender_id, sender_name, channel, receiver_id, message });
+    }
+  );
+});
+ 
+// DELETE /messages/:id — admin or own message
+app.delete("/messages/:id", (req, res) => {
+  db.query("DELETE FROM messages WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    res.send("Message deleted");
+  });
+});
 // =============================================================================
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));
