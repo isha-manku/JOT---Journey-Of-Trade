@@ -302,9 +302,26 @@ useEffect(() => {
   const buyerChange   = computeChange(buyersThisMonth,    buyersPrevMonth);
   const sellerChange  = computeChange(sellersThisMonth,   sellersPrevMonth);
   const inquiryChange = computeChange(inquiriesThisMonth, inquiriesPrevMonth);
-  const bonafide      = buyers.filter(b => (b.buyer_quality_rating || "").toLowerCase() === "hot buyer" || (b.status || "").toLowerCase() === "verified");
-  const bonafideChange = computeChange(bonafide.length, Math.max(bonafide.length - 2, 0)); // fallback if no date on bonafide
+ // Count unique buyer names from inquiries rated "genuine buyer" only
+const genuineNames = new Set(
+  inquiries
+    .filter(i => (i.buyer_quality_rating || "").toLowerCase() === "genuine buyer")
+    .map(i => (i.buyer_name || "").toLowerCase().trim())
+    .filter(Boolean)
+);
+const bonafide = [...genuineNames];
 
+const bonafideThisMonth = inquiries.filter(i => {
+  const d = new Date(i.inquiry_date);
+  return (i.buyer_quality_rating || "").toLowerCase() === "genuine buyer" &&
+    d.getFullYear() === thisYear && d.getMonth() === thisMonth;
+});
+const bonafidePrevMonth = inquiries.filter(i => {
+  const d = new Date(i.inquiry_date);
+  return (i.buyer_quality_rating || "").toLowerCase() === "genuine buyer" &&
+    d.getFullYear() === prevYear && d.getMonth() === prevMonth;
+});
+const bonafideChange = computeChange(bonafideThisMonth.length, bonafidePrevMonth.length);
   const insightLabel = ({ pct, up }) => {
     if (pct === null) return   <span className="stat-change stat-up">
           <FiArrowUpRight size={13} /> Live data
