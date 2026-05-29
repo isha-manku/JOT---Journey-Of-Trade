@@ -77,7 +77,7 @@ function Messages() {
   const loadMessages = () => {
     const url = channel === "general"
       ? "http://localhost:5000/messages?channel=general"
-      : `http://localhost:5000/messages?channel=dm&with=${channel}`;
+      : `http://localhost:5000/messages?channel=dm&with=${channel}&me=${myId()}`;
     fetch(url)
       .then(r => r.json())
       .then(data => {

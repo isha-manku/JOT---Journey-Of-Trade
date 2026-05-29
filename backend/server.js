@@ -411,42 +411,42 @@ app.delete("/companies/:id", (req, res) => {
     res.send("Company Deleted");
   });
 });
-// GET messages — general channel or DM between two users
+// GET /messages — general or DM
 app.get("/messages", (req, res) => {
-  const { channel, with: withUser } = req.query;
-  const userId = parseInt(req.query.userId || 0);
+  const { channel } = req.query;
+  const me   = parseInt(req.query.me   || 0);
+  const withUser = parseInt(req.query.with || 0);
  
   if (channel === "general") {
+    // All general messages, forever, oldest first
     db.query(
       `SELECT * FROM messages
        WHERE channel = 'general'
-         AND created_at >= DATE_SUB(NOW(), INTERVAL 15 DAY)
        ORDER BY created_at ASC`,
       (err, result) => {
         if (err) return res.status(500).send(err);
         res.json(result);
       }
     );
-  } else if (channel === "dm" && withUser) {
-    // DM: get messages between current user (from header) and withUser
-    // We identify sender by sender_id in the message itself
+ 
+  } else if (channel === "dm" && me && withUser) {
+    // DM: messages between exactly these two users in both directions
     db.query(
       `SELECT * FROM messages
        WHERE channel = 'dm'
-         AND created_at >= DATE_SUB(NOW(), INTERVAL 15 DAY)
          AND (
            (sender_id = ? AND receiver_id = ?)
            OR
            (sender_id = ? AND receiver_id = ?)
          )
        ORDER BY created_at ASC`,
-      // We pass both directions — frontend will pass senderId via query param
-      [req.query.me, withUser, withUser, req.query.me],
+      [me, withUser, withUser, me],
       (err, result) => {
         if (err) return res.status(500).send(err);
         res.json(result);
       }
     );
+ 
   } else {
     res.json([]);
   }
@@ -475,6 +475,55 @@ app.delete("/messages/:id", (req, res) => {
     if (err) return res.status(500).send(err);
     res.send("Message deleted");
   });
+});
+/* ============================================================
+   Add these 2 routes to server.js BEFORE app.listen
+   ============================================================ */
+
+// GET /messages/unread — count of new messages since lastReadId for this user
+// Counts: general messages NOT sent by me + DMs sent TO me
+app.get("/messages/unread", (req, res) => {
+  const userId     = parseInt(req.query.userId     || 0);
+  const lastReadId = parseInt(req.query.lastReadId || 0);
+
+  if (!userId) return res.json({ count: 0 });
+
+  db.query(
+    `SELECT COUNT(*) AS count FROM messages
+     WHERE id > ?
+       AND sender_id != ?
+       AND (
+         channel = 'general'
+         OR (channel = 'dm' AND receiver_id = ?)
+       )`,
+    [lastReadId, userId, userId],
+    (err, result) => {
+      if (err) return res.status(500).json({ count: 0 });
+      res.json({ count: result[0].count });
+    }
+  );
+});
+
+// GET /messages/latest-id — get the highest message id visible to this user
+// Used to mark all as read when user opens Messages page
+app.get("/messages/latest-id", (req, res) => {
+  const userId = parseInt(req.query.userId || 0);
+
+  if (!userId) return res.json({ id: 0 });
+
+  db.query(
+    `SELECT MAX(id) AS id FROM messages
+     WHERE sender_id != ?
+       AND (
+         channel = 'general'
+         OR (channel = 'dm' AND receiver_id = ?)
+       )`,
+    [userId, userId],
+    (err, result) => {
+      if (err) return res.status(500).json({ id: 0 });
+      res.json({ id: result[0].id || 0 });
+    }
+  );
 });
 // =============================================================================
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));
