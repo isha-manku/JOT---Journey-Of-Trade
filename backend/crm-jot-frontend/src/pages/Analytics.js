@@ -125,11 +125,16 @@ function Analytics() {
         <StatCard icon={FiShoppingBag}  label="Total Sellers"   value={sellers.length}   color="#c9a96e" />
         <StatCard icon={FiMessageSquare}label="Total Inquiries" value={inquiries.length} color="#0e2318" />
         <StatCard
-          icon={FiTrendingUp}
-          label="Hot Buyers"
-          value={inquiries.filter(i => i.buyer_quality_rating === "hot buyer").length}
-          color="#c9a96e"
-        />
+  icon={FiTrendingUp}
+  label="Genuine Buyers"
+  value={new Set(
+    inquiries
+      .filter(i => (i.buyer_quality_rating || "").toLowerCase() === "genuine buyer")
+      .map(i => (i.buyer_name || "").toLowerCase().trim())
+      .filter(Boolean)
+  ).size}
+  color="#c9a96e"
+/>
       </div>
 
       {/* ROW 1: Trend + Inquiry Source */}
