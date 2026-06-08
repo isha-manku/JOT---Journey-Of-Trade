@@ -989,3 +989,191 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
   th, td { padding: 11px 12px; }
   .modal-overlay { padding: 10px; }
 }
+/* ============================================================
+   SETTINGS PAGE ADDITIONS — paste at bottom of App.css
+   ============================================================ */
+
+/* ── GRID LAYOUTS ── */
+.set-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.set-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+/* ── SUB HEADING inside card ── */
+.set-sub-heading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0e2318;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0ede6;
+}
+
+/* ── TOGGLE SWITCH ── */
+.set-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f5f2eb;
+  font-size: 14px;
+  color: #333;
+}
+.set-toggle-row:last-of-type { border-bottom: none; }
+
+.set-toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 99px;
+  border: none;
+  background: #d1d5db;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.25s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.set-toggle-on { background: #0e2318; }
+
+.set-toggle-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: white;
+  transition: left 0.25s;
+  display: block;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.set-toggle-on .set-toggle-thumb { left: 23px; }
+
+/* ── CONTENT AREA ── */
+.set-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── TEXTAREA in set-field ── */
+.set-field textarea {
+  padding: 10px 14px;
+  border: 1px solid #e5e0d5;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #faf9f6;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.set-field textarea:focus { border-color: #c9a96e; background: white; }
+
+/* ── BUYERS PAGE ADDITIONS ── */
+.buyers-page {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: #f5f2eb;
+  min-height: 100vh;
+}
+.buyers-page-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.buyers-page-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: #0e2318; margin-bottom: 4px; }
+.buyers-page-sub   { font-size: 14px; color: #888; }
+
+.buyers-search-wrap { position: relative; display: flex; align-items: center; max-width: 480px; }
+.buyers-search-icon { position: absolute; left: 13px; color: #aaa; pointer-events: none; }
+.buyers-search { width: 100%; padding: 11px 36px; border: 1px solid #e5e0d5; border-radius: 12px; font-size: 13px; background: white; outline: none; transition: border-color 0.2s; }
+.buyers-search:focus { border-color: #c9a96e; }
+.buyers-search-clear { position: absolute; right: 13px; color: #aaa; cursor: pointer; }
+
+.buyers-table-outer { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow-x: auto; }
+.buyers-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+.buyers-table thead tr { background: #0e2318; }
+.buyers-table th { padding: 13px 16px; text-align: left; font-size: 12px; font-weight: 700; color: #c9a96e; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; border: none; background: #0e2318; }
+.buyers-table td { padding: 13px 16px; border-bottom: 1px solid #f5f2eb; font-size: 13px; color: #333; vertical-align: middle; }
+.buyer-main-row:hover td { background: #faf9f6; }
+.buyer-row-open td { background: #f7f5f0 !important; }
+
+.buyer-name-cell { display: flex; align-items: center; gap: 10px; }
+.buyer-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg,#0e2318,#1d3b2f); color: #c9a96e; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; }
+.buyer-name-cell strong { display: block; font-size: 14px; color: #0e2318; }
+.buyer-company { display: block; font-size: 11px; color: #888; margin-top: 1px; }
+
+.buyer-product-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+.buyer-chip { background: #f0f7f3; color: #0e2318; border: 1px solid #c9a96e; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.buyer-chip-more { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
+
+.buyer-note-cell  { max-width: 220px; }
+.buyer-note-text  { font-size: 12px; color: #444; line-height: 1.5; white-space: normal; word-break: break-word; }
+
+.buyer-action-btn { width: 30px; height: 30px; border: 1px solid #e5e0d5; border-radius: 8px; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #555; }
+.buyer-action-btn:hover { background: #f5f2eb; }
+.buyer-edit:hover   { background: #d1fae5 !important; color: #065f46 !important; border-color: #065f46 !important; }
+.buyer-del:hover    { background: #fee2e2 !important; color: #dc2626 !important; border-color: #dc2626 !important; }
+.buyer-expand       { background: #f5f2eb; }
+.buyer-expand:hover { background: #0e2318 !important; color: #c9a96e !important; border-color: #0e2318 !important; }
+
+.buyer-detail-row td { padding: 0 !important; border-bottom: 2px solid #c9a96e; background: #faf9f6 !important; }
+.buyer-detail-panel  { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+.buyer-detail-info   { display: flex; flex-wrap: wrap; gap: 12px; }
+.buyer-detail-info-item { display: flex; align-items: flex-start; gap: 7px; font-size: 13px; color: #444; background: white; border: 1px solid #ede9df; border-radius: 10px; padding: 8px 14px; }
+.buyer-detail-info-item svg { color: #c9a96e; flex-shrink: 0; margin-top: 1px; }
+
+.buyer-important-note { display: flex; align-items: flex-start; gap: 12px; background: #fffbeb; border: 1px solid #f59e0b; border-left: 4px solid #f59e0b; border-radius: 12px; padding: 14px 18px; }
+.buyer-important-note svg { color: #f59e0b; flex-shrink: 0; margin-top: 2px; }
+.buyer-important-note strong { display: block; font-size: 13px; color: #92400e; margin-bottom: 4px; }
+.buyer-important-note p { font-size: 13px; color: #444; line-height: 1.6; white-space: pre-wrap; }
+
+.buyer-products-wrap { overflow-x: auto; }
+.buyer-products-title { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: #0e2318; margin-bottom: 10px; }
+.buyer-products-table { width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; min-width: 560px; }
+.buyer-products-table th { background: #0e2318; color: #c9a96e; padding: 10px 14px; font-size: 12px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: 0.4px; }
+.buyer-products-table td { padding: 10px 14px; border-bottom: 1px solid #f0ede6; font-size: 13px; background: white; }
+.buyer-products-table tr:last-child td { border-bottom: none; }
+.buyer-products-table tr:hover td { background: #faf9f6; }
+
+/* Buyers modal */
+.buyers-modal { max-width: 780px !important; max-height: 90vh; overflow-y: auto; }
+.buyers-form-section { margin-bottom: 22px; padding-bottom: 22px; border-bottom: 1px solid #f0ede6; }
+.buyers-form-section:last-of-type { border-bottom: none; }
+.buyers-form-title { font-size: 12px; font-weight: 700; color: #0e2318; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+.buyers-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.buyers-field { display: flex; flex-direction: column; gap: 5px; }
+.buyers-field-full { grid-column: 1 / -1; }
+.buyers-field-note textarea { border-color: #f59e0b !important; background: #fffbeb !important; }
+.buyers-field label { font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.3px; display: flex; align-items: center; gap: 4px; }
+.buyers-field input, .buyers-field textarea, .buyers-field select { padding: 10px 13px; border: 1px solid #e5e0d5; border-radius: 10px; font-size: 13px; font-family: inherit; background: #faf9f6; outline: none; transition: border-color 0.2s; resize: vertical; }
+.buyers-field input:focus, .buyers-field textarea:focus { border-color: #c9a96e; background: white; }
+.buyers-products-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.buyers-add-product-btn { display: flex; align-items: center; gap: 5px; background: #0e2318; color: #c9a96e; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.buyers-add-product-btn:hover { background: #1d3b2f; }
+.buyers-product-row { display: flex; align-items: flex-start; gap: 10px; background: #faf9f6; border: 1px solid #ede9df; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.buyers-product-row:last-child { margin-bottom: 0; }
+.buyers-product-num { width: 26px; height: 26px; background: #0e2318; color: #c9a96e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 22px; }
+.buyers-product-fields { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.buyers-remove-product { width: 30px; height: 30px; background: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 22px; transition: all 0.2s; }
+.buyers-remove-product:hover { background: #dc2626; color: white; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .set-form-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .set-form-grid-2, .set-form-grid-3 { grid-template-columns: 1fr; }
+  .buyers-form-grid { grid-template-columns: 1fr; }
+  .buyers-product-fields { grid-template-columns: 1fr 1fr; }
+  .buyers-page { padding: 14px; }
+}

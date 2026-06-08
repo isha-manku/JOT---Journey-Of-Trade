@@ -9,7 +9,8 @@ function Buyers() {
   const [form, setForm] = useState({
     name: "",
     country: "",
-    email: ""
+    email: "",
+    address: ""
   });
 
   useEffect(() => {
@@ -27,7 +28,8 @@ function Buyers() {
     if (
       !form.name.trim() ||
       !form.country.trim() ||
-      !form.email.trim()
+      !form.email.trim() ||
+      !form.address.trim()
     ) {
       alert("⚠️ Please fill all fields");
       return;
@@ -48,7 +50,7 @@ function Buyers() {
       });
     }
 
-    setForm({ name: "", country: "", email: "" });
+    setForm({ name: "", country: "", email: "", address: ""});
     setShowForm(false);
     fetchBuyers();
   };
@@ -78,7 +80,7 @@ function Buyers() {
         <button
           className="add-btn"
           onClick={() => {
-            setForm({ name: "", country: "", email: "" });
+            setForm({ name: "", country: "", email: "", address: "" });
             setEditId(null);
             setShowForm(true);
           }}
@@ -121,6 +123,11 @@ function Buyers() {
                 value={form.email}
                 onChange={e => setForm({ ...form, email: e.target.value })}
               />
+               <input
+                placeholder="Address"
+                value={form.address}
+                onChange={e => setForm({ ...form, address: e.target.value })}
+              />
               <button className="save-btn" onClick={handleSubmit}>
                 {editId ? "Update Buyer" : "Add Buyer"}
               </button>
@@ -138,6 +145,7 @@ function Buyers() {
               <th>Name</th>
               <th>Country</th>
               <th>Email</th>
+              <th>Address</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -147,11 +155,12 @@ function Buyers() {
                 <td>{b.name}</td>
                 <td>{b.country}</td>
                 <td>{b.email}</td>
+                <td>{b.address}</td>
                 <td className="action-buttons">
                   <button onClick={() => handleDelete(b.id)}>Delete</button>
                   <button
                     onClick={() => {
-                      setForm({ name: b.name, country: b.country, email: b.email });
+                      setForm({ name: b.name, country: b.country, email: b.email, address: b.address });
                       setEditId(b.id);
                       setShowForm(true);
                     }}

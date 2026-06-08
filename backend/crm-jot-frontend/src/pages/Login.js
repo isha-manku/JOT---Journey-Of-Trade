@@ -58,7 +58,7 @@ function Login() {
     <div className="login-page">
       <div className="login-card">
 
-        <img src="/jot.png" alt="logo" className="login-logo" />
+        <img src="/jot copy.png" alt="logo" className="login-logo" />
      
 
         {/* ERROR MESSAGE */}

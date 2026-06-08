@@ -137,7 +137,7 @@ const filteredInquiries = inquiries.filter(i => {
     className="add-btn"
     onClick={() => {
       setShowForm(true);
-      setEditId(null);
+      setEditId(null); 
     }}
   >
     + Add Inquiry
@@ -203,7 +203,7 @@ const filteredInquiries = inquiries.filter(i => {
 
               <input
                 placeholder="Buyer Name"
-                value={form.buyer_name}
+                value={form.buyer_name}   
                 onChange={(e) =>
                   setForm({
                     ...form,
@@ -336,7 +336,7 @@ const filteredInquiries = inquiries.filter(i => {
                 <td>{i.buyer_quality_rating}</td>
 
                 {/* REMARKS */}
-                <td>
+                 <td style={{ minWidth: "180px", maxWidth: "280px", verticalAlign: "middle" }}>
 
                   {role === "admin" ? (
 

@@ -132,7 +132,7 @@ function Layout() {
       {!hideSidebar && (
         <div className="sidebar">
           <div className="logo-area">
-            <img src="/jot.png" alt="JOT logo" className="sidebar-logo" />
+            <img src="/jot copy.png" alt="JOT logo" className="sidebar-logo" />
           </div>
 
           <nav>
