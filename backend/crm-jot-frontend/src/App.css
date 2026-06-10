@@ -1177,3 +1177,100 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
   .buyers-product-fields { grid-template-columns: 1fr 1fr; }
   .buyers-page { padding: 14px; }
 }
+/* ══════════════════════════════════════════
+   INQUIRIES EXPANDED ROW PANEL
+   Paste at the bottom of App.css
+══════════════════════════════════════════ */
+
+/* Two-column grid for Remarks + Follow-up */
+.inq-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* Each box (Remarks / Follow-up) */
+.inq-detail-box {
+  background: white;
+  border: 1px solid #ede9df;
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Box header: icon + label */
+.inq-detail-box-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0e2318;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.inq-detail-box-head svg {
+  color: #c9a96e;
+}
+
+/* Textarea inside expanded row */
+.inq-remark-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e0d5;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #faf9f6;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+  color: #333;
+  line-height: 1.6;
+}
+.inq-remark-textarea:focus {
+  border-color: #c9a96e;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.1);
+}
+
+/* Read-only remark text for non-admin */
+.inq-remark-text {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Mark as Done row */
+.inq-done-row {
+  padding-top: 4px;
+}
+.inq-done-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0e2318;
+  cursor: pointer;
+  background: #f0f7f3;
+  border: 1px solid #c9a96e;
+  border-radius: 10px;
+  padding: 9px 16px;
+  transition: background 0.2s;
+  user-select: none;
+}
+.inq-done-label:hover {
+  background: #d1fae5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .inq-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

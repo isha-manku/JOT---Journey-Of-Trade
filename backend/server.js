@@ -177,38 +177,52 @@ app.delete("/sellers/:id", (req, res) => {
     res.send("Seller Deleted");
   });
 });
+// ============================================================
+//  JOT CRM — Updated Buyers Routes (server.js / routes/buyers.js)
+//  Replace your existing buyers GET/POST/PUT routes with these
+// ============================================================
 
-// =============================================================================
-//  BUYERS
-// =============================================================================
-app.get("/buyers", (req, res) => {
-  db.query("SELECT * FROM buyers", (err, result) => {
-    if (err) return res.send(err);
-    res.json(result);
+// GET all buyers
+app.get('/buyers', (req, res) => {
+  db.query('SELECT * FROM buyers ORDER BY created_at DESC', (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
   });
 });
-app.post("/buyers", (req, res) => {
-  const { name, country, email } = req.body;
-  if (!name || !country || !email) return res.status(400).send("Missing fields");
-  db.query("INSERT INTO buyers (name,country,email) VALUES (?,?,?)",
-    [name, country, email], (err) => {
-      if (err) return res.send(err);
-      addActivity("buyer", "New buyer registered", `${name} from ${country}`);
-      res.send("Buyer Added");
-    });
+
+// POST — add new buyer
+app.post('/buyers', (req, res) => {
+  const { buyer_name, company_name, country, email, address, notes, products } = req.body;
+  const sql = `
+    INSERT INTO buyers (buyer_name, company_name, country, email, address, notes, products)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+  db.query(sql, [buyer_name, company_name, country || '', email, address, notes, products], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ id: result.insertId });
+  });
 });
-app.put("/buyers/:id", (req, res) => {
-  const { name, country, email } = req.body;
-  db.query("UPDATE buyers SET name=?,country=?,email=? WHERE id=?",
-    [name, country, email, req.params.id], (err) => {
-      if (err) return res.send(err);
-      res.send("Buyer Updated");
-    });
+
+// PUT — update buyer
+app.put('/buyers/:id', (req, res) => {
+  const { buyer_name, company_name, country, email, address, notes, products } = req.body;
+  const sql = `
+    UPDATE buyers
+    SET buyer_name = ?, company_name = ?, country = ?, email = ?,
+        address = ?, notes = ?, products = ?
+    WHERE id = ?
+  `;
+  db.query(sql, [buyer_name, company_name, country || '', email, address, notes, products, req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
 });
-app.delete("/buyers/:id", (req, res) => {
-  db.query("DELETE FROM buyers WHERE id=?", [req.params.id], (err) => {
-    if (err) return res.send(err);
-    res.send("Buyer Deleted");
+
+// DELETE buyer
+app.delete('/buyers/:id', (req, res) => {
+  db.query('DELETE FROM buyers WHERE id = ?', [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
   });
 });
 
