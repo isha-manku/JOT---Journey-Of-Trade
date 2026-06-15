@@ -19,6 +19,7 @@ const EMPTY_FORM = {
   company_name: "",
   address: "",
   email: "",
+  country: "",
   notes: "",
   products: [{ ...EMPTY_PRODUCT }]
 };
@@ -79,8 +80,8 @@ function Buyers() {
 
   /* ── SUBMIT ── */
   const handleSubmit = async () => {
-    if (!form.buyer_name.trim() || !form.company_name.trim() || !form.email.trim()) {
-      alert("⚠️ Buyer Name, Company Name, and Email are required.");
+    if (!form.buyer_name.trim() || !form.company_name.trim() || !form.email.trim() || !form.country.trim()) {
+      alert("⚠️ Buyer Name, Company Name, Email and Country are required.");
       return;
     }
     for (let i = 0; i < form.products.length; i++) {
@@ -131,6 +132,7 @@ function Buyers() {
       company_name: b.company_name || "",
       address:      b.address      || "",
       email:        b.email        || "",
+      country:      b.country      || "",
       notes:        b.notes        || "",
       products:     b.products?.length ? b.products : [{ ...EMPTY_PRODUCT }]
     });
@@ -142,7 +144,8 @@ function Buyers() {
   const filtered = buyers.filter(b =>
     (b.buyer_name   || "").toLowerCase().includes(search.toLowerCase()) ||
     (b.company_name || "").toLowerCase().includes(search.toLowerCase()) ||
-    (b.email        || "").toLowerCase().includes(search.toLowerCase())
+    (b.email        || "").toLowerCase().includes(search.toLowerCase()) ||
+    (b.country       || "").toLowerCase().includes(search.toLowerCase())
   );
 
   /* ── OPEN FORM ── */
@@ -194,6 +197,7 @@ function Buyers() {
               <th>Buyer Name</th>
               <th>Company</th>
               <th>Email</th>
+              <th>Country</th>
               <th>Address</th>
               <th>Products</th>
               <th>Actions</th>
@@ -236,6 +240,7 @@ function Buyers() {
                     </td>
                     <td>{b.company_name || "—"}</td>
                     <td>{b.email || "—"}</td>
+                    <td>{b.country || "—"}</td>
                     <td style={{ maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {b.address || "—"}
                     </td>
@@ -282,6 +287,10 @@ function Buyers() {
                             <div className="buyer-detail-info-item">
                               <FiMail size={14} />
                               <span>{b.email || "—"}</span>
+                            </div>
+                            <div className="buyer-detail-info-item">
+                              <FiMapPin size={14} />
+                              <span>{b.country || "—"}</span>
                             </div>
                             <div className="buyer-detail-info-item">
                               <FiMapPin size={14} />
@@ -396,6 +405,14 @@ function Buyers() {
                     placeholder="e.g. buyer@company.com"
                     value={form.email}
                     onChange={e => setField("email", e.target.value)}
+                  />
+                </div>
+                    <div className="buyers-field">
+                  <label>Country*</label>
+                  <input
+                    placeholder="e.g. India"
+                    value={form.country}
+                    onChange={e => setField("country", e.target.value)}
                   />
                 </div>
                 <div className="buyers-field">

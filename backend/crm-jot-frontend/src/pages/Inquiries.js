@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   FiPlus, FiSearch, FiX, FiChevronDown, FiChevronUp,
   FiCalendar, FiUser, FiPackage, FiMessageSquare,
-  FiPhone, FiActivity, FiStar, FiCheckCircle, FiAlertCircle
+  FiPhone, FiActivity, FiCheckCircle, FiAlertCircle
 } from "react-icons/fi";
 
 const EMPTY_FORM = {

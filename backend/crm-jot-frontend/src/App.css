@@ -1274,3 +1274,173 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
     grid-template-columns: 1fr;
   }
 }
+/* ══════════════════════════════════════════
+   SELLER INQUIRIES PAGE
+   Paste at the bottom of App.css
+══════════════════════════════════════════ */
+
+/* Modal — slightly wider to fit price section */
+.sinq-modal {
+  max-width: 760px !important;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+/* ── FORM SECTIONS ── */
+.sinq-form-section {
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #f0ede6;
+}
+.sinq-form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.sinq-form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0e2318;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid #f0ede6;
+}
+.sinq-form-section-title svg {
+  color: #c9a96e;
+}
+
+/* ── FORM GRID ── */
+.sinq-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* ── FIELD ── */
+.sinq-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.sinq-field-full {
+  grid-column: 1 / -1;
+}
+.sinq-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.sinq-req {
+  color: #ef4444;
+  margin-left: 2px;
+}
+.sinq-field input,
+.sinq-field select,
+.sinq-field textarea {
+  padding: 10px 13px;
+  border: 1px solid #e5e0d5;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #faf9f6;
+  outline: none;
+  transition: border-color 0.2s;
+  color: #222;
+  resize: vertical;
+}
+.sinq-field input:focus,
+.sinq-field select:focus,
+.sinq-field textarea:focus {
+  border-color: #c9a96e;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.1);
+}
+
+/* ── PRICE LIST PANEL (expanded row) ── */
+.sinq-price-panel {
+  background: #f0f7f3;
+  border: 1px solid #c9a96e;
+  border-left: 4px solid #c9a96e;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sinq-price-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0e2318;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.sinq-price-head svg {
+  color: #c9a96e;
+}
+
+.sinq-price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.sinq-price-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sinq-price-full {
+  grid-column: 1 / -1;
+}
+
+.sinq-price-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.sinq-price-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0e2318;
+}
+.sinq-price-notes {
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .sinq-price-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .sinq-price-full {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 768px) {
+  .sinq-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .sinq-price-grid {
+    grid-template-columns: 1fr;
+  }
+}

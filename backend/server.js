@@ -540,4 +540,91 @@ app.get("/messages/latest-id", (req, res) => {
   );
 });
 // =============================================================================
+//  SELLER INQUIRIES — paste these routes into server.js BEFORE app.listen
+// =============================================================================
+
+// GET all seller inquiries
+app.get("/seller-inquiries", (req, res) => {
+  db.query("SELECT * FROM seller_inquiries ORDER BY id DESC", (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json(result);
+  });
+});
+
+// POST — add new seller inquiry
+app.post("/seller-inquiries", (req, res) => {
+  const {
+    inquiry_date, inquiry_source, seller_name, product_name,
+    query_executor, initial_contact_method, response_status,
+    seller_quality_rating, offered_price, price_currency,
+    price_validity, price_remarks, remarks, remark_done
+  } = req.body;
+
+  if (
+    !inquiry_date || !inquiry_source || !seller_name || !product_name ||
+    !query_executor || !initial_contact_method || !response_status ||
+    !seller_quality_rating || !offered_price || !price_currency
+  ) return res.status(400).send("Please fill all required fields");
+
+  db.query(
+    `INSERT INTO seller_inquiries
+      (inquiry_date, inquiry_source, seller_name, product_name,
+       query_executor, initial_contact_method, response_status,
+       seller_quality_rating, offered_price, price_currency,
+       price_validity, price_remarks, remarks, remark_done)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    [
+      inquiry_date, inquiry_source, seller_name, product_name,
+      query_executor, initial_contact_method, response_status,
+      seller_quality_rating, offered_price, price_currency,
+      price_validity || "", price_remarks || "",
+      remarks || "", remark_done || false
+    ],
+    (err, result) => {
+      if (err) return res.status(500).send(err);
+      addActivity("seller_inquiry", "New seller inquiry", `${seller_name} — ${product_name}`);
+      res.json({ id: result.insertId });
+    }
+  );
+});
+
+// PUT — update seller inquiry
+app.put("/seller-inquiries/:id", (req, res) => {
+  const {
+    inquiry_date, inquiry_source, seller_name, product_name,
+    query_executor, initial_contact_method, response_status,
+    seller_quality_rating, offered_price, price_currency,
+    price_validity, price_remarks, remarks, followup, remark_done
+  } = req.body;
+
+  db.query(
+    `UPDATE seller_inquiries SET
+      inquiry_date=?, inquiry_source=?, seller_name=?, product_name=?,
+      query_executor=?, initial_contact_method=?, response_status=?,
+      seller_quality_rating=?, offered_price=?, price_currency=?,
+      price_validity=?, price_remarks=?, remarks=?, followup=?, remark_done=?
+     WHERE id=?`,
+    [
+      inquiry_date, inquiry_source, seller_name, product_name,
+      query_executor, initial_contact_method, response_status,
+      seller_quality_rating, offered_price, price_currency,
+      price_validity || "", price_remarks || "",
+      remarks || "", followup || "", remark_done || false,
+      req.params.id
+    ],
+    (err) => {
+      if (err) return res.status(500).send(err);
+      res.json({ success: true });
+    }
+  );
+});
+
+// DELETE — seller inquiry
+app.delete("/seller-inquiries/:id", (req, res) => {
+  db.query("DELETE FROM seller_inquiries WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    res.json({ success: true });
+  });
+});
+// =============================================================================
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));

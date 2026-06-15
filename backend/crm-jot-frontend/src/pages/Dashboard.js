@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import {
   FiUsers, FiShoppingBag, FiMessageSquare, FiTrendingUp,
-  FiUserPlus, FiUpload, FiEye, FiMoreVertical, FiChevronRight,
+  FiUserPlus, FiUpload, FiEye, FiChevronRight,
   FiArrowUpRight, FiArrowDownRight, FiCalendar, FiX,
 } from "react-icons/fi";
 
@@ -380,7 +380,7 @@ function Dashboard() {
             </div>
 
             <div className="jot-card">
-              <div className="jot-card-head"><h3>Inquiries by Country</h3></div>
+              <div className="jot-card-head"><h3>Buyers by Country</h3></div>
               {countryData.map((c, i) => (
                 <div className="country-row" key={i}>
                   <div className="country-top"><span>{c.country}</span><span>{c.count}</span></div>

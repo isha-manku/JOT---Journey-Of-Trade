@@ -18,6 +18,7 @@ import {
   FiSettings,
   FiLogOut,
   FiMessageCircle,
+  FiPackage,
 } from "react-icons/fi";
 
 import { useEffect, useState } from "react";
@@ -32,20 +33,24 @@ import ProtectedRoute from "./ProtectedRoute";
 import Inquiries      from "./pages/Inquiries";
 import CalendarPage   from "./pages/CalendarPage";
 import Analytics      from "./pages/Analytics";
+import ProductAnalytics from "./pages/ProductAnalytics";
 import Settings       from "./pages/Settings";
 import Messages       from "./pages/Messages";
 
+import SellerInquiries from "./pages/SellerInquiries";
 import "./App.css";
 
 const NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", icon: FiGrid,          roles: ["admin","manager","member"] },
   { to: "/calendar",  label: "Calendar",  icon: FiCalendar,      roles: ["admin","manager","member"] },
   { to: "/inquiries", label: "Inquiries", icon: FiMessageSquare, roles: ["admin","manager","member"] },
+  { to: "/seller-inquiries", label: "Seller Inquiries", icon: FiShoppingBag, roles: ["admin","manager","member"] },
   { to: "/buyers",    label: "Buyers",    icon: FiUsers,         roles: ["admin","manager","member"] },
   { to: "/sellers",   label: "Sellers",   icon: FiShoppingBag,  roles: ["admin","manager","member"] },
   { to: "/companies", label: "Companies", icon: FiBriefcase,    roles: ["admin","manager"] },
   { to: "/generate",  label: "Documents", icon: FiFileText,     roles: ["admin","manager"] },
   { to: "/analytics", label: "Analytics", icon: FiBarChart2,    roles: ["admin","manager"] },
+  { to: "/product-analytics", label: "Products", icon: FiPackage, roles: ["admin","manager","member"] },
   { to: "/messages",  label: "Messages",  icon: FiMessageCircle,roles: ["admin","manager","member"] },
   { to: "/settings",  label: "Settings",  icon: FiSettings,     roles: ["admin"] },
 ];
@@ -179,12 +184,14 @@ function Layout() {
           <Route path="/" element={<Login />} />
           <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/inquiries"  element={<ProtectedRoute><Inquiries /></ProtectedRoute>} />
+          <Route path="/seller-inquiries" element={<ProtectedRoute><SellerInquiries /></ProtectedRoute>} />
           <Route path="/buyers"     element={<ProtectedRoute><Buyers /></ProtectedRoute>} />
           <Route path="/sellers"    element={<ProtectedRoute><Sellers /></ProtectedRoute>} />
           <Route path="/companies"  element={<ProtectedRoute><Companies /></ProtectedRoute>} />
           <Route path="/generate"   element={<ProtectedRoute><GenerateDoc /></ProtectedRoute>} />
           <Route path="/calendar"   element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
           <Route path="/analytics"  element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+          <Route path="/product-analytics" element={<ProtectedRoute><ProductAnalytics /></ProtectedRoute>} />
           <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/messages"   element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         </Routes>

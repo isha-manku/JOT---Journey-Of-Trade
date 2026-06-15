@@ -146,7 +146,7 @@ useEffect(() => { fetchCompanies(); }, []);
                 <h4 className="comp-form-section-title">Contact Details</h4>
                 <div className="comp-field">
                   <label><FiUser size={12} /> Contact Person</label>
-                  <input placeholder="e.g. Vikram Singh"
+                  <input placeholder="e.g. isha "
                     value={form.contact_person} onChange={e => setForm({ ...form, contact_person: e.target.value })} />
                 </div>
                 <div className="comp-field">
