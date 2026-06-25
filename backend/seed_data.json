@@ -1,0 +1,525 @@
+{
+  "loi_latex": "\n\\documentclass[11pt]{article}\n\\usepackage[margin=1in]{geometry}\n\\usepackage{helvet}\n\\renewcommand{\\familydefault}{\\sfdefault}\n\\begin{document}\n\n\\begin{center}\n{\\LARGE \\textbf{\\VAR{seller_company}}}\\\\[2pt]\n{\\small \\VAR{seller_address}}\\\\[10pt]\n{\\Large \\textbf{LETTER OF INTENT (LOI)}}\n\\end{center}\n\n\\vspace{1em}\n\\noindent \\textbf{Date:} \\VAR{loi_date} \\hfill \\textbf{Ref:} \\VAR{reference_no}\n\n\\vspace{1em}\n\\noindent We, \\textbf{\\VAR{buyer_company}}, hereby confirm our irrevocable intent to\npurchase the following commodity under the terms below:\n\n\\vspace{1em}\n\\begin{tabular}{ll}\n\\textbf{Product:} & \\VAR{product_name} \\\\\n\\textbf{Quantity:} & \\VAR{quantity} \\VAR{unit} \\\\\n\\textbf{Unit Price:} & \\VAR{unit_price} \\\\\n\\textbf{Destination Port:} & \\VAR{destination_port} \\\\\n\\textbf{Delivery Time:} & \\VAR{delivery_time} \\\\\n\\textbf{Payment Terms:} & \\VAR{payment_terms} \\\\\n\\end{tabular}\n\n\\vspace{2em}\n\\noindent \\textbf{Authorized Signatory}\\\\\n\\VAR{buyer_company}\n\n\\vspace{3em}\n\\noindent {\\small Seller Bank: \\VAR{seller_bank} --- This document is generated electronically.}\n\\end{document}\n",
+  "loi_fields": [
+    {
+      "key": "buyer_company",
+      "label": "Buyer Company Name",
+      "field_type": "text",
+      "required": true,
+      "order": 1
+    },
+    {
+      "key": "reference_no",
+      "label": "Reference No",
+      "field_type": "text",
+      "required": true,
+      "order": 2
+    },
+    {
+      "key": "loi_date",
+      "label": "LOI Date",
+      "field_type": "date",
+      "required": true,
+      "order": 3
+    },
+    {
+      "key": "quantity",
+      "label": "Quantity",
+      "field_type": "number",
+      "required": true,
+      "order": 4
+    },
+    {
+      "key": "unit_price",
+      "label": "Unit Price (USD)",
+      "field_type": "text",
+      "required": true,
+      "order": 5
+    },
+    {
+      "key": "destination_port",
+      "label": "Destination Port",
+      "field_type": "text",
+      "required": true,
+      "order": 6
+    },
+    {
+      "key": "delivery_time",
+      "label": "Delivery Time",
+      "field_type": "text",
+      "required": true,
+      "order": 7
+    },
+    {
+      "key": "payment_terms",
+      "label": "Payment Terms",
+      "field_type": "dropdown",
+      "required": true,
+      "order": 8,
+      "options": [
+        "MT103 TT",
+        "DLC at Sight",
+        "SBLC",
+        "MT760"
+      ]
+    }
+  ],
+  "fco_latex": "\n\\documentclass[a4paper,11pt]{article}\n\\usepackage[top=3.5cm,bottom=3.8cm,left=2cm,right=2cm]{geometry}\n\\usepackage{xcolor}\n\\usepackage{array}\n\\usepackage{fancyhdr}\n\\usepackage[T1]{fontenc}\n\\usepackage[utf8]{inputenc}\n\\usepackage{parskip}\n\\usepackage{graphicx}\n\\usepackage{lmodern}\n\\usepackage{enumitem}\n\\usepackage{multirow}\n\\usepackage{helvet}\n\\usepackage{eso-pic}\n\\renewcommand{\\familydefault}{\\sfdefault}\n\n\\definecolor{goldcolor}{RGB}{180,140,50}\n\\definecolor{marooncolor}{RGB}{110,25,25}\n\n\\AddToShipoutPictureBG{%\n  \\AtPageUpperLeft{%\n    \\raisebox{-90pt}{%\n      \\includegraphics[width=\\paperwidth,height=90pt,keepaspectratio=false]{header_logo.jpg}%\n    }%\n  }%\n}\n\n\\pagestyle{fancy}\n\\fancyhf{}\n\\renewcommand{\\headrulewidth}{0pt}\n\\renewcommand{\\footrulewidth}{0pt}\n\\setlength{\\headheight}{90pt}\n\\setlength{\\headsep}{6pt}\n\\setlength{\\topmargin}{-72pt}\n\\setlength{\\voffset}{0pt}\n\n\\fancyhead[C]{}\n\n\\fancyfoot[L]{%\n  \\footnotesize\n  Address : Compass Building, Al Shohada Road, Al Hamara,\\\\\n  Industrial Zone-FZ, Ras Al Khaimah, United Arab Emirates%\n}\n\\fancyfoot[R]{%\n  \\footnotesize\n  Website: www.ronsonstrading.com\\\\\n  Email: ceo@ronsonstrading.com\\\\\n  Tele: +1-604-613-2109%\n}\n\\fancyfoot[C]{\\footnotesize\\thepage}\n\\renewcommand{\\footrule}{{\\color{marooncolor}\\hrule width\\headwidth height 0.8pt}\\vskip 3pt}\n\\renewcommand{\\footrulewidth}{0.8pt}\n\n\\begin{document}\n\\setlength{\\parindent}{0pt}\n\n\\begin{center}\n  {\\Large\\textbf{\\underline{FULL CORPORATE OFFER FOR \\VAR{product_name}}}}\n\\end{center}\n\n\\vspace{0.3cm}\n\n\\noindent\\textbf{Date: \\VAR{fco_date}} \\hfill \\textbf{\\VAR{reference_no}}\n\n\\vspace{0.5cm}\n\n\\noindent\\textbf{To}\n\n\\vspace{0.2cm}\n\n\\noindent\\textbf{Company Name:} \\VAR{buyer_company}\\\\\n\\textbf{Address:} \\VAR{buyer_address}\\\\\n\\textbf{Website:} \\VAR{buyer_website}\\\\\n\\textbf{Email:} \\VAR{buyer_email}\\\\\n\\textbf{Phone Number:} \\VAR{buyer_phone}\n\n\\vspace{0.4cm}\n\n\\noindent\\textbf{Dear Sir,}\n\n\\vspace{0.3cm}\n\n\\noindent We, \\textbf{\\VAR{seller_company}}, hereby formally confirm our intent and capability to supply \\textbf{\\VAR{product_name}}. We affirm that our company is fully prepared, willing, and able to sell the product strictly in accordance with the specifications, quantities, pricing, and commercial terms outlined in this \\textbf{Full Corporate Offer (FCO).} This declaration is issued with full corporate authority and complete responsibility on behalf of our company.\n\n\\vspace{0.4cm}\n\n\\begin{center}{\\large\\textbf{\\color{marooncolor}QUANTITY \\& PRICING FOR TRIAL SHIPMENT}}\\end{center}\n\\vspace{0.1cm}\n\\begin{center}\n\\begin{tabular}{|>{\\bfseries}p{5.5cm}|p{9.5cm}|}\n\\hline\nTrial Container & \\VAR{trial_container} \\\\ \\hline\nPrice & \\VAR{trial_price} \\\\ \\hline\nTrial Shipment Value & \\VAR{trial_shipment_value} \\\\ \\hline\nTrial Quantity in MT & \\VAR{trial_quantity_mt} \\\\ \\hline\nLoading Capacity & \\VAR{loading_capacity} \\\\ \\hline\nLoading Port & \\VAR{loading_port} \\\\ \\hline\nDestination Port & \\VAR{destination_port} \\\\ \\hline\nDelivery Time & \\VAR{delivery_time} \\\\ \\hline\n\\end{tabular}\n\\end{center}\n\n\\vspace{0.3cm}\n\n\\begin{center}{\\large\\textbf{\\color{marooncolor}QUANITY \\& PRICING FOR YEARLY CONTRACT SHIPMENT}}\\end{center}\n\\vspace{0.1cm}\n\\begin{center}\n\\begin{tabular}{|>{\\bfseries}p{5.5cm}|p{9.5cm}|}\n\\hline\nQuantity & \\VAR{contract_quantity} \\\\ \\hline\nPrice & \\VAR{contract_price} \\\\ \\hline\nMonthly Shipment Value & \\VAR{monthly_shipment_value} \\\\ \\hline\nAnnual Contract Value & \\VAR{annual_contract_value} \\\\ \\hline\nContract Duration & \\VAR{contract_duration} \\\\ \\hline\nLoading Capacity & \\VAR{contract_loading_capacity} \\\\ \\hline\nAnnual Contract Quantity & \\VAR{annual_contract_quantity} \\\\ \\hline\nLoading Port & \\VAR{contract_loading_port} \\\\ \\hline\nDestination Port & \\VAR{contract_destination_port} \\\\ \\hline\nDelivery Time & \\VAR{contract_delivery_time} \\\\ \\hline\n\\end{tabular}\n\\end{center}\n\n\\newpage\n\n\\begin{center}{\\large\\textbf{\\color{marooncolor}PRODUCT SPECIFICATION}}\\end{center}\n\\vspace{0.1cm}\n\\begin{center}\n\\begin{tabular}{|>{\\bfseries}p{5cm}|p{10cm}|}\n\\hline\n\\multicolumn{1}{|>{\\bfseries\\centering\\arraybackslash}p{5cm}|}{CATEGORY} & \\multicolumn{1}{>{\\bfseries\\centering\\arraybackslash}p{10cm}|}{SPECIFICATION} \\\\ \\hline\nProduct Name & \\VAR{product_name} \\\\ \\hline\nGrade & \\VAR{spec_grade} \\\\ \\hline\nOrigin & \\VAR{spec_origin} \\\\ \\hline\nOrigin / Certification & \\VAR{spec_certification} \\\\ \\hline\nProcessing & \\VAR{spec_processing} \\\\ \\hline\nAppearance & \\VAR{spec_appearance} \\\\ \\hline\nOdor & \\VAR{spec_odor} \\\\ \\hline\nBones & \\VAR{spec_bones} \\\\ \\hline\nBlood / Blood Stains & \\VAR{spec_blood_stains} \\\\ \\hline\nMoisture Content & \\VAR{spec_moisture} \\\\ \\hline\nDamage & \\VAR{spec_damage} \\\\ \\hline\nChicken Paw Pad & \\VAR{spec_paw_pad} \\\\ \\hline\nWeight per Piece & \\VAR{spec_weight_per_piece} \\\\ \\hline\nLength per Piece & \\VAR{spec_length_per_piece} \\\\ \\hline\nPackaging & \\VAR{spec_packaging} \\\\ \\hline\nInner Packing & \\VAR{spec_inner_packing} \\\\ \\hline\nCarton Weight & \\VAR{spec_carton_weight} \\\\ \\hline\nFreezing Temperature & \\VAR{spec_freezing_temp} \\\\ \\hline\nStorage Temperature & \\VAR{spec_storage_temp} \\\\ \\hline\nTransportation Temperature & \\VAR{spec_transport_temp} \\\\ \\hline\nFreezing Process & \\VAR{spec_freezing_process} \\\\ \\hline\nShelf Life & \\VAR{spec_shelf_life} \\\\ \\hline\nPackaging & \\VAR{spec_packaging_note} \\\\ \\hline\n\\end{tabular}\n\\end{center}\n\n\\vspace{0.3cm}\n\n\\begin{center}{\\large\\textbf{\\color{marooncolor}PRODUCT DISCHARGE}}\\end{center}\n\\vspace{0.1cm}\n\\begin{itemize}[leftmargin=1.5em, itemsep=2pt, topsep=2pt]\n\\item The shipment shall begin within 15-20 days after receipt and confirmation of the payment instrument in seller's Bank, after the contract is signed.\n\\item The Date of bill of Lading shall be considered the date of delivery.\n\\item Seller is responsible for all supervision, fees and/ or levies at the port of loading.\n\\item Not later than 72 hours from the completion of loading, the seller's agent shall email the buyer and inform the vessel's sailing date and the expected time of arrival at the port of destination.\n\\item All port of loading charges are for the account of the seller and all port of discharge charges are for the account of the buyer.\n\\end{itemize}\n\n\\newpage\n\n\\begin{center}\n  {\\large\\textbf{\\color{marooncolor}COMMERCIAL TERMS}}\\\\[4pt]\n  {\\small\\color{marooncolor}(This is our basis payment terms but still it should be editable)}\n\\end{center}\n\\vspace{0.2cm}\n\n\\begin{center}{\\large\\textbf{\\color{marooncolor}TRIAL SHIPMENT}}\\end{center}\n\\vspace{0.1cm}\n\\noindent The Buyer will provide irrevocable, operative, and transferable DLC (MT700) for trial containers. The Buyer shall make 100\\% payment at the loading port against presentation of shipping documents via TT (MT 103). The Seller shall ship the goods as per the agreed Proforma Invoice and, upon completion of loading at the port of shipment, present copies of the shipping documents, including but not limited to the Bill of Lading, Commercial Invoice, Packing List, Health Certificate, and other required export documents, to the Buyer. Full payment shall be remitted by the Buyer immediately upon confirmation of loading and presentation of documents. Release of the original shipping documents shall be made only after receipt of 100\\% payment through normal banking channels via TT (MT103).\n\n\\vspace{0.3cm}\n\\begin{center}{\\large\\textbf{\\color{marooncolor}MONTHLY SHIPMENT}}\\end{center}\n\\vspace{0.1cm}\n\\noindent Buyer will open an irrevocable, operative, and transferable DLC (MT700) for the value of one month shipment quantity against the proforma invoice \\& SPA, issued and confirmed by world top 100 Banks valid for 365 + 1 days (or 180 days x 2 subject to the issuing bank's rule). Upon completion of loading and issuance of the Bill of Lading, the Seller shall provide copies of the commercial invoice, Bill of Lading, Packing List, and other relevant shipping documents to the Buyer. The Buyer shall remit 100\\% payment immediately upon confirmation of the above mentioned shipping documents. Payment shall be effected via MT103 / TT bank-to-bank SWIFT transfer. Release of the original Bill of Lading and full set of original shipping documents shall be made only after confirmation of full payment through normal banking channels.\n\n\\vspace{0.3cm}\n\\begin{center}{\\large\\textbf{\\color{marooncolor}PAYMENT VIA TELEGRAPHIC TRANSFER (TT/MT103)}}\\end{center}\n\\vspace{0.1cm}\n\\noindent The Buyer shall effect payment for shipments by way of Telegraphic Transfer (TT/MT103) upon receipt of confirmation from the Seller's nominated bank via SWIFT that the original shipping documents have been duly submitted and are held in custody by the bank. The Seller shall, prior to such confirmation, provide the Buyer with scanned/digital copies of all relevant shipping documents for advance review and verification. The Buyer will still be providing DLC MT700 as a security financial instrument for contract shipment.\n\n\\vspace{0.3cm}\n\\begin{center}{\\large\\textbf{\\color{marooncolor}DOCUMENTARY LETTER OF CREDIT (DLC/MT700)}}\\end{center}\n\\vspace{0.1cm}\n\\noindent The DLC (MT700) shall serve as a supporting financial instrument for the purpose of providing transactional assurance and security to both parties. For the avoidance of doubt, the DLC shall not constitute the primary mode of payment. Actual settlement for each shipment shall be effected exclusively via TT/MT103.\n\n\\vspace{0.3cm}\n\\begin{center}{\\large\\textbf{\\color{marooncolor}TELEX RELEASE}}\\end{center}\n\\vspace{0.1cm}\n\\noindent The Seller shall arrange telex release of the cargo upon receipt of full payment, unless otherwise mutually agreed.\n\n\\newpage\n\n\\begin{center}{\\large\\textbf{\\underline{\\color{marooncolor}PRODUCT DOCUMENTATION}}}\\end{center}\n\\vspace{0.2cm}\n\\noindent A full set of the following documents which will be legitimate for shipment from Brazil will be presented.\n\\vspace{0.1cm}\n\\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]\n\\item Full set of clean on -- board marine bill of lading made out to order and blank endorsed, 1/3 clearly marked `Freight Prepaid'' in 1 original\n\\item Commercial Invoice issued by the seller indicating the contract number, DLC/SBLC number, Description of the goods, gross / net weights of the goods in 1 Original.\n\\item Packaging list 1 originals showing contract no., seal no., container no., gross / net weight, B/L no., date. Quantity loaded and loading port.\n\\item Certificate of origin issued by the relevant authority of the country of origin of Brazil in 1 original\n\\item Certificate of Quality and quantity issued by CCIC Brazil, 1 original\n\\item Veterinary health certificate issued by veterinary office for the record of China entry- Exit inspection and quarantine in 1 originals\n\\item Insurance policy/ certificate in 1 original for 110\\% of the invoice value, covering ocean marine transportation all risk.\n\\item Commodity bilingual English- Chinese label samples in 1 original.\n\\item Slaughterhouse SIF certificate in 1 copy\n\\item Export / shipper certificate of GACC Registration in 1 Copy\n\\item HALAL certificate in 1 original\n\\end{itemize}\n\n\\vspace{0.3cm}\n\\begin{center}\n  {\\large\\textbf{\\color{marooncolor}PROCEDURES}}\\\\[4pt]\n  {\\small\\color{marooncolor}(This is our basis procedure but still it should be editable)}\n\\end{center}\n\\vspace{0.1cm}\n\\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]\n\\item The Buyer issues the \\textbf{LOI (Letter of Intent)} to the Seller.\n\\item The Seller issues the \\textbf{FCO (Full Corporate Offer)} to the Buyer.\n\\item Upon acceptance, the Buyer signs, seals, and returns the FCO.\n\\item The Buyer issues the \\textbf{ICPO (Irrevocable Corporate Purchase Order).}\n\\item The Seller issues the \\textbf{SPA (Sales and Purchase Agreement).}\n\\item The Buyer provides \\textbf{POF (Proof of Funds)} by \\textbf{BCL (Bank Comfort Letter).}\n\\item Upon signing and sealing of the SPA, the Seller issues the Proforma Invoice (PI).\n\\item The Buyer's bank issues an irrevocable, operative, and transferable \\textbf{DLC (MT700),} covering the agreed shipment quantity in accordance with the SPA and payment terms. The DLC shall be issued and confirmed by a Top 100 World Bank and remain valid as per agreed contract terms.\n\\item The Seller arranges inspection for quality and quantity through CCIC Brazil at the Seller's expense, completes loading, and prepares the shipping documents.\n\\item Upon completion of loading and issuance of the Bill of Lading, the Seller provides copies of shipping documents to the Buyer, including but not limited to the Bill of Lading, Commercial Invoice, Packing List, Health Certificate, and other relevant export documents.\n\\item The Buyer remits 100\\% payment immediately upon confirmation of loading and presentation of shipping documents via TT / MT103 bank-to-bank SWIFT transfer.\n\\item Release of the original Bill of Lading and full set of original shipping documents shall be made only after confirmation of 100\\% payment through normal banking channels.\n\\item The Seller permits the Buyer or the Buyer's appointed representative to witness the loading process at the loading warehouse, at the Buyer's expense.\n\\item The Buyer shall be responsible for customs clearance, unloading at destination, and any penalties arising from delayed unloading. The Buyer shall notify the Seller in writing of the appointed clearing agent details at the time of payment confirmation.\n\\end{itemize}\n\n\\newpage\n\n\\noindent\n\\begin{tabular}{|>{\\bfseries}p{3cm}|p{5.2cm}|>{\\bfseries}p{3cm}|p{4.2cm}|}\n\\hline\n\\multicolumn{2}{|>{\\centering\\arraybackslash}p{7.5cm}|}{\\textbf{\\color{marooncolor}SELLER DETAILS}} & \\multicolumn{2}{>{\\centering\\arraybackslash}p{7.3cm}|}{\\textbf{\\color{marooncolor}SELLER BANKING DETAILS}} \\\\\n\\hline\nCompany Name & Ronsons Trading FZ-LLC & Bank Name & MASHREQ \\\\ \\hline\nAddress & Compass Building, Al Shohada Road, Al Hamara, Industrial Zone-FZ, Ras Al Khaimah, United Arab Emirates & Address & Beside Al Hooth Hypermarket, Al Muntasir RD, Al Nakheel, Ras Al Khaimah, United Arab Emirates \\\\ \\hline\nContact Person & Mr. Hirdey Batth & Account Name & RONSONS TRADING FZ-LLC. \\\\ \\hline\nEmail & ceo@ronsonstrading.com & Account Number & 019101772389 \\\\ \\hline\nWebsite & www.ronsonstrading.com & IBAN & AE380330000019101772389 \\\\ \\hline\nWhatsApp & +1 (604) 613-2109 \\newline +971 50 838 0262 & Swift Code & BOMLAEAD \\\\ \\hline\n\\end{tabular}\n\n\\vspace{0.6cm}\n\n\\begin{center}{\\large\\textbf{\\underline{\\color{marooncolor}BUYER COMPANY INFORMATION}}}\\end{center}\n\\vspace{0.1cm}\n\\begin{center}\n\\begin{tabular}{|>{\\bfseries}p{4cm}|p{11cm}|}\n\\hline\nCompany Name & \\VAR{buyer_company} \\\\ \\hline\nAddress & \\VAR{buyer_address} \\\\ \\hline\nContact Person & \\VAR{buyer_contact_person} \\\\ \\hline\nEmail Address & \\VAR{buyer_email} \\\\ \\hline\nCountry & \\VAR{buyer_country} \\\\ \\hline\nPhone No. & \\VAR{buyer_phone} \\\\ \\hline\n\\end{tabular}\n\\end{center}\n\n\\newpage\n\n\\begin{center}{\\large\\textbf{\\underline{\\color{marooncolor}BUYER BANK INFORMATION}}}\\end{center}\n\\vspace{0.2cm}\n\\begin{center}\n\\begin{tabular}{|>{\\bfseries}p{4cm}|p{11cm}|}\n\\hline\nBank Name & \\VAR{buyer_bank_name} \\\\ \\hline\nBank Address & \\VAR{buyer_bank_address} \\\\ \\hline\nBank Swift Code & \\VAR{buyer_bank_swift} \\\\ \\hline\nAccount Name & \\VAR{buyer_account_name} \\\\ \\hline\nAccount Number & \\VAR{buyer_account_number} \\\\ \\hline\nBank Officer/Email & \\VAR{buyer_bank_officer_email} \\\\ \\hline\n\\end{tabular}\n\\end{center}\n\n\\vspace{0.5cm}\n\n\\noindent\\textbf{Bank Charges:} All banking Charges from Buyer's Bank shall be borne by the buyer, and all banking charges incurred at Seller's Financier's Bank will be borne by the Seller Financier's.\n\n\\vspace{0.3cm}\n\n\\noindent\\textbf{Note:} No contact with the Seller's or Buyer's bank(s) shall be made without the explicit written permission of the Seller or Buyer. In the event that an alternate bank account is to be used, the Seller and Buyer shall notify each other in writing of the new bank coordinates. Both parties are required to inform each other in advance before forwarding any financial instructions or correspondence to the bank.\n\n\\vspace{0.3cm}\n\n\\noindent\\textbf{Please Note:} A final SPA will be signed between end seller and \\textbf{\\VAR{buyer_company}} once this FCO is accepted, signed and sealed by the buyer.\n\n\\vspace{0.4cm}\n\n\\noindent\\textbf{VALIDITY OF OFFER}\\\\\nThis FCO remains valid until \\textbf{\\VAR{validity}}\n\n\\newpage\n\n\\begin{center}{\\large\\textbf{\\underline{AUTHORIZED SIGNATURES}}}\\end{center}\n\\vspace{0.8cm}\n\n\\noindent\\textbf{\\underline{FOR AND ON BEHALF OF \\VAR{seller_company} (SELLER)}}\n\n\\vspace{0.6cm}\n\n\\noindent\\includegraphics[width=6cm,keepaspectratio]{signature_stamp.png}\\\\[4pt]\n\\rule{7cm}{0.4pt}\\\\[4pt]\n\\textbf{\\VAR{signatory_name}}\\\\\n\\textbf{\\VAR{signatory_title}}\\\\\n\\textbf{Date: \\VAR{signing_date}}\n\n\\vspace{2.5cm}\n\n\\noindent\\textbf{\\underline{FOR AND ON BEHALF OF \\VAR{buyer_company} (BUYER)}}\n\n\\vspace{2.5cm}\n\n\\noindent\\rule{7cm}{0.4pt}\\\\[4pt]\n\\textbf{Mr.}\\\\\n\\textbf{Title}\\\\\n\\textbf{Date:}\n\n\\end{document}\n",
+  "fco_fields": [
+    {
+      "key": "reference_no",
+      "label": "FCO Reference No.",
+      "field_type": "text",
+      "required": true,
+      "order": 1,
+      "default_value": "RT/FCO/2025/001"
+    },
+    {
+      "key": "fco_date",
+      "label": "FCO Date",
+      "field_type": "date",
+      "required": true,
+      "order": 2
+    },
+    {
+      "key": "buyer_company",
+      "label": "Buyer Company Name",
+      "field_type": "text",
+      "required": true,
+      "order": 3
+    },
+    {
+      "key": "buyer_address",
+      "label": "Buyer Address",
+      "field_type": "textarea",
+      "required": true,
+      "order": 4
+    },
+    {
+      "key": "buyer_website",
+      "label": "Buyer Website",
+      "field_type": "text",
+      "required": false,
+      "order": 5
+    },
+    {
+      "key": "buyer_email",
+      "label": "Buyer Email",
+      "field_type": "text",
+      "required": false,
+      "order": 6
+    },
+    {
+      "key": "buyer_phone",
+      "label": "Buyer Phone Number",
+      "field_type": "text",
+      "required": false,
+      "order": 7
+    },
+    {
+      "key": "buyer_country",
+      "label": "Buyer Country",
+      "field_type": "text",
+      "required": true,
+      "order": 8
+    },
+    {
+      "key": "buyer_contact_person",
+      "label": "Buyer Contact Person",
+      "field_type": "text",
+      "required": true,
+      "order": 9
+    },
+    {
+      "key": "trial_container",
+      "label": "Trial Container Quantity",
+      "field_type": "text",
+      "required": true,
+      "order": 10,
+      "default_value": "10 Containers"
+    },
+    {
+      "key": "trial_price",
+      "label": "Trial Price",
+      "field_type": "text",
+      "required": true,
+      "order": 11,
+      "default_value": "USD 1,350 Per MT CIF"
+    },
+    {
+      "key": "trial_shipment_value",
+      "label": "Trial Shipment Value",
+      "field_type": "text",
+      "required": true,
+      "order": 12,
+      "default_value": "USD 364,500"
+    },
+    {
+      "key": "trial_quantity_mt",
+      "label": "Trial Quantity in MT",
+      "field_type": "text",
+      "required": true,
+      "order": 13,
+      "default_value": "270 MT"
+    },
+    {
+      "key": "loading_capacity",
+      "label": "Loading Capacity (Trial)",
+      "field_type": "text",
+      "required": true,
+      "order": 14,
+      "default_value": "27 MT per 40ft Reefer"
+    },
+    {
+      "key": "loading_port",
+      "label": "Loading Port",
+      "field_type": "text",
+      "required": true,
+      "order": 15,
+      "default_value": "Brazil"
+    },
+    {
+      "key": "destination_port",
+      "label": "Destination Port",
+      "field_type": "text",
+      "required": true,
+      "order": 16
+    },
+    {
+      "key": "delivery_time",
+      "label": "Delivery Time",
+      "field_type": "text",
+      "required": true,
+      "order": 17,
+      "default_value": "30-45 Days"
+    },
+    {
+      "key": "contract_quantity",
+      "label": "Contract Quantity (Monthly)",
+      "field_type": "text",
+      "required": true,
+      "order": 18,
+      "default_value": "100 Containers"
+    },
+    {
+      "key": "contract_price",
+      "label": "Contract Price",
+      "field_type": "text",
+      "required": true,
+      "order": 19,
+      "default_value": "USD 1,300 Per MT CIF"
+    },
+    {
+      "key": "monthly_shipment_value",
+      "label": "Monthly Shipment Value",
+      "field_type": "text",
+      "required": true,
+      "order": 20,
+      "default_value": "USD 3,510,000"
+    },
+    {
+      "key": "annual_contract_value",
+      "label": "Annual Contract Value",
+      "field_type": "text",
+      "required": true,
+      "order": 21,
+      "default_value": "USD 42,120,000"
+    },
+    {
+      "key": "contract_duration",
+      "label": "Contract Duration",
+      "field_type": "text",
+      "required": true,
+      "order": 22,
+      "default_value": "12 Months"
+    },
+    {
+      "key": "contract_loading_capacity",
+      "label": "Loading Capacity (Contract)",
+      "field_type": "text",
+      "required": true,
+      "order": 23,
+      "default_value": "27 MT per 40ft Reefer"
+    },
+    {
+      "key": "annual_contract_quantity",
+      "label": "Annual Contract Quantity",
+      "field_type": "text",
+      "required": true,
+      "order": 24,
+      "default_value": "32,400 MT"
+    },
+    {
+      "key": "contract_loading_port",
+      "label": "Contract Loading Port",
+      "field_type": "text",
+      "required": true,
+      "order": 25,
+      "default_value": "Brazil"
+    },
+    {
+      "key": "contract_destination_port",
+      "label": "Contract Destination Port",
+      "field_type": "text",
+      "required": true,
+      "order": 26
+    },
+    {
+      "key": "contract_delivery_time",
+      "label": "Contract Delivery Time",
+      "field_type": "text",
+      "required": true,
+      "order": 27,
+      "default_value": "Monthly Shipments"
+    },
+    {
+      "key": "spec_grade",
+      "label": "Grade",
+      "field_type": "text",
+      "required": true,
+      "order": 28,
+      "default_value": "Grade A"
+    },
+    {
+      "key": "spec_origin",
+      "label": "Origin",
+      "field_type": "text",
+      "required": true,
+      "order": 29,
+      "default_value": "Brazil"
+    },
+    {
+      "key": "spec_certification",
+      "label": "Origin / Certification",
+      "field_type": "text",
+      "required": true,
+      "order": 30,
+      "default_value": "SIF Approved, Halal"
+    },
+    {
+      "key": "spec_processing",
+      "label": "Processing",
+      "field_type": "text",
+      "required": true,
+      "order": 31,
+      "default_value": "IQF (Individually Quick Frozen)"
+    },
+    {
+      "key": "spec_appearance",
+      "label": "Appearance",
+      "field_type": "text",
+      "required": true,
+      "order": 32,
+      "default_value": "Clean, no yellow skin, no feathers, no black pads or ammonia burns"
+    },
+    {
+      "key": "spec_odor",
+      "label": "Odor",
+      "field_type": "text",
+      "required": true,
+      "order": 33,
+      "default_value": "No bad smell"
+    },
+    {
+      "key": "spec_bones",
+      "label": "Bones",
+      "field_type": "text",
+      "required": true,
+      "order": 34,
+      "default_value": "Less than 2% broken bones"
+    },
+    {
+      "key": "spec_blood_stains",
+      "label": "Blood / Blood Stains",
+      "field_type": "text",
+      "required": true,
+      "order": 35,
+      "default_value": "Washed and clean, no blood stains"
+    },
+    {
+      "key": "spec_moisture",
+      "label": "Moisture Content",
+      "field_type": "text",
+      "required": true,
+      "order": 36,
+      "default_value": "Less than 3%"
+    },
+    {
+      "key": "spec_damage",
+      "label": "Damage",
+      "field_type": "text",
+      "required": true,
+      "order": 37,
+      "default_value": "No bruises, no black flaws"
+    },
+    {
+      "key": "spec_paw_pad",
+      "label": "Chicken Paw Pad",
+      "field_type": "text",
+      "required": true,
+      "order": 38,
+      "default_value": "Retained and undamaged"
+    },
+    {
+      "key": "spec_weight_per_piece",
+      "label": "Weight per Piece",
+      "field_type": "text",
+      "required": true,
+      "order": 39,
+      "default_value": "35g - 45g+"
+    },
+    {
+      "key": "spec_length_per_piece",
+      "label": "Length per Piece",
+      "field_type": "text",
+      "required": true,
+      "order": 40,
+      "default_value": "10cm - 15cm"
+    },
+    {
+      "key": "spec_packaging",
+      "label": "Packaging",
+      "field_type": "text",
+      "required": true,
+      "order": 41,
+      "default_value": "10kg - 15kg or 20kg carton boxes"
+    },
+    {
+      "key": "spec_inner_packing",
+      "label": "Inner Packing",
+      "field_type": "text",
+      "required": true,
+      "order": 42,
+      "default_value": "2x 5kg polybags per 10kg carton"
+    },
+    {
+      "key": "spec_carton_weight",
+      "label": "Carton Weight",
+      "field_type": "text",
+      "required": true,
+      "order": 43,
+      "default_value": "10kg Net Weight"
+    },
+    {
+      "key": "spec_freezing_temp",
+      "label": "Freezing Temperature",
+      "field_type": "text",
+      "required": true,
+      "order": 44,
+      "default_value": "Blasted at -40\u00b0C"
+    },
+    {
+      "key": "spec_storage_temp",
+      "label": "Storage Temperature",
+      "field_type": "text",
+      "required": true,
+      "order": 45,
+      "default_value": "-18\u00b0C"
+    },
+    {
+      "key": "spec_transport_temp",
+      "label": "Transportation Temperature",
+      "field_type": "text",
+      "required": true,
+      "order": 46,
+      "default_value": "-18\u00b0C"
+    },
+    {
+      "key": "spec_freezing_process",
+      "label": "Freezing Process",
+      "field_type": "text",
+      "required": true,
+      "order": 47,
+      "default_value": "BQF / IQF"
+    },
+    {
+      "key": "spec_shelf_life",
+      "label": "Shelf Life",
+      "field_type": "text",
+      "required": true,
+      "order": 48,
+      "default_value": "12-24 Months from production date"
+    },
+    {
+      "key": "spec_packaging_note",
+      "label": "Packaging Note",
+      "field_type": "text",
+      "required": true,
+      "order": 49,
+      "default_value": "Standard export packing"
+    },
+    {
+      "key": "buyer_bank_name",
+      "label": "Buyer Bank Name",
+      "field_type": "text",
+      "required": true,
+      "order": 50
+    },
+    {
+      "key": "buyer_bank_address",
+      "label": "Buyer Bank Address",
+      "field_type": "text",
+      "required": true,
+      "order": 51
+    },
+    {
+      "key": "buyer_bank_swift",
+      "label": "Buyer Bank SWIFT Code",
+      "field_type": "text",
+      "required": true,
+      "order": 52
+    },
+    {
+      "key": "buyer_account_name",
+      "label": "Buyer Account Name",
+      "field_type": "text",
+      "required": true,
+      "order": 53
+    },
+    {
+      "key": "buyer_account_number",
+      "label": "Buyer Account Number",
+      "field_type": "text",
+      "required": true,
+      "order": 54
+    },
+    {
+      "key": "buyer_bank_officer_email",
+      "label": "Bank Officer Email",
+      "field_type": "text",
+      "required": false,
+      "order": 55
+    },
+    {
+      "key": "validity",
+      "label": "Offer Validity",
+      "field_type": "text",
+      "required": true,
+      "order": 56,
+      "default_value": "7 Days from Issuance"
+    },
+    {
+      "key": "signatory_name",
+      "label": "Signatory Name",
+      "field_type": "text",
+      "required": true,
+      "order": 57,
+      "default_value": "Hirdey Batth"
+    },
+    {
+      "key": "signatory_title",
+      "label": "Signatory Title",
+      "field_type": "text",
+      "required": true,
+      "order": 58,
+      "default_value": "Managing Director"
+    },
+    {
+      "key": "signing_date",
+      "label": "Signing Date",
+      "field_type": "date",
+      "required": true,
+      "order": 59
+    }
+  ]
+}

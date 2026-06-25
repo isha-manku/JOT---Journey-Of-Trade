@@ -1,14 +1,92 @@
 const express = require("express");
 const cors = require("cors");
 const db = require("./db");
+const { signToken } = require("./docplatform_auth");
 const fs = require("fs");
 const app = express();
 const PizZip = require("pizzip");
 const Docxtemplater = require("docxtemplater");
 const path = require("path");
+const multer = require("multer");
 
-app.use(cors());
+// ── Multer Storage Configuration ─────────────────────────────────────────────
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = path.join(__dirname, "uploads/seller_documents");
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  }
+});
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed"));
+    }
+  }
+});
+
+// Buyer Documents Multer Config
+const buyerStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = path.join(__dirname, "uploads/buyer_documents");
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  }
+});
+const buyerUpload = multer({
+  storage: buyerStorage,
+  fileFilter: (req, file, cb) => {
+    // Only accept PDFs by mime type and extension
+    if (file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed"));
+    }
+  }
+});
+
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", (req, res) => {
+  res.status(404).send(`
+    <html style="background:#f8f9fa;">
+      <body style="font-family:'Segoe UI',sans-serif; text-align:center; padding: 4rem; color:#495057;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#e03131; margin-bottom:1rem;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="9" y1="15" x2="15" y2="15"></line>
+        </svg>
+        <h2 style="color:#212529; margin-bottom:0.5rem;">Document File Missing</h2>
+        <p style="margin-bottom:1.5rem; max-width:400px; margin-left:auto; margin-right:auto;">
+          The physical PDF file for this record could not be found on the server.
+        </p>
+        <div style="background:#fff; border:1px solid #dee2e6; border-radius:8px; padding:1rem; display:inline-block; text-align:left;">
+          <ul style="margin:0; padding-left:1.2rem; color:#868e96; font-size:14px;">
+            <li style="margin-bottom:0.5rem;">Database record is intact.</li>
+            <li style="margin-bottom:0.5rem;">File is absent from <code style="background:#f1f3f5; padding:2px 4px; border-radius:4px;">backend/uploads/</code>.</li>
+            <li><strong>Fix:</strong> Please delete and re-upload this document.</li>
+          </ul>
+        </div>
+      </body>
+    </html>
+  `);
+});
 
 // ── AUTO-CREATE users table ───────────────────────────────────────────────────
 db.query(`
@@ -23,6 +101,44 @@ db.query(`
 `, (err) => {
   if (err) { console.log("Users table error:", err); return; }
   console.log("✅ Users table ready");
+
+  // auto-create seller_documents table
+  db.query(`
+    CREATE TABLE IF NOT EXISTS seller_documents (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      seller_id INT NOT NULL,
+      company_name VARCHAR(255) NOT NULL,
+      product_name VARCHAR(255) NOT NULL,
+      file_name VARCHAR(255) NOT NULL,
+      file_path VARCHAR(255) NOT NULL,
+      uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      uploaded_by VARCHAR(255) NULL,
+      FOREIGN KEY (seller_id) REFERENCES sellers(id) ON DELETE CASCADE
+    )
+  `, (err) => {
+    if (err) { console.log("seller_documents table error:", err); return; }
+    console.log("✅ seller_documents table ready");
+  });
+
+  // auto-create buyer_documents table
+  db.query(`
+    CREATE TABLE IF NOT EXISTS buyer_documents (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      buyer_id INT NOT NULL,
+      company_name VARCHAR(255) NULL,
+      product_name VARCHAR(255) NULL,
+      document_type VARCHAR(255) NULL,
+      file_name VARCHAR(255) NOT NULL,
+      file_path VARCHAR(255) NOT NULL,
+      uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      uploaded_by VARCHAR(255) NULL,
+      FOREIGN KEY (buyer_id) REFERENCES buyers(id) ON DELETE CASCADE
+    )
+  `, (err) => {
+    if (err) { console.log("buyer_documents table error:", err); return; }
+    console.log("✅ buyer_documents table ready");
+  });
+
   // seed default admin if table is empty
   db.query("SELECT COUNT(*) as count FROM users", (err, result) => {
     if (!err && result[0].count === 0) {
@@ -59,6 +175,16 @@ app.post("/login", (req, res) => {
         return res.status(401).json({ error: "Invalid credentials" });
 
       const user = result[0];
+
+      // Issue HttpOnly secure cookie for shared CRM/DocPlatform session
+      const token = signToken({ id: user.id, username: user.username, role: user.role });
+      res.cookie("crm_session", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+
       res.json({ id: user.id, full_name: user.full_name, username: user.username, role: user.role });
     }
   );
@@ -149,7 +275,14 @@ app.post("/generate-doc", (req, res) => {
 //  SELLERS
 // =============================================================================
 app.get("/sellers", (req, res) => {
-  db.query("SELECT * FROM sellers", (err, result) => {
+  db.query("SELECT * FROM sellers WHERE is_deleted = FALSE OR is_deleted IS NULL", (err, result) => {
+    if (err) return res.send(err);
+    res.json(result);
+  });
+});
+
+app.get("/sellers/recycle-bin", (req, res) => {
+  db.query("SELECT * FROM sellers WHERE is_deleted = TRUE", (err, result) => {
     if (err) return res.send(err);
     res.json(result);
   });
@@ -157,10 +290,10 @@ app.get("/sellers", (req, res) => {
 app.post("/sellers", (req, res) => {
   const { name, country, email, phone, product } = req.body;
   db.query("INSERT INTO sellers (name,country,email,phone,product) VALUES (?,?,?,?,?)",
-    [name, country, email, phone, product], (err) => {
+    [name, country, email, phone, product], (err, result) => {
       if (err) return res.send(err);
       addActivity("seller", "Seller added", `${name} - ${product}`);
-      res.send("Seller Added");
+      res.json({ id: result.insertId, message: "Seller Added" });
     });
 });
 app.put("/sellers/:id", (req, res) => {
@@ -171,10 +304,166 @@ app.put("/sellers/:id", (req, res) => {
       res.send("Seller Updated");
     });
 });
-app.delete("/sellers/:id", (req, res) => {
-  db.query("DELETE FROM sellers WHERE id=?", [req.params.id], (err) => {
+app.post("/sellers/:id/delete", (req, res) => {
+  db.query("UPDATE sellers SET is_deleted = TRUE, deleted_at = NOW() WHERE id=?", [req.params.id], (err) => {
     if (err) return res.send(err);
-    res.send("Seller Deleted");
+    res.send("Seller Soft Deleted");
+  });
+});
+
+app.post("/sellers/:id/restore", (req, res) => {
+  db.query("UPDATE sellers SET is_deleted = FALSE, deleted_at = NULL WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.send(err);
+    res.send("Seller Restored");
+  });
+});
+
+app.delete("/sellers/:id/permanent", (req, res) => {
+  const sellerId = req.params.id;
+  db.query("SELECT name FROM sellers WHERE id = ?", [sellerId], (err, sellerRes) => {
+    if (err || sellerRes.length === 0) return res.status(404).send("Seller not found");
+    const sellerName = sellerRes[0].name;
+
+    const queries = [
+      new Promise((resolve, reject) => {
+        db.query("SELECT COUNT(*) AS count FROM account_transactions WHERE seller_id = ?", [sellerId], (err, res) => err ? reject(err) : resolve(res[0].count));
+      }),
+      new Promise((resolve, reject) => {
+        db.query("SELECT COUNT(*) AS count FROM seller_documents WHERE seller_id = ?", [sellerId], (err, res) => err ? reject(err) : resolve(res[0].count));
+      }),
+      new Promise((resolve, reject) => {
+        db.query("SELECT COUNT(*) AS count FROM seller_inquiries WHERE seller_name = ?", [sellerName], (err, res) => err ? reject(err) : resolve(res[0].count));
+      })
+    ];
+
+    Promise.all(queries).then(results => {
+      const totalRefs = results.reduce((a, b) => a + b, 0);
+      if (totalRefs > 0) {
+        return res.status(400).json({ error: "This seller is linked to historical business records and cannot be permanently deleted." });
+      }
+      
+      db.query("DELETE FROM sellers WHERE id=?", [sellerId], (err) => {
+        if (err) return res.status(500).send(err);
+        res.send("Seller Permanently Deleted");
+      });
+    }).catch(err => {
+      res.status(500).send("Error checking references");
+    });
+  });
+});
+
+// ── Upload documents for a seller ───────────────────────────────────────────
+app.post("/sellers/:id/documents", upload.array("documents"), (req, res) => {
+  const sellerId = req.params.id;
+  const uploaded_by = req.body.uploaded_by || "System";
+  
+  db.query("SELECT name, product FROM sellers WHERE id = ?", [sellerId], (err, result) => {
+    if (err || result.length === 0) return res.status(500).send("Seller not found");
+    const seller = result[0];
+    
+    if (req.files && req.files.length > 0) {
+      const insertDocsSql = "INSERT INTO seller_documents (seller_id, company_name, product_name, file_name, file_path, uploaded_by) VALUES ?";
+      const values = req.files.map(file => [
+        sellerId,
+        seller.name,
+        seller.product,
+        file.originalname,
+        file.filename,
+        uploaded_by
+      ]);
+      db.query(insertDocsSql, [values], (err) => {
+        if (err) return res.status(500).send(err);
+        res.send("Documents Uploaded");
+      });
+    } else {
+      res.send("No Documents to Upload");
+    }
+  });
+});
+
+// ── Get seller profile with documents hierarchy ───────────────────────────────
+app.get("/sellers/:id/profile", (req, res) => {
+  const sellerId = req.params.id;
+  
+  db.query("SELECT * FROM sellers WHERE id = ?", [sellerId], (err, sellerResult) => {
+    if (err) return res.status(500).send(err);
+    if (sellerResult.length === 0) return res.status(404).send("Seller not found");
+    
+    const seller = sellerResult[0];
+    
+    db.query("SELECT * FROM seller_documents WHERE seller_id = ?", [sellerId], (err, docResult) => {
+      if (err) return res.status(500).send(err);
+      
+      const companyMap = {};
+      const uniqueProducts = new Set();
+      const uniqueCompanies = new Set();
+      
+      docResult.forEach(doc => {
+        uniqueCompanies.add(doc.company_name);
+        uniqueProducts.add(`${doc.company_name}::${doc.product_name}`);
+        
+        if (!companyMap[doc.company_name]) {
+          companyMap[doc.company_name] = {
+            company_name: doc.company_name,
+            products: {}
+          };
+        }
+        
+        if (!companyMap[doc.company_name].products[doc.product_name]) {
+          companyMap[doc.company_name].products[doc.product_name] = {
+            product_name: doc.product_name,
+            documents: []
+          };
+        }
+        
+        companyMap[doc.company_name].products[doc.product_name].documents.push({
+          id: doc.id,
+          file_name: doc.file_name,
+          file_path: doc.file_path,
+          uploaded_at: doc.uploaded_at,
+          uploaded_by: doc.uploaded_by
+        });
+      });
+      
+      const companiesList = Object.values(companyMap).map(c => ({
+        company_name: c.company_name,
+        products: Object.values(c.products)
+      }));
+      
+      res.json({
+        seller: {
+          id: seller.id,
+          name: seller.name,
+          country: seller.country,
+          email: seller.email,
+          phone: seller.phone,
+          product: seller.product
+        },
+        stats: {
+          total_companies: uniqueCompanies.size || 1,
+          total_products: uniqueProducts.size || (seller.product ? 1 : 0),
+          total_documents: docResult.length
+        },
+        companies: companiesList
+      });
+    });
+  });
+});
+
+// ── Download endpoint ────────────────────────────────────────────────────────
+app.get("/seller-documents/download/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, "uploads/seller_documents", filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send("File not found");
+  }
+  
+  db.query("SELECT file_name FROM seller_documents WHERE file_path = ?", [filename], (err, result) => {
+    let serveName = filename;
+    if (!err && result.length > 0) {
+      serveName = result[0].file_name;
+    }
+    res.download(filePath, serveName);
   });
 });
 // ============================================================
@@ -182,9 +471,17 @@ app.delete("/sellers/:id", (req, res) => {
 //  Replace your existing buyers GET/POST/PUT routes with these
 // ============================================================
 
-// GET all buyers
+// GET all active buyers
 app.get('/buyers', (req, res) => {
-  db.query('SELECT * FROM buyers ORDER BY created_at DESC', (err, results) => {
+  db.query('SELECT * FROM buyers WHERE is_deleted = FALSE OR is_deleted IS NULL ORDER BY created_at DESC', (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
+// GET all soft-deleted buyers
+app.get('/buyers/recycle-bin', (req, res) => {
+  db.query('SELECT * FROM buyers WHERE is_deleted = TRUE ORDER BY deleted_at DESC', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
@@ -203,24 +500,123 @@ app.post('/buyers', (req, res) => {
   });
 });
 
-// PUT — update buyer
-app.put('/buyers/:id', (req, res) => {
-  const { buyer_name, company_name, country, email, address, notes, products } = req.body;
-  const sql = `
-    UPDATE buyers
-    SET buyer_name = ?, company_name = ?, country = ?, email = ?,
-        address = ?, notes = ?, products = ?
-    WHERE id = ?
-  `;
-  db.query(sql, [buyer_name, company_name, country || '', email, address, notes, products, req.params.id], (err) => {
+// POST — upload buyer documents (called after buyer creation)
+app.post("/buyer-documents/upload", buyerUpload.array("files"), (req, res) => {
+  const { buyer_id, company_name, product_name, document_type, uploaded_by } = req.body;
+  if (!buyer_id) return res.status(400).json({ error: "Buyer ID is required" });
+
+  const uploadedFiles = req.files || [];
+  const errors = [];
+  const successfulDocs = [];
+  const promises = [];
+
+  for (const file of uploadedFiles) {
+    // 1. Validate PDF magic bytes
+    try {
+      const buffer = fs.readFileSync(file.path);
+      if (buffer.length < 4 || buffer.slice(0, 4).toString('ascii') !== '%PDF') {
+        fs.unlinkSync(file.path);
+        errors.push({ filename: file.originalname, error: "The uploaded file is not a valid PDF document." });
+        continue;
+      }
+    } catch (e) {
+      try { fs.unlinkSync(file.path); } catch (err) {}
+      errors.push({ filename: file.originalname, error: "The uploaded file is not a valid PDF document." });
+      continue;
+    }
+
+    // 2. Valid file, insert into DB
+    const sql = `
+      INSERT INTO buyer_documents (buyer_id, company_name, product_name, document_type, file_name, file_path, uploaded_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    const params = [
+      buyer_id, 
+      company_name || null, 
+      product_name || null, 
+      document_type || null, 
+      file.originalname, 
+      file.filename, 
+      uploaded_by || null
+    ];
+    
+    promises.push(new Promise((resolve, reject) => {
+      db.query(sql, params, (err, result) => {
+        if (err) {
+          try { fs.unlinkSync(file.path); } catch (unlinkErr) {}
+          reject({ filename: file.originalname, error: err.message });
+        } else {
+          successfulDocs.push(file.originalname);
+          resolve();
+        }
+      });
+    }));
+  }
+
+  Promise.allSettled(promises).then((results) => {
+    const rejected = results.filter(r => r.status === 'rejected').map(r => r.reason);
+    errors.push(...rejected);
+    
+    if (errors.length > 0) {
+      return res.status(400).json({ success: successfulDocs.length > 0, errors, message: "Some or all files failed validation." });
+    }
+    res.json({ success: true, message: "Documents uploaded successfully." });
+  });
+});
+
+// GET — download buyer document
+app.get("/buyer-documents/download/:filename", (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(__dirname, "uploads/buyer_documents", filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send("Document not found");
+  }
+  const cleanName = filename.replace(/^\d+-\d+-/, "");
+  res.download(filePath, cleanName);
+});
+
+// GET — list buyer documents
+app.get("/buyer-documents/:buyer_id", (req, res) => {
+  db.query("SELECT * FROM buyer_documents WHERE buyer_id = ? AND is_deleted = 0 ORDER BY uploaded_at DESC", [req.params.buyer_id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
+// POST — soft delete buyer document
+app.post("/buyer-documents/:id/delete", (req, res) => {
+  db.query("UPDATE buyer_documents SET is_deleted = 1, deleted_at = NOW() WHERE id = ?", [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });
 });
 
-// DELETE buyer
-app.delete('/buyers/:id', (req, res) => {
-  db.query('DELETE FROM buyers WHERE id = ?', [req.params.id], (err) => {
+// PUT — update buyer
+app.put('/buyers/:id', (req, res) => {
+  const { buyer_name, company_name, country, email, phone, address, notes, products } = req.body;
+  const sql = `
+    UPDATE buyers
+    SET buyer_name = ?, company_name = ?, country = ?, email = ?, phone = ?,
+        address = ?, notes = ?, products = ?
+    WHERE id = ?
+  `;
+  db.query(sql, [buyer_name, company_name, country || '', email, phone || '', address, notes, products, req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+// POST — soft delete buyer
+app.post('/buyers/:id/delete', (req, res) => {
+  db.query('UPDATE buyers SET is_deleted = TRUE, deleted_at = NOW() WHERE id = ?', [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+// POST — restore buyer
+app.post('/buyers/:id/restore', (req, res) => {
+  db.query('UPDATE buyers SET is_deleted = FALSE, deleted_at = NULL WHERE id = ?', [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });
@@ -247,14 +643,13 @@ app.post("/companies", (req, res) => {
 // =============================================================================
 //  TEMPLATES
 // =============================================================================
-const multer  = require("multer");
-const storage = multer.diskStorage({
+const templateStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "templates/"),
   filename:    (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
 });
-const upload = multer({ storage });
+const templateUpload = multer({ storage: templateStorage });
 
-app.post("/upload-template", upload.single("file"), (req, res) => {
+app.post("/upload-template", templateUpload.single("file"), (req, res) => {
   db.query("INSERT INTO templates (name,file_path) VALUES (?,?)",
     [req.body.name, req.file.path], (err) => {
       if (err) return res.send(err);
@@ -436,7 +831,7 @@ app.get("/messages", (req, res) => {
     db.query(
       `SELECT * FROM messages
        WHERE channel = 'general'
-       ORDER BY created_at ASC`,
+       ORDER BY id ASC`,
       (err, result) => {
         if (err) return res.status(500).send(err);
         res.json(result);
@@ -448,12 +843,12 @@ app.get("/messages", (req, res) => {
     db.query(
       `SELECT * FROM messages
        WHERE channel = 'dm'
-         AND (
-           (sender_id = ? AND receiver_id = ?)
-           OR
-           (sender_id = ? AND receiver_id = ?)
-         )
-       ORDER BY created_at ASC`,
+          AND (
+            (sender_id = ? AND receiver_id = ?)
+            OR
+            (sender_id = ? AND receiver_id = ?)
+          )
+       ORDER BY id ASC`,
       [me, withUser, withUser, me],
       (err, result) => {
         if (err) return res.status(500).send(err);
@@ -627,4 +1022,13 @@ app.delete("/seller-inquiries/:id", (req, res) => {
   });
 });
 // =============================================================================
+// DocPlatform routing
+app.use("/docplatform", express.static(path.join(__dirname, "public/docplatform")));
+app.use("/docplatform", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/docplatform/index.html"));
+});
+app.use("/doc-api", require("./docplatform_router"));
+
+app.use(require("./accounts_router"));
+
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));

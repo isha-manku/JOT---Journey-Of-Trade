@@ -1,0 +1,89 @@
+"""
+On-the-fly PDF generation via Jinja2-templated LaTeX -> pdflatex.
+PDFs are NEVER stored on disk permanently; we compile in a temp dir and
+return the bytes buffer, then clean up.
+"""
+import os
+import shutil
+import subprocess
+import tempfile
+from jinja2 import Environment, BaseLoader, StrictUndefined
+
+# Custom Jinja2 delimiters that don't collide with LaTeX's {} and %.
+LATEX_JINJA_ENV = Environment(
+    block_start_string=r"\BLOCK{",
+    block_end_string="}",
+    variable_start_string=r"\VAR{",
+    variable_end_string="}",
+    comment_start_string=r"\#{",
+    comment_end_string="}",
+    line_statement_prefix="%%",
+    line_comment_prefix="%#",
+    trim_blocks=True,
+    autoescape=False,
+    undefined=StrictUndefined,
+    loader=BaseLoader(),
+)
+
+_LATEX_SPECIALS = {
+    "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_",
+    "{": r"\{", "}": r"\}", "~": r"\textasciitilde{}",
+    "^": r"\textasciicircum{}", "\\": r"\textbackslash{}",
+}
+
+
+def latex_escape(value) -> str:
+    if value is None:
+        return ""
+    s = str(value)
+    return "".join(_LATEX_SPECIALS.get(ch, ch) for ch in s)
+
+
+LATEX_JINJA_ENV.filters["e"] = latex_escape
+
+
+class PdfGenerationError(RuntimeError):
+    pass
+
+
+def render_latex(latex_source: str, context: dict) -> str:
+    """Render the Jinja2+LaTeX template string with escaped form values."""
+    safe_ctx = {k: latex_escape(v) if isinstance(v, (str, int, float)) else v
+                for k, v in context.items()}
+    template = LATEX_JINJA_ENV.from_string(latex_source)
+    return template.render(**safe_ctx)
+
+
+def compile_pdf(latex_source: str, context: dict) -> bytes:
+    """Render + compile to PDF, return bytes. Cleans up all temp artifacts."""
+    if shutil.which("pdflatex") is None:
+        raise PdfGenerationError("pdflatex not found on PATH. Install a TeX distribution.")
+
+    rendered = render_latex(latex_source, context)
+    tmpdir = tempfile.mkdtemp(prefix="docgen_")
+    try:
+        tex_path = os.path.join(tmpdir, "doc.tex")
+        with open(tex_path, "w", encoding="utf-8") as f:
+            f.write(rendered)
+
+        # Copy static template images if they exist
+        for img in ["header_logo.jpg", "signature_stamp.png"]:
+            img_path = os.path.join(os.getcwd(), img)
+            if os.path.exists(img_path):
+                shutil.copy(img_path, tmpdir)
+
+        # Run twice for references/layout stabilization.
+        for _ in range(2):
+            proc = subprocess.run(
+                ["pdflatex", "-interaction=nonstopmode", "-halt-on-error", "doc.tex"],
+                cwd=tmpdir, capture_output=True, text=True, timeout=60,
+            )
+        pdf_path = os.path.join(tmpdir, "doc.pdf")
+        if not os.path.exists(pdf_path):
+            raise PdfGenerationError(
+                f"pdflatex failed:\n{proc.stdout[-2000:]}\n{proc.stderr[-1000:]}"
+            )
+        with open(pdf_path, "rb") as f:
+            return f.read()
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)

@@ -249,7 +249,7 @@ function Dashboard() {
 
   const recentActivity = (() => {
     const items = [];
-    [...buyers].reverse().slice(0, 2).forEach(b =>
+       [...buyers].slice(0, 2).forEach(b =>
       items.push({ time: b.created_at ? new Date(b.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—", icon: "buyer", title: "New buyer registered", sub: b.email || b.buyer_name || b.name })
     );
     [...inquiries].slice(0, 2).forEach(i =>
@@ -265,8 +265,7 @@ function Dashboard() {
   })();
 
   const formatDate = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  const recentBuyers = [...buyers].reverse().slice(0, 5);
-
+  const recentBuyers = [...buyers].slice(0, 5);
   return (
     <div className="jot-dashboard">
 

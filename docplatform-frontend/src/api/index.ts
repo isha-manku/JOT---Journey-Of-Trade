@@ -1,0 +1,109 @@
+import axios from "axios";
+import type {
+  Company, Product, DocumentType, DocumentSchema,
+  GeneratedDocument, DocumentVersion, SearchResult,
+  BuyerListItem, BuyerProfile, SellerProfile
+} from "../types";
+
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL ?? "/doc-api",
+});
+
+if (import.meta.env.DEV) {
+  api.interceptors.request.use(request => {
+    console.group(`📡 API Request: ${request.method?.toUpperCase()} ${request.url}`);
+    console.log("Base URL:", request.baseURL);
+    console.log("Full URL:", `${request.baseURL}${request.url}`);
+    console.log("Params:", request.params);
+    console.log("Payload:", request.data);
+    console.groupEnd();
+    return request;
+  });
+
+  api.interceptors.response.use(response => {
+    console.group(`✅ API Response: ${response.config.url}`);
+    console.log("Status:", response.status);
+    console.log("Payload:", response.data);
+    console.groupEnd();
+    return response;
+  }, error => {
+    console.group(`❌ API Error: ${error.config?.url}`);
+    console.log("Message:", error.message);
+    console.log("Response:", error.response?.data);
+    console.groupEnd();
+    
+    // Auto-logout if session is invalid
+    if (error.response?.status === 401) {
+      if (window.parent !== window) {
+        window.parent.postMessage({ action: "navigate", to: "/login", forceLogout: true }, "*");
+      } else {
+        window.location.href = "/login";
+      }
+    }
+    
+    return Promise.reject(error);
+  });
+}
+
+export const refApi = {
+  companies: () => api.get<Company[]>("/reference/companies").then(r => r.data),
+  products: (company_id: string) =>
+    api.get<Product[]>("/reference/products", { params: { company_id } }).then(r => r.data),
+  documentTypes: (company_id: string, product_id: string) =>
+    api.get<DocumentType[]>("/reference/document-types",
+      { params: { company_id, product_id } }).then(r => r.data),
+  buyers: (search?: string) =>
+    api.get<BuyerListItem[]>("/reference/buyers", { params: search ? { search } : {} }).then(r => r.data),
+};
+
+export const docApi = {
+  schema: (p: { company_id: string; product_id: string; document_type_id: string }) =>
+    api.get<DocumentSchema>("/documents/schema", { params: p }).then(r => r.data),
+
+  schemaByDoc: (document_id: string) =>
+    api.get<DocumentSchema>(`/documents/${document_id}/schema`).then(r => r.data),
+
+  get: (document_id: string) =>
+    api.get<GeneratedDocument>(`/documents/${document_id}`).then(r => r.data),
+
+  generate: (body: {
+    company_id: string; product_id: string; document_type_id: string;
+    buyer_name: string; company_name: string; country: string; phone: string;
+    email?: string;
+    form_values: Record<string, unknown>;
+  }) => api.post<GeneratedDocument>("/documents/generate", body).then(r => r.data),
+
+  search: (params: Record<string, string | number | undefined>) =>
+    api.get<SearchResult>("/documents/search", { params }). then(r => r.data),
+
+  latest: (document_id: string) =>
+    api.get<DocumentVersion>(`/documents/${document_id}/latest`).then(r => r.data),
+
+  revise: (body: { document_id: string; form_values: Record<string, unknown> }) =>
+    api.post<GeneratedDocument>("/documents/revise", body).then(r => r.data),
+
+  versions: (document_id: string) =>
+    api.get<DocumentVersion[]>(`/documents/${document_id}/versions`).then(r => r.data),
+
+  pdfUrl: (document_id: string, version?: number, download = false) => {
+    let url = `${api.defaults.baseURL}/documents/${document_id}/pdf`;
+    const params = new URLSearchParams();
+    if (version) params.set("version", String(version));
+    if (download) params.set("download", "true");
+    const qs = params.toString();
+    return qs ? `${url}?${qs}` : url;
+  },
+
+  buyerProfile: (buyerId: string | number) =>
+    api.get<BuyerProfile>(`/documents/buyer/${buyerId}/profile`).then(r => r.data),
+};
+
+export const sellerApi = {
+  profile: (sellerId: string | number) =>
+    axios.get<SellerProfile>(`/sellers/${sellerId}/profile`).then(r => r.data),
+  
+  downloadUrl: (filename: string) => `/seller-documents/download/${filename}`,
+  
+  previewUrl: (filename: string) => `/uploads/seller_documents/${filename}`
+};
+

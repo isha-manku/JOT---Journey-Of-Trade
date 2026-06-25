@@ -1,50 +1,13 @@
-import { useEffect, useState } from "react";
-
 function GenerateDoc() {
-  const [buyers, setBuyers] = useState([]);
-  const [companies, setCompanies] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:5000/buyers")
-      .then(res => res.json())
-      .then(setBuyers);
-
-    fetch("http://localhost:5000/companies")
-      .then(res => res.json())
-      .then(setCompanies);
-  }, []);
-
+  const docAppUrl = "http://localhost:5000/docplatform";  const username = localStorage.getItem("username") || "";
+  
   return (
-    <div>
-      <h2>Generate Document</h2>
-
-      <select>
-        <option>Select Buyer</option>
-        {buyers.map(b => (
-          <option key={b.id}>{b.name}</option>
-        ))}
-      </select>
-
-      <br /><br />
-
-      <select>
-        <option>Select Company</option>
-        {companies.map(c => (
-          <option key={c.id}>{c.name}</option>
-        ))}
-      </select>
-
-      <br /><br />
-
-      <select>
-        <option>FCO</option>
-        <option>SCO</option>
-        <option>Invoice</option>
-      </select>
-
-      <br /><br />
-
-      <button>Generate</button>
+    <div style={{ width: '100%', height: '100vh', margin: '-20px' }}>
+      <iframe 
+        src={`${docAppUrl}?created_by=${encodeURIComponent(username)}`}
+        style={{ width: '100%', height: '100%', border: 'none' }}
+        title="Document Generation"
+      />
     </div>
   );
 }

@@ -1,0 +1,13 @@
+{
+  "name": "western-agro-crm-monolith",
+  "version": "1.0.0",
+  "description": "Monolithic integration of Western Agro CRM and Document Automation Platform",
+  "scripts": {
+    "install-all": "npm install --prefix backend && npm install --prefix backend/crm-jot-frontend && npm install --prefix docplatform-frontend",
+    "build-doc-frontend": "npm run build --prefix docplatform-frontend",
+    "copy-doc-frontend": "node scripts/copy_assets.js",
+    "build-all": "npm run build-doc-frontend && npm run copy-doc-frontend",
+    "setup-db": "node backend/setup_accounts.js && node backend/setup_docplatform.js",
+    "start": "node backend/server.js"
+  }
+}
