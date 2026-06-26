@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Sellers() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [sellers, setSellers]   = useState([]);
+  const [recycleCount, setRecycleCount] = useState(0);
   const [editId, setEditId]     = useState(null);
   const [search, setSearch]     = useState("");
   const [showForm, setShowForm] = useState(false);
+
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [fileError, setFileError] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -16,12 +23,44 @@ function Sellers() {
 
   useEffect(() => {
     fetchSellers();
+    fetchRecycleCount();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.openAddModal) {
+      setForm({ name: "", country: "", email: "", phone: "", product: "" });
+      setEditId(null);
+      setSelectedFiles([]);
+      setFileError("");
+      setShowForm(true);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate, location.pathname]);
+
+  const fetchRecycleCount = () => {
+    fetch("http://localhost:5000/sellers/recycle-bin")
+      .then(res => res.json())
+      .then(data => setRecycleCount(data.length))
+      .catch(() => setRecycleCount(0));
+  };
 
   const fetchSellers = () => {
     fetch("http://localhost:5000/sellers")
       .then(res => res.json())
       .then(data => setSellers(data));
+  };
+
+  const handleFileChange = (e) => {
+    setFileError("");
+    const files = Array.from(e.target.files);
+    const nonPdfs = files.filter(f => !f.name.toLowerCase().endsWith(".pdf") && f.type !== "application/pdf");
+    if (nonPdfs.length > 0) {
+      setFileError("❌ Only PDF files are allowed.");
+      e.target.value = ""; // Reset
+      setSelectedFiles([]);
+      return;
+    }
+    setSelectedFiles(files);
   };
 
   // ADD + UPDATE
@@ -37,30 +76,50 @@ function Sellers() {
       return;
     }
 
+    let sellerId = editId;
+
     if (editId) {
       await fetch(`http://localhost:5000/sellers/${editId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)
       });
-      setEditId(null);
     } else {
-      await fetch("http://localhost:5000/sellers", {
+      const response = await fetch("http://localhost:5000/sellers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)
       });
+      const data = await response.json();
+      sellerId = data.id;
+    }
+
+    // Upload documents if selected
+    if (selectedFiles.length > 0 && sellerId) {
+      const formData = new FormData();
+      formData.append("uploaded_by", localStorage.getItem("username") || "System");
+      selectedFiles.forEach(file => {
+        formData.append("documents", file);
+      });
+
+      await fetch(`http://localhost:5000/sellers/${sellerId}/documents`, {
+        method: "POST",
+        body: formData
+      });
     }
 
     setForm({ name: "", country: "", email: "", phone: "", product: "" });
+    setSelectedFiles([]);
+    setFileError("");
     setShowForm(false);
     fetchSellers();
   };
 
   // DELETE
   const handleDelete = async (id) => {
-    await fetch(`http://localhost:5000/sellers/${id}`, { method: "DELETE" });
+    await fetch(`http://localhost:5000/sellers/${id}/delete`, { method: "POST" });
     fetchSellers();
+    fetchRecycleCount();
   };
 
   // SEARCH
@@ -72,23 +131,33 @@ function Sellers() {
     <div className="card">
 
       {/* TOP BAR */}
-      <div className="table-top-bar">
+      <div className="table-top-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <input
           className="search-input"
           placeholder="Search Seller..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <button
-          className="add-btn"
-          onClick={() => {
-            setForm({ name: "", country: "", email: "", phone: "", product: "" });
-            setEditId(null);
-            setShowForm(true);
-          }}
-        >
-          + Add Seller
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button 
+            style={{ backgroundColor: "#0e2318", color: "#c9a96e", border: "1px solid #c9a96e", padding: "0 20px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", cursor: "pointer", fontWeight: "bold", whiteSpace: "nowrap", height: "40px" }}
+            onClick={() => navigate("/sellers/recycle-bin")}
+          >
+            ♻ Recycle Bin ({recycleCount})
+          </button>
+          <button
+            className="add-btn"
+            onClick={() => {
+              setForm({ name: "", country: "", email: "", phone: "", product: "" });
+              setEditId(null);
+              setSelectedFiles([]);
+              setFileError("");
+              setShowForm(true);
+            }}
+          >
+            + Add Seller
+          </button>
+        </div>
       </div>
 
       {/* POPUP FORM */}
@@ -103,6 +172,8 @@ function Sellers() {
                 onClick={() => {
                   setShowForm(false);
                   setEditId(null);
+                  setSelectedFiles([]);
+                  setFileError("");
                 }}
               >
                 ✖
@@ -135,7 +206,20 @@ function Sellers() {
                 value={form.product}
                 onChange={e => setForm({ ...form, product: e.target.value })}
               />
-              <button className="save-btn" onClick={handleSubmit}>
+              
+              <div style={{ gridColumn: "span 2", display: "flex", flexDirection: "column", gap: "5px", marginTop: "10px" }}>
+                <label style={{ fontWeight: 600, color: "#0e2318", fontSize: "13px" }}>Upload Documents (PDF only)</label>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  multiple
+                  onChange={handleFileChange}
+                  style={{ padding: "8px 0" }}
+                />
+                {fileError && <span style={{ color: "red", fontSize: "12px" }}>{fileError}</span>}
+              </div>
+
+              <button className="save-btn" onClick={handleSubmit} style={{ marginTop: "15px" }}>
                 {editId ? "Update Seller" : "Add Seller"}
               </button>
             </div>
@@ -166,7 +250,12 @@ function Sellers() {
                 <td>{s.phone}</td>
                 <td>{s.product}</td>
                 <td className="action-buttons">
-                  <button onClick={() => handleDelete(s.id)}>Delete</button>
+                  <button 
+                    style={{ backgroundColor: "#2b2b2b", color: "#c9a96e", marginRight: "8px" }}
+                    onClick={() => navigate(`/sellers/${s.id}/documents`)}
+                  >
+                    View Profile
+                  </button>
                   <button
                     onClick={() => {
                       setForm({
@@ -177,11 +266,14 @@ function Sellers() {
                         product: s.product
                       });
                       setEditId(s.id);
+                      setSelectedFiles([]);
+                      setFileError("");
                       setShowForm(true);
                     }}
                   >
                     Edit
                   </button>
+                  <button onClick={() => handleDelete(s.id)}>Delete</button>
                 </td>
               </tr>
             ))}

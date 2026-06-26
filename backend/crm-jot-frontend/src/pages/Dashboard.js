@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, ResponsiveContainer, PieChart, Pie, Cell,
   Tooltip, XAxis, YAxis, CartesianGrid,
@@ -8,19 +9,8 @@ import {
   FiUserPlus, FiUpload, FiEye, FiChevronRight,
   FiArrowUpRight, FiArrowDownRight, FiCalendar, FiX,
 } from "react-icons/fi";
-
-function filterByMonth(items, dateField, year, month) {
-  return items.filter((item) => {
-    const d = new Date(item[dateField]);
-    return d.getFullYear() === year && d.getMonth() === month;
-  });
-}
-
-function computeChange(current, previous) {
-  if (previous === 0) return { pct: null, up: true };
-  const diff = ((current - previous) / previous) * 100;
-  return { pct: Math.abs(diff).toFixed(1), up: diff >= 0 };
-}
+import { useDashboardData } from "../hooks/useDashboardData";
+import InsightLabel from "../components/InsightLabel";
 
 // ─── Inline Buyer Form Modal ──────────────────────────────────────────────────
 function BuyerFormModal({ onClose, onSaved }) {
@@ -138,12 +128,33 @@ function InquiryFormModal({ onClose, onSaved }) {
   );
 }
 
+// ─── Custom Tooltip for Inquiries Chart ───────────────────────────────────────
+const InquiriesTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div style={{ background: "#fff", padding: "12px", border: "1px solid #E9ECEF", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+        <p style={{ margin: "0 0 8px 0", fontWeight: "bold", color: "#6c757d", fontSize: "13px" }}>{label}</p>
+        <p style={{ margin: "0 0 4px 0", color: "#123524", fontSize: "13px", fontWeight: "600" }}>This Month: {data.thisMonth}</p>
+        <p style={{ margin: 0, color: "#c9a96e", fontSize: "13px", fontWeight: "600" }}>Last Month: {data.lastMonth}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 function Dashboard() {
-  const [buyers,      setBuyers]      = useState([]);
-  const [sellers,     setSellers]     = useState([]);
-  const [inquiries,   setInquiries]   = useState([]);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const navigate = useNavigate();
+  const { 
+    buyers, sellers, inquiries,
+    buyerChange, sellerChange, inquiryChange,
+    genuineNames, bonafideChange, currentTime,
+    fetchData
+  } = useDashboardData();
+
+  const bonafide = [...genuineNames];
+
   const [modal,       setModal]       = useState(null);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
 
@@ -170,62 +181,43 @@ function Dashboard() {
       });
   }, []);
 
-  useEffect(() => {
-    fetchData();
-    const refresh = setInterval(fetchData, 5000);
-    const timer   = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => { clearInterval(refresh); clearInterval(timer); };
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const [br, sr, ir] = await Promise.all([
-        fetch("http://localhost:5000/buyers"),
-        fetch("http://localhost:5000/sellers"),
-        fetch("http://localhost:5000/inquiries"),
-      ]);
-      setBuyers(await br.json());
-      setSellers(await sr.json());
-      setInquiries(await ir.json());
-    } catch (e) { console.log(e); }
-  };
-
-  const now       = currentTime;
-  const thisYear  = now.getFullYear();
-  const thisMonth = now.getMonth();
-  const prevMonth = thisMonth === 0 ? 11 : thisMonth - 1;
-  const prevYear  = thisMonth === 0 ? thisYear - 1 : thisYear;
-
-  const buyerChange   = computeChange(filterByMonth(buyers,    "created_at",   thisYear, thisMonth).length, filterByMonth(buyers,    "created_at",   prevYear, prevMonth).length);
-  const sellerChange  = computeChange(filterByMonth(sellers,   "created_at",   thisYear, thisMonth).length, filterByMonth(sellers,   "created_at",   prevYear, prevMonth).length);
-  const inquiryChange = computeChange(filterByMonth(inquiries, "inquiry_date", thisYear, thisMonth).length, filterByMonth(inquiries, "inquiry_date", prevYear, prevMonth).length);
-
-  const genuineNames = new Set(
-    inquiries.filter(i => (i.buyer_quality_rating || "").toLowerCase() === "genuine buyer")
-      .map(i => (i.buyer_name || "").toLowerCase().trim()).filter(Boolean)
-  );
-  const bonafide = [...genuineNames];
-  const bonafideChange = computeChange(
-    inquiries.filter(i => { const d = new Date(i.inquiry_date); return (i.buyer_quality_rating||"").toLowerCase()==="genuine buyer" && d.getFullYear()===thisYear && d.getMonth()===thisMonth; }).length,
-    inquiries.filter(i => { const d = new Date(i.inquiry_date); return (i.buyer_quality_rating||"").toLowerCase()==="genuine buyer" && d.getFullYear()===prevYear && d.getMonth()===prevMonth; }).length
-  );
-
-  const insightLabel = ({ pct, up }) => {
-    if (pct === null) return <span className="stat-change stat-up"><FiArrowUpRight size={13} /> Live data</span>;
-    return (
-      <span className={`stat-change ${up ? "stat-up" : "stat-down"}`}>
-        {up ? <FiArrowUpRight size={13} /> : <FiArrowDownRight size={13} />}
-        {up ? "+" : "-"}{pct}% vs last month
-      </span>
-    );
-  };
-
   const lineData = (() => {
+    const monthlyTotals = {};
     const groups = {};
-    inquiries.forEach(inq => { const d = inq.inquiry_date?.slice(0, 10); if (d) groups[d] = (groups[d] || 0) + 1; });
+    
+    inquiries.forEach(inq => { 
+      const d = inq.inquiry_date?.slice(0, 10); 
+      if (d) {
+        groups[d] = (groups[d] || 0) + 1; 
+        const monthKey = d.slice(0, 7); // YYYY-MM
+        monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + 1;
+      }
+    });
+
     const sorted = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0])).slice(-6);
-    if (!sorted.length) return [{ name: "Day 1", thisMonth: 0, lastMonth: 0 }, { name: "Day 2", thisMonth: 0, lastMonth: 0 }];
-    return sorted.map(([date, count]) => ({ name: date.slice(5), thisMonth: count, lastMonth: Math.max(0, count - Math.floor(Math.random() * 3 + 1)) }));
+    if (!sorted.length) return [{ name: "Day 1", thisMonthDaily: 0, lastMonthDaily: 0, thisMonth: 0, lastMonth: 0 }, { name: "Day 2", thisMonthDaily: 0, lastMonthDaily: 0, thisMonth: 0, lastMonth: 0 }];
+
+    return sorted.map(([date, count]) => {
+      const monthKey = date.slice(0, 7); // YYYY-MM
+      const [yearStr, monthStr] = monthKey.split('-');
+      let year = parseInt(yearStr, 10);
+      let month = parseInt(monthStr, 10);
+      
+      month -= 1;
+      if (month === 0) {
+        month = 12;
+        year -= 1;
+      }
+      const prevMonthKey = `${year}-${month.toString().padStart(2, '0')}`;
+      
+      return { 
+        name: date.slice(5), 
+        thisMonthDaily: count, 
+        lastMonthDaily: Math.max(0, count - Math.floor(Math.random() * 3 + 1)),
+        thisMonth: monthlyTotals[monthKey] || 0,
+        lastMonth: monthlyTotals[prevMonthKey] || 0
+      };
+    });
   })();
 
   const pieData = (() => {
@@ -265,7 +257,7 @@ function Dashboard() {
   })();
 
   const formatDate = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  const recentBuyers = [...buyers].reverse().slice(0, 5);
+  const recentBuyers = [...buyers].slice(0, 5);
 
   return (
     <div className="jot-dashboard">
@@ -285,28 +277,49 @@ function Dashboard() {
       </div>
 
       <div className="jot-stats">
-        <div className="jot-stat-card">
+        <div
+          className="jot-stat-card"
+          onClick={() => navigate("/buyers")}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate("/buyers"); } }}
+          role="button"
+          tabIndex={0}
+          style={{ cursor: "pointer" }}
+        >
           <div className="jot-stat-icon" style={{ background: "#123524" }}><FiUsers size={22} /></div>
           <div className="jot-stat-body">
             <p className="jot-stat-label">Total Buyers</p>
             <h2 className="jot-stat-value">{buyers.length || 0}</h2>
-            {insightLabel(buyerChange)}
+            {InsightLabel(buyerChange)}
           </div>
         </div>
-        <div className="jot-stat-card">
+        <div
+          className="jot-stat-card"
+          onClick={() => navigate("/sellers")}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate("/sellers"); } }}
+          role="button"
+          tabIndex={0}
+          style={{ cursor: "pointer" }}
+        >
           <div className="jot-stat-icon" style={{ background: "#c9a96e" }}><FiShoppingBag size={22} /></div>
           <div className="jot-stat-body">
             <p className="jot-stat-label">Total Sellers</p>
             <h2 className="jot-stat-value">{sellers.length || 0}</h2>
-            {insightLabel(sellerChange)}
+            {InsightLabel(sellerChange)}
           </div>
         </div>
-        <div className="jot-stat-card">
+        <div
+          className="jot-stat-card"
+          onClick={() => navigate("/inquiries")}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate("/inquiries"); } }}
+          role="button"
+          tabIndex={0}
+          style={{ cursor: "pointer" }}
+        >
           <div className="jot-stat-icon" style={{ background: "#123524" }}><FiMessageSquare size={22} /></div>
           <div className="jot-stat-body">
             <p className="jot-stat-label">Total Inquiries</p>
             <h2 className="jot-stat-value">{inquiries.length || 0}</h2>
-            {insightLabel(inquiryChange)}
+            {InsightLabel(inquiryChange)}
           </div>
         </div>
         <div className="jot-stat-card">
@@ -314,7 +327,7 @@ function Dashboard() {
           <div className="jot-stat-body">
             <p className="jot-stat-label">Bonafide Buyers</p>
             <h2 className="jot-stat-value">{bonafide.length || 0}</h2>
-            {insightLabel(bonafideChange)}
+            {InsightLabel(bonafideChange)}
           </div>
         </div>
       </div>
@@ -335,9 +348,9 @@ function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#aaa" }} />
                 <YAxis tick={{ fontSize: 11, fill: "#aaa" }} allowDecimals={false} />
-                <Tooltip />
-                <Line type="monotone" dataKey="thisMonth" stroke="#123524" strokeWidth={3} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="lastMonth" stroke="#c9a96e" strokeWidth={2} strokeDasharray="5 4" dot={false} />
+                <Tooltip content={<InquiriesTooltip />} />
+                <Line type="monotone" dataKey="thisMonthDaily" stroke="#123524" strokeWidth={3} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="lastMonthDaily" stroke="#c9a96e" strokeWidth={2} strokeDasharray="5 4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -422,8 +435,9 @@ function Dashboard() {
                       <td>{buyer.email || "—"}</td>
                       <td>{buyer.country || "—"}</td>
                       <td>
-                        <button className="jot-icon-btn" title="View"><FiEye size={14} /></button>
-                     
+                       <button className="jot-icon-btn" title="View" onClick={() => navigate(`/buyers/${buyer.id}/documents`)}>
+                          <FiEye size={14} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -437,12 +451,12 @@ function Dashboard() {
         <div className="jot-right">
           <div className="jot-card jot-quick-card">
             <h3>Quick Actions</h3>
-            <button className="quick-action-btn" onClick={() => setModal("buyer")}>
+            <button className="quick-action-btn" onClick={() => navigate("/buyers", { state: { openAddModal: true } })}>
               <span className="qa-icon qa-icon-buyer"><FiUserPlus size={18} /></span>
               <span className="qa-label">Add New Buyer</span>
               <FiChevronRight size={15} className="qa-arrow" />
             </button>
-            <button className="quick-action-btn" onClick={() => setModal("seller")}>
+            <button className="quick-action-btn" onClick={() => navigate("/sellers", { state: { openAddModal: true } })}>
               <span className="qa-icon qa-icon-seller"><FiShoppingBag size={18} /></span>
               <span className="qa-label">Add New Seller</span>
               <FiChevronRight size={15} className="qa-arrow" />
@@ -452,9 +466,9 @@ function Dashboard() {
               <span className="qa-label">Create Inquiry</span>
               <FiChevronRight size={15} className="qa-arrow" />
             </button>
-            <button className="quick-action-btn" onClick={() => window.location.href = "/documents"}>
+            <button className="quick-action-btn" onClick={() => window.location.href = "/generate"}>
               <span className="qa-icon qa-icon-doc"><FiUpload size={18} /></span>
-              <span className="qa-label">Upload Document</span>
+              <span className="qa-label">Generate Document</span>
               <FiChevronRight size={15} className="qa-arrow" />
             </button>
           </div>

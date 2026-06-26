@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   FiPlus, FiSearch, FiX, FiChevronDown,
   FiChevronUp, FiPackage, FiMapPin, FiMail, FiBriefcase,
-  FiAlertCircle, FiDollarSign, FiAnchor
+  FiAlertCircle, FiDollarSign, FiAnchor,  FiTrash
 } from "react-icons/fi";
 
 const EMPTY_PRODUCT = {
@@ -32,6 +33,9 @@ function BuyerAvatar({ name }) {
 }
 
 function Buyers() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [buyers, setBuyers]       = useState([]);
   const [search, setSearch]       = useState("");
   const [showForm, setShowForm]   = useState(false);
@@ -41,6 +45,15 @@ function Buyers() {
   const [loading, setLoading]     = useState(false);
 
   useEffect(() => { fetchBuyers(); }, []);
+
+  useEffect(() => {
+    if (location.state?.openAddModal) {
+      setForm(EMPTY_FORM);
+      setEditId(null);
+      setShowForm(true);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const fetchBuyers = () => {
     fetch("http://localhost:5000/buyers")
@@ -115,11 +128,11 @@ function Buyers() {
     fetchBuyers();
   };
 
-  /* ── DELETE ── */
+  /* ── DELETE (soft delete → moves to recycle bin) ── */
   const handleDelete = async (id, e) => {
     e.stopPropagation();
-    if (!window.confirm("Delete this buyer?")) return;
-    await fetch(`http://localhost:5000/buyers/${id}`, { method: "DELETE" });
+    if (!window.confirm("Move this buyer to the recycle bin?")) return;
+    await fetch(`http://localhost:5000/buyers/${id}/delete`, { method: "POST" });
     if (expandedId === id) setExpandedId(null);
     fetchBuyers();
   };
@@ -139,6 +152,8 @@ function Buyers() {
     setEditId(b.id);
     setShowForm(true);
   };
+
+  
 
   /* ── FILTER ── */
   const filtered = buyers.filter(b =>
@@ -165,9 +180,18 @@ function Buyers() {
           <h1 className="buyers-page-title">Buyers</h1>
           <p className="buyers-page-sub">{buyers.length} buyer{buyers.length !== 1 ? "s" : ""} registered</p>
         </div>
-        <button className="comp-add-btn" onClick={openAddForm}>
-          <FiPlus size={16} /> Add Buyer
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            className="comp-edit-btn"
+            onClick={() => navigate("/buyers/recycle-bin")}
+            title="View deleted buyers"
+          >
+            <FiTrash size={15} /> Recycle Bin
+          </button>
+          <button className="comp-add-btn" onClick={openAddForm}>
+            <FiPlus size={16} /> Add Buyer
+          </button>
+        </div>
       </div>
 
       {/* SEARCH */}
@@ -258,15 +282,19 @@ function Buyers() {
                     <td>
                       <div className="action-buttons">
                         <button
-                          className="action-buttons"
-                          onClick={e => handleDelete(b.id, e)}
+                          onClick={e => { e.stopPropagation(); navigate(`/buyers/${b.id}/documents`); }}
                         >
-                          Delete
+                          View Documents
                         </button>
                         <button
                           onClick={e => handleEdit(b, e)}
                         >
                           Edit
+                        </button>
+                        <button
+                          onClick={e => handleDelete(b.id, e)}
+                        >
+                          Delete
                         </button>
                       </div>
                     </td>

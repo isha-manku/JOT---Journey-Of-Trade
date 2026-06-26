@@ -6,31 +6,22 @@ import {
   useLocation
 } from "react-router-dom";
 
-import {
-  FiGrid,
-  FiCalendar,
-  FiMessageSquare,
-  FiUsers,
-  FiShoppingBag,
-  FiBriefcase,
-  FiFileText,
-  FiBarChart2,
-  FiSettings,
-  FiLogOut,
-  FiMessageCircle,
-  FiPackage,
-} from "react-icons/fi";
-
+import { FiGrid, FiCalendar, FiMessageSquare, FiShoppingBag, FiUsers, FiDollarSign, FiBriefcase, FiFileText, FiBarChart2, FiPackage, FiMessageCircle, FiSettings, FiX, FiCheckCircle, FiLogOut } from "react-icons/fi";
 import { useEffect, useState } from "react";
 
 import Buyers         from "./pages/Buyers";
+import BuyersRecycleBin from "./pages/BuyersRecycleBin";
 import Sellers        from "./pages/Sellers";
+import SellerRecycleBin from "./pages/SellerRecycleBin";
 import Companies      from "./pages/Companies";
 import GenerateDoc    from "./pages/GenerateDoc";
 import Dashboard      from "./pages/Dashboard";
 import Login          from "./pages/Login";
 import ProtectedRoute from "./ProtectedRoute";
+import BuyerDocs      from "./pages/BuyerDocs";
+import SellerDocs     from "./pages/SellerDocs";
 import Inquiries      from "./pages/Inquiries";
+import InquiriesRecycleBin from "./pages/InquiriesRecycleBin";
 import CalendarPage   from "./pages/CalendarPage";
 import Analytics      from "./pages/Analytics";
 import ProductAnalytics from "./pages/ProductAnalytics";
@@ -38,7 +29,9 @@ import Settings       from "./pages/Settings";
 import Messages       from "./pages/Messages";
 
 import SellerInquiries from "./pages/SellerInquiries";
+import Accounts        from "./pages/Accounts";
 import "./App.css";
+
 
 const NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", icon: FiGrid,          roles: ["admin","manager","member"] },
@@ -47,6 +40,7 @@ const NAV_ITEMS = [
   { to: "/seller-inquiries", label: "Seller Inquiries", icon: FiShoppingBag, roles: ["admin","manager","member"] },
   { to: "/buyers",    label: "Buyers",    icon: FiUsers,         roles: ["admin","manager","member"] },
   { to: "/sellers",   label: "Sellers",   icon: FiShoppingBag,  roles: ["admin","manager","member"] },
+  { to: "/accounts",  label: "Accounts",  icon: FiDollarSign,   roles: ["admin","manager"] },
   { to: "/companies", label: "Companies", icon: FiBriefcase,    roles: ["admin","manager"] },
   { to: "/generate",  label: "Documents", icon: FiFileText,     roles: ["admin","manager"] },
   { to: "/analytics", label: "Analytics", icon: FiBarChart2,    roles: ["admin","manager"] },
@@ -120,14 +114,29 @@ function Layout() {
       .catch(() => {});
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("loggedIn");
+    const handleLogout = () => {
+    localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("username");
     localStorage.removeItem("userId");
     localStorage.removeItem(LAST_READ_KEY);
     window.location.href = "/";
   };
+
+    useEffect(() => {
+    const handleMessage = (event) => {
+      // Allow messages from DocPlatform iframe
+      if (event.data?.action === "navigate") {
+        if (event.data.forceLogout) {
+          handleLogout();
+        } else if (event.data.to) {
+          window.location.href = event.data.to;
+        }
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
 
   const visibleNav = NAV_ITEMS.filter((item) => item.roles.includes(role));
 
@@ -184,12 +193,18 @@ function Layout() {
           <Route path="/" element={<Login />} />
           <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/inquiries"  element={<ProtectedRoute><Inquiries /></ProtectedRoute>} />
+          <Route path="/inquiries/recycle-bin" element={<ProtectedRoute><InquiriesRecycleBin /></ProtectedRoute>} />
           <Route path="/seller-inquiries" element={<ProtectedRoute><SellerInquiries /></ProtectedRoute>} />
           <Route path="/buyers"     element={<ProtectedRoute><Buyers /></ProtectedRoute>} />
           <Route path="/sellers"    element={<ProtectedRoute><Sellers /></ProtectedRoute>} />
+          <Route path="/buyers/recycle-bin" element={<ProtectedRoute><BuyersRecycleBin /></ProtectedRoute>} />
+          <Route path="/buyers/:buyerId/documents" element={<ProtectedRoute><BuyerDocs /></ProtectedRoute>} />
+          <Route path="/sellers/recycle-bin" element={<ProtectedRoute><SellerRecycleBin /></ProtectedRoute>} />
+          <Route path="/sellers/:sellerId/documents" element={<ProtectedRoute><SellerDocs /></ProtectedRoute>} />
           <Route path="/companies"  element={<ProtectedRoute><Companies /></ProtectedRoute>} />
           <Route path="/generate"   element={<ProtectedRoute><GenerateDoc /></ProtectedRoute>} />
-          <Route path="/calendar"   element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+          <Route path="/accounts"   element={<ProtectedRoute><Accounts /></ProtectedRoute>} />
+          <Route path="/calendar"   element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} /> 
           <Route path="/analytics"  element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
           <Route path="/product-analytics" element={<ProtectedRoute><ProductAnalytics /></ProtectedRoute>} />
           <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
