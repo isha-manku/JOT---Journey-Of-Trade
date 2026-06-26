@@ -133,6 +133,20 @@ async function run() {
     ) ENGINE=InnoDB;
   `);
 
+  try {
+    await query("ALTER TABLE doc_generated_documents ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE");
+    await query("ALTER TABLE doc_generated_documents ADD COLUMN deleted_at DATETIME");
+  } catch (e) {
+    if (e.code !== 'ER_DUP_FIELDNAME') console.log("doc_generated_documents alter error:", e);
+  }
+
+  try {
+    await query("ALTER TABLE doc_generated_document_versions ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE");
+    await query("ALTER TABLE doc_generated_document_versions ADD COLUMN deleted_at DATETIME");
+  } catch (e) {
+    if (e.code !== 'ER_DUP_FIELDNAME') console.log("doc_generated_document_versions alter error:", e);
+  }
+
   await query(`
     CREATE TABLE IF NOT EXISTS doc_audit_logs (
       id CHAR(36) PRIMARY KEY,

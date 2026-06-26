@@ -96,6 +96,23 @@ export const docApi = {
 
   buyerProfile: (buyerId: string | number) =>
     api.get<BuyerProfile>(`/documents/buyer/${buyerId}/profile`).then(r => r.data),
+
+  deleteGeneratedDocument: (document_id: string) =>
+    api.post<{ success: boolean }>(`/documents/generated/${document_id}/delete`).then(r => r.data),
+
+  deleteBuyerDocument: (document_id: string | number) => {
+    let crmBaseUrl = "http://localhost:5000";
+    if (api.defaults.baseURL && api.defaults.baseURL.startsWith("http")) {
+      crmBaseUrl = api.defaults.baseURL.replace(/\/doc-api\/?$/, "");
+    } else if (window.location.origin.includes("localhost:3000")) {
+      crmBaseUrl = "http://localhost:5000";
+    } else {
+      crmBaseUrl = window.location.origin;
+    }
+    return axios.post<{ success: boolean }>(`${crmBaseUrl}/buyer-documents/${document_id}/delete`, {}, {
+      headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` }
+    }).then(r => r.data);
+  },
 };
 
 export const sellerApi = {

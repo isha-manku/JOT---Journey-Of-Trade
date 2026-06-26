@@ -8,8 +8,9 @@ import {
 } from "recharts";
 import {
   FiUsers, FiShoppingBag, FiMessageSquare, FiTrendingUp,
-  FiArrowUpRight,
 } from "react-icons/fi";
+import { useDashboardData } from "../hooks/useDashboardData";
+import InsightLabel from "../components/InsightLabel";
 
 const COLORS = ["#0e2318","#c9a96e","#356859","#8faf9f","#d8c3a5","#6b8f71"];
 
@@ -42,7 +43,7 @@ function groupByMonth(arr, dateField) {
     .map(([name, value]) => ({ name, value }));
 }
 
-function StatCard({ icon: Icon, label, value, color }) {
+function StatCard({ icon: Icon, label, value, color, change }) {
   return (
     <div className="jot-stat-card">
       <div className="jot-stat-icon" style={{ background: color }}>
@@ -51,32 +52,20 @@ function StatCard({ icon: Icon, label, value, color }) {
       <div className="jot-stat-body">
         <p className="jot-stat-label">{label}</p>
         <h2 className="jot-stat-value">{value}</h2>
-        <span className="stat-change stat-up">
-          <FiArrowUpRight size={13} /> Live data
-        </span>
+        {InsightLabel(change)}
       </div>
     </div>
   );
 }
 
 function Analytics() {
-  const [buyers,    setBuyers]    = useState([]);
-  const [sellers,   setSellers]   = useState([]);
-  const [inquiries, setInquiries] = useState([]);
-  const [loading,   setLoading]   = useState(true);
+  const { 
+    buyers, sellers, inquiries, loading,
+    buyerChange, sellerChange, inquiryChange,
+    genuineNames, bonafideChange
+  } = useDashboardData();
 
-  useEffect(() => {
-    Promise.all([
-      fetch("http://localhost:5000/buyers").then(r => r.json()).catch(() => []),
-      fetch("http://localhost:5000/sellers").then(r => r.json()).catch(() => []),
-      fetch("http://localhost:5000/inquiries").then(r => r.json()).catch(() => []),
-    ]).then(([b, s, i]) => {
-      setBuyers(Array.isArray(b) ? b : []);
-      setSellers(Array.isArray(s) ? s : []);
-      setInquiries(Array.isArray(i) ? i : []);
-      setLoading(false);
-    });
-  }, []);
+  const genuineCount = genuineNames.size || 0;
 
   // ── derived data ────────────────────────────────────────────────────────
   const buyersByCountry   = groupBy(buyers,    "country");
@@ -121,20 +110,10 @@ function Analytics() {
 
       {/* STAT CARDS */}
       <div className="jot-stats">
-        <StatCard icon={FiUsers}        label="Total Buyers"    value={buyers.length}    color="#0e2318" />
-        <StatCard icon={FiShoppingBag}  label="Total Sellers"   value={sellers.length}   color="#c9a96e" />
-        <StatCard icon={FiMessageSquare}label="Total Inquiries" value={inquiries.length} color="#0e2318" />
-        <StatCard
-  icon={FiTrendingUp}
-  label="Genuine Buyers"
-  value={new Set(
-    inquiries
-      .filter(i => (i.buyer_quality_rating || "").toLowerCase() === "genuine buyer")
-      .map(i => (i.buyer_name || "").toLowerCase().trim())
-      .filter(Boolean)
-  ).size}
-  color="#c9a96e"
-/>
+        <StatCard icon={FiUsers}        label="Total Buyers"    value={buyers.length || 0}    color="#0e2318" change={buyerChange} />
+        <StatCard icon={FiShoppingBag}  label="Total Sellers"   value={sellers.length || 0}   color="#c9a96e" change={sellerChange} />
+        <StatCard icon={FiMessageSquare}label="Total Inquiries" value={inquiries.length || 0} color="#0e2318" change={inquiryChange} />
+        <StatCard icon={FiTrendingUp}   label="Genuine Buyers"  value={genuineCount}          color="#c9a96e" change={bonafideChange} />
       </div>
 
       {/* ROW 1: Trend + Inquiry Source */}

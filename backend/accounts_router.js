@@ -125,17 +125,17 @@ router.post("/accounts", async (req, res) => {
   try {
     // 1. Auto-generate transaction number
     const txYear = new Date(transaction_date).getFullYear();
-    const countResult = await query(
-      "SELECT COUNT(*) as count FROM account_transactions WHERE YEAR(transaction_date) = ?",
+    const maxResult = await query(
+      "SELECT MAX(CAST(SUBSTRING_INDEX(transaction_no, '-', -1) AS UNSIGNED)) as max_seq FROM account_transactions WHERE YEAR(transaction_date) = ?",
       [txYear]
     );
-    const sequence = countResult[0].count + 1;
+    const sequence = (maxResult[0].max_seq || 0) + 1;
     const transaction_no = `ACC-${txYear}-${String(sequence).padStart(4, "0")}`;
 
     // 2. Calculations
     const shipment_value = Number(quantity_mt) * Number(selling_price);
 
-    let final_status = "Pending Financial Review";
+    let final_status = status || "Completed";
     let db_cost_price = null;
     let db_cost_currency = null;
     let db_margin = null;
@@ -149,7 +149,6 @@ router.post("/accounts", async (req, res) => {
       db_cost_price = cost_price ? Number(cost_price) : null;
       db_cost_currency = cost_currency || null;
       db_impfa_no = impfa_no || null;
-      final_status = status || "Completed";
 
       if (final_status === "Completed") {
         db_reviewed_by = username;
@@ -273,7 +272,7 @@ router.put("/accounts/:id", async (req, res) => {
     const db_cost_price = cost_price !== undefined ? (cost_price !== null ? Number(cost_price) : null) : currentTx.cost_price;
     const db_cost_currency = cost_currency || currentTx.cost_currency;
     const db_impfa_no = impfa_no !== undefined ? impfa_no : currentTx.impfa_no;
-    const final_status = status || "Completed";
+    const final_status = status || currentTx.status;
 
     let db_margin = null;
     if (db_cost_price !== null) {
@@ -383,8 +382,8 @@ function buildAnalyticsFilters(queryObj) {
   let clauses = [];
   let params = [];
 
-  // Status Filter (Default to Completed)
-  const status = queryObj.status || "Completed";
+  // Status Filter (Default to All)
+  const status = queryObj.status || "All";
   if (status !== "All") {
     clauses.push("tx.status = ?");
     params.push(status);
@@ -476,44 +475,44 @@ router.get("/accounts/analytics", async (req, res) => {
         ${whereSql}
       `, params),
 
-      // 2. Highest Profit Buyer
+      // 2. Highest Profit Buyer (Global Leaderboard)
       query(`
         SELECT tx.buyer_id AS id, b.buyer_name AS name, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
         JOIN buyers b ON tx.buyer_id = b.id
-        ${whereSql}
+        WHERE tx.status != 'Draft'
         GROUP BY tx.buyer_id
         ORDER BY profit DESC LIMIT 1
-      `, params),
+      `, []),
 
-      // 3. Highest Profit Product
+      // 3. Highest Profit Product (Global Leaderboard)
       query(`
         SELECT tx.product_id AS id, p.name AS name, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
         JOIN products p ON tx.product_id = p.id
-        ${whereSql}
+        WHERE tx.status != 'Draft'
         GROUP BY tx.product_id
         ORDER BY profit DESC LIMIT 1
-      `, params),
+      `, []),
 
-      // 4. Highest Profit Company
+      // 4. Highest Profit Company (Global Leaderboard)
       query(`
         SELECT tx.supplier_company_id AS id, c.name AS name, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
         JOIN companies c ON tx.supplier_company_id = c.id
-        ${whereSql}
+        WHERE tx.status != 'Draft'
         GROUP BY tx.supplier_company_id
         ORDER BY profit DESC LIMIT 1
-      `, params),
+      `, []),
 
-      // 5. Highest Profit Route
+      // 5. Highest Profit Route (Global Leaderboard)
       query(`
         SELECT tx.loading_port, tx.destination_port, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
-        ${whereSql}
+        WHERE tx.status != 'Draft'
         GROUP BY tx.loading_port, tx.destination_port
         ORDER BY profit DESC LIMIT 1
-      `, params),
+      `, []),
 
       // 6. Buyers BI
       query(`
@@ -778,8 +777,8 @@ router.get("/accounts/:id", async (req, res) => {
   }
 });
 
-// POST /accounts/:id/cancel (Soft Delete / Cancel - Admin Only)
-router.post("/accounts/:id/cancel", async (req, res) => {
+// DELETE /accounts/:id (Hard Delete - Admin Only)
+router.delete("/accounts/:id", async (req, res) => {
   const role = req.headers["x-user-role"] || "manager";
   if (role !== "admin") {
     return res.status(403).json({ error: "Access denied. Admin role required." });
@@ -787,8 +786,8 @@ router.post("/accounts/:id/cancel", async (req, res) => {
 
   const txId = req.params.id;
   try {
-    await query("UPDATE account_transactions SET status = 'Cancelled' WHERE id = ?", [txId]);
-    res.json({ success: true, message: "Transaction Cancelled (Soft Deleted)" });
+    await query("DELETE FROM account_transactions WHERE id = ?", [txId]);
+    res.json({ success: true, message: "Transaction deleted permanently" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

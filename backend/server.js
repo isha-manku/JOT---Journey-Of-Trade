@@ -118,6 +118,12 @@ db.query(`
   `, (err) => {
     if (err) { console.log("seller_documents table error:", err); return; }
     console.log("✅ seller_documents table ready");
+    db.query("ALTER TABLE seller_documents ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE", (alterErr) => {
+      if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("seller_documents is_deleted alter error:", alterErr);
+    });
+    db.query("ALTER TABLE seller_documents ADD COLUMN deleted_at DATETIME", (alterErr) => {
+      if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("seller_documents deleted_at alter error:", alterErr);
+    });
   });
 
   // auto-create buyer_documents table
@@ -137,6 +143,23 @@ db.query(`
   `, (err) => {
     if (err) { console.log("buyer_documents table error:", err); return; }
     console.log("✅ buyer_documents table ready");
+  });
+
+  // Idempotent migration for inquiries soft-delete columns
+  db.query("ALTER TABLE inquiries ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE", (alterErr) => {
+    if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("inquiries is_deleted alter error:", alterErr);
+  });
+  db.query("ALTER TABLE inquiries ADD COLUMN deleted_at DATETIME", (alterErr) => {
+    if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("inquiries deleted_at alter error:", alterErr);
+  });
+  db.query("ALTER TABLE inquiries ADD COLUMN deleted_by VARCHAR(255)", (alterErr) => {
+    if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("inquiries deleted_by alter error:", alterErr);
+  });
+  db.query("ALTER TABLE inquiries ADD COLUMN restored_at DATETIME", (alterErr) => {
+    if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("inquiries restored_at alter error:", alterErr);
+  });
+  db.query("ALTER TABLE inquiries ADD COLUMN restored_by VARCHAR(255)", (alterErr) => {
+    if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("inquiries restored_by alter error:", alterErr);
   });
 
   // seed default admin if table is empty
@@ -329,7 +352,7 @@ app.delete("/sellers/:id/permanent", (req, res) => {
         db.query("SELECT COUNT(*) AS count FROM account_transactions WHERE seller_id = ?", [sellerId], (err, res) => err ? reject(err) : resolve(res[0].count));
       }),
       new Promise((resolve, reject) => {
-        db.query("SELECT COUNT(*) AS count FROM seller_documents WHERE seller_id = ?", [sellerId], (err, res) => err ? reject(err) : resolve(res[0].count));
+        db.query("SELECT COUNT(*) AS count FROM seller_documents WHERE seller_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)", [sellerId], (err, res) => err ? reject(err) : resolve(res[0].count));
       }),
       new Promise((resolve, reject) => {
         db.query("SELECT COUNT(*) AS count FROM seller_inquiries WHERE seller_name = ?", [sellerName], (err, res) => err ? reject(err) : resolve(res[0].count));
@@ -391,7 +414,7 @@ app.get("/sellers/:id/profile", (req, res) => {
     
     const seller = sellerResult[0];
     
-    db.query("SELECT * FROM seller_documents WHERE seller_id = ?", [sellerId], (err, docResult) => {
+    db.query("SELECT * FROM seller_documents WHERE seller_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)", [sellerId], (err, docResult) => {
       if (err) return res.status(500).send(err);
       
       const companyMap = {};
@@ -450,6 +473,14 @@ app.get("/sellers/:id/profile", (req, res) => {
   });
 });
 
+// POST — soft delete seller document
+app.post("/seller-documents/:id/delete", (req, res) => {
+  db.query("UPDATE seller_documents SET is_deleted = 1, deleted_at = NOW() WHERE id = ?", [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
 // ── Download endpoint ────────────────────────────────────────────────────────
 app.get("/seller-documents/download/:filename", (req, res) => {
   const filename = req.params.filename;
@@ -489,12 +520,12 @@ app.get('/buyers/recycle-bin', (req, res) => {
 
 // POST — add new buyer
 app.post('/buyers', (req, res) => {
-  const { buyer_name, company_name, country, email, address, notes, products } = req.body;
+  const { buyer_name, company_name, country, email, phone, address, notes, products } = req.body;
   const sql = `
-    INSERT INTO buyers (buyer_name, company_name, country, email, address, notes, products)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO buyers (buyer_name, company_name, country, email, phone, address, notes, products)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
-  db.query(sql, [buyer_name, company_name, country || '', email, address, notes, products], (err, result) => {
+  db.query(sql, [buyer_name, company_name, country || '', email, phone || '', address, notes, products], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ id: result.insertId });
   });
@@ -661,7 +692,7 @@ app.post("/upload-template", templateUpload.single("file"), (req, res) => {
 //  INQUIRIES
 // =============================================================================
 app.get("/inquiries", (req, res) => {
-  db.query("SELECT * FROM inquiries ORDER BY id DESC", (err, result) => {
+  db.query("SELECT * FROM inquiries WHERE is_deleted = FALSE OR is_deleted IS NULL ORDER BY id DESC", (err, result) => {
     if (err) return res.send(err);
     res.json(result);
   });
@@ -707,9 +738,38 @@ app.put("/inquiries/:id", (req, res) => {
   );
 });
 app.delete("/inquiries/:id", (req, res) => {
-  db.query("DELETE FROM inquiries WHERE id=?", [req.params.id], (err) => {
-    if (err) return res.send(err);
+  const deletedBy = req.headers["x-user-name"] || "Unknown";
+  db.query("UPDATE inquiries SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = ? WHERE id = ?", [deletedBy, req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
     res.send("Inquiry Deleted");
+  });
+});
+
+app.post("/inquiries/:id/restore", (req, res) => {
+  const restoredBy = req.headers["x-user-name"] || "Unknown";
+  db.query("UPDATE inquiries SET is_deleted = FALSE, deleted_at = NULL, deleted_by = NULL, restored_at = NOW(), restored_by = ? WHERE id = ?", [restoredBy, req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    res.send("Inquiry Restored");
+  });
+});
+
+app.delete("/inquiries/:id/permanent", (req, res) => {
+  const role = req.headers["x-user-role"];
+  const username = req.headers["x-user-name"] || "Unknown";
+  if (role !== "admin") {
+    return res.status(403).json({ error: "Access denied. Admin role required." });
+  }
+  db.query("DELETE FROM inquiries WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    addActivity("inquiry", "Permanent Delete", `Inquiry #${req.params.id} permanently deleted by ${username}`);
+    res.send("Inquiry Permanently Deleted");
+  });
+});
+
+app.get("/inquiries/recycle-bin/all", (req, res) => {
+  db.query("SELECT * FROM inquiries WHERE is_deleted = TRUE ORDER BY deleted_at DESC, id DESC", (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json(result);
   });
 });
 

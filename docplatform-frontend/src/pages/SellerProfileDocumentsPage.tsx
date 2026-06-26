@@ -12,6 +12,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import CloseIcon from "@mui/icons-material/Close";
 import DescriptionIcon from "@mui/icons-material/Description";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import BusinessIcon from "@mui/icons-material/Business";
 import InventoryIcon from "@mui/icons-material/Inventory";
@@ -30,6 +31,22 @@ export default function SellerProfileDocumentsPage() {
     queryFn: () => sellerApi.profile(sellerId!),
     enabled: !!sellerId,
   });
+
+  const handleDeleteDocument = async (doc: any) => {
+    if (!window.confirm("Are you sure you want to delete this document? This action cannot be undone.")) return;
+    try {
+      const res = await fetch(`http://localhost:5000/seller-documents/${doc.id}/delete`, { 
+        method: "POST", 
+        headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` } 
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Delete failed");
+      
+      profile.refetch();
+    } catch (err: any) {
+      alert("Error deleting document: " + err.message);
+    }
+  };
 
   if (profile.isLoading) {
     return (
@@ -467,6 +484,20 @@ export default function SellerProfileDocumentsPage() {
                                     }}
                                   >
                                     <DownloadIcon fontSize="small"/>
+                                  </IconButton>
+                                </Tooltip>
+                                
+                                <Tooltip title="Delete Document" arrow>
+                                  <IconButton 
+                                    size="small"
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc); }}
+                                    sx={{ 
+                                      width: 36, height: 36, borderRadius: 2,
+                                      color: '#d32f2f', 
+                                      '&:hover': { bgcolor: '#ffebee', transform: 'scale(1.1)' }
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small"/>
                                   </IconButton>
                                 </Tooltip>
                               </Stack>

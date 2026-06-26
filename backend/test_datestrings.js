@@ -10,12 +10,8 @@ const db = mysql.createConnection({
   dateStrings: ["DATE"]
 });
 
-db.connect((err) => {
-  if (err) {
-    console.log("DB Error:", err);
-  } else {
-    console.log("MySQL Connected");
-  }
+db.query("SELECT id, inquiry_date, created_at FROM inquiries LIMIT 2", (err, res) => {
+  if (err) throw err;
+  console.log(res);
+  process.exit(0);
 });
-
-module.exports = db;

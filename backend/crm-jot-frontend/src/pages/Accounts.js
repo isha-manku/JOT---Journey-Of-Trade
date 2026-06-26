@@ -87,7 +87,6 @@ export default function Accounts() {
     cost_price: "",
     cost_currency: "USD",
     impfa_no: "",
-    status: "Pending Financial Review",
     mandates: [] // [{ name: "", phone: "", amount: "" }]
   });
 
@@ -95,8 +94,6 @@ export default function Accounts() {
   const [search, setSearch] = useState("");
   const [filterCompany, setFilterCompany] = useState("");
   const [filterPaymentMode, setFilterPaymentMode] = useState("");
-  const [filterStartDate, setFilterStartDate] = useState("");
-  const [filterEndDate, setFilterEndDate] = useState("");
 
   // Fetch reference lists
   const fetchReferenceData = async () => {
@@ -321,7 +318,6 @@ export default function Accounts() {
           cost_price: "",
           cost_currency: "USD",
           impfa_no: "",
-          status: "Pending Financial Review",
           mandates: []
         });
         setEditingTxId(null);
@@ -363,19 +359,19 @@ export default function Accounts() {
     setView("update");
   };
 
-  // Soft Delete / Cancel transaction (Admin Only)
-  const handleCancelClick = async (txId) => {
-    if (!window.confirm("Are you sure you want to cancel this financial transaction? This action is soft-delete only and remains auditable.")) return;
+  // Hard Delete transaction (Admin Only)
+  const handleDeleteClick = async (txId) => {
+    if (!window.confirm("Are you sure you want to permanently delete this financial transaction? This action cannot be undone.")) return;
     try {
-      const res = await fetch(`http://localhost:5000/accounts/${txId}/cancel`, {
-        method: "POST",
+      const res = await fetch(`http://localhost:5000/accounts/${txId}`, {
+        method: "DELETE",
         headers: { "x-user-role": "admin" }
       });
       if (res.ok) {
-        alert("✅ Transaction Cancelled Successfully.");
+        alert("✅ Transaction Deleted Successfully.");
         await fetchTransactions();
       } else {
-        alert("Failed to cancel transaction.");
+        alert("Failed to delete transaction.");
       }
     } catch (e) {
       console.error(e);
@@ -418,17 +414,9 @@ export default function Accounts() {
       const matchCompany = !filterCompany || tx.supplier_company_id === Number(filterCompany);
       const matchMode = !filterPaymentMode || tx.payment_mode === filterPaymentMode;
 
-      let matchDate = true;
-      if (filterStartDate) {
-        matchDate = matchDate && new Date(tx.transaction_date) >= new Date(filterStartDate);
-      }
-      if (filterEndDate) {
-        matchDate = matchDate && new Date(tx.transaction_date) <= new Date(filterEndDate);
-      }
-
-      return matchSearch && matchCompany && matchMode && matchDate;
+      return matchSearch && matchCompany && matchMode;
     });
-  }, [transactions, search, filterCompany, filterPaymentMode, filterStartDate, filterEndDate]);
+  }, [transactions, search, filterCompany, filterPaymentMode]);
 
   // Styles setup to enforce dark green & gold aesthetic
   const styles = {
@@ -1238,7 +1226,7 @@ export default function Accounts() {
                 </div>
               </div>
 
-              <div style={{ ...styles.grid2Col, marginBottom: "20px" }}>
+              <div style={{ marginBottom: "20px" }}>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>IMPFA Number *</label>
                   <input 
@@ -1249,21 +1237,6 @@ export default function Accounts() {
                     required
                     disabled={isLocked}
                   />
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Review Status</label>
-                  <select 
-                    style={styles.select}
-                    value={form.status}
-                    onChange={e => setForm({ ...form, status: e.target.value })}
-                    required
-                    disabled={isLocked}
-                  >
-                    <option value="Pending Financial Review">Pending Financial Review</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
                 </div>
               </div>
 
@@ -1531,28 +1504,6 @@ export default function Accounts() {
               {paymentModes.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
             </select>
           </div>
-          <div style={styles.formGroup}>
-            <label style={{ ...styles.label, display: "flex", alignItems: "center", gap: 5 }}>
-              <FiCalendar /> Start Date
-            </label>
-            <input 
-              type="date"
-              style={{ ...styles.input, padding: "8px 10px" }}
-              value={filterStartDate}
-              onChange={e => setFilterStartDate(e.target.value)}
-            />
-          </div>
-          <div style={styles.formGroup}>
-            <label style={{ ...styles.label, display: "flex", alignItems: "center", gap: 5 }}>
-              <FiCalendar /> End Date
-            </label>
-            <input 
-              type="date"
-              style={{ ...styles.input, padding: "8px 10px" }}
-              value={filterEndDate}
-              onChange={e => setFilterEndDate(e.target.value)}
-            />
-          </div>
         </div>
 
         {/* Ledger Table */}
@@ -1564,7 +1515,6 @@ export default function Accounts() {
               <thead>
                 <tr>
                   <th style={styles.th}>Tx No</th>
-                  <th style={styles.th}>Status</th>
                   <th style={styles.th}>Date</th>
                   <th style={styles.th}>Buyer</th>
                   <th style={styles.th}>Seller</th>
@@ -1584,7 +1534,6 @@ export default function Accounts() {
                 {filteredTransactions.map(tx => (
                   <tr key={tx.id}>
                     <td style={{ ...styles.td, fontWeight: 700, color: "#0e2318" }}>{tx.transaction_no}</td>
-                    <td style={styles.td}>{renderStatusBadge(tx.status)}</td>
                     <td style={styles.td}>{new Date(tx.transaction_date).toLocaleDateString()}</td>
                     <td style={styles.td}>
                       <strong>{tx.buyer_name || "—"}</strong>
@@ -1611,15 +1560,13 @@ export default function Accounts() {
                         >
                           <FiEdit2 size={15} />
                         </button>
-                        {tx.status !== "Cancelled" && (
-                          <button 
-                            style={{ background: "none", border: "none", color: "#dc3545", cursor: "pointer" }}
-                            onClick={() => handleCancelClick(tx.id)}
-                            title="Cancel Transaction"
-                          >
-                            <FiTrash2 size={15} />
-                          </button>
-                        )}
+                        <button 
+                          style={{ background: "none", border: "none", color: "#dc3545", cursor: "pointer" }}
+                          onClick={() => handleDeleteClick(tx.id)}
+                          title="Delete Transaction"
+                        >
+                          <FiTrash2 size={15} />
+                        </button>
                       </div>
                     </td>
                   </tr>

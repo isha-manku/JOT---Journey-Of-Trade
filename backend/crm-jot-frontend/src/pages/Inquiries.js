@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiPlus, FiSearch, FiX, FiChevronDown, FiChevronUp,
   FiCalendar, FiUser, FiPackage, FiMessageSquare,
   FiPhone, FiActivity, FiCheckCircle, FiAlertCircle
 } from "react-icons/fi";
+import { getInquiries, createInquiry, updateInquiry, deleteInquiry, getDeletedInquiries } from "../api/inquiries";
 
 const EMPTY_FORM = {
   inquiry_date: "",
@@ -60,6 +62,7 @@ function StatusBadge({ val }) {
 
 function Inquiries() {
   const [inquiries,   setInquiries]   = useState([]);
+  const [recycleCount, setRecycleCount] = useState(0);
   const [search,      setSearch]      = useState("");
   const [showForm,    setShowForm]    = useState(false);
   const [editId,      setEditId]      = useState(null);
@@ -67,13 +70,20 @@ function Inquiries() {
   const [form,        setForm]        = useState(EMPTY_FORM);
 
   const role = localStorage.getItem("role");
+  const navigate = useNavigate();
 
-  useEffect(() => { fetchInquiries(); }, []);
+  useEffect(() => { fetchInquiries(); fetchRecycleCount(); }, []);
 
   const fetchInquiries = () => {
-    fetch("http://localhost:5000/inquiries")
-      .then(res => res.json())
-      .then(data => setInquiries(data));
+    getInquiries()
+      .then(data => setInquiries(data))
+      .catch(console.error);
+  };
+
+  const fetchRecycleCount = () => {
+    getDeletedInquiries()
+      .then(data => setRecycleCount(data.length || 0))
+      .catch(console.error);
   };
 
   /* ── SUBMIT ── */
@@ -81,43 +91,45 @@ function Inquiries() {
     const vals = Object.values(form);
     if (vals.some(v => !v)) { alert("Please fill all fields"); return; }
 
-    if (editId) {
-      await fetch(`http://localhost:5000/inquiries/${editId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
-      });
-      setEditId(null);
-    } else {
-      await fetch("http://localhost:5000/inquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
-      });
+    try {
+      if (editId) {
+        await updateInquiry(editId, form);
+        setEditId(null);
+      } else {
+        await createInquiry(form);
+      }
+      setForm(EMPTY_FORM);
+      setShowForm(false);
+      fetchInquiries();
+    } catch (err) {
+      alert("Failed to save inquiry");
     }
-    setForm(EMPTY_FORM);
-    setShowForm(false);
-    fetchInquiries();
   };
 
   /* ── DELETE ── */
   const handleDelete = async (id, e) => {
     e.stopPropagation();
     if (!window.confirm("Delete this inquiry?")) return;
-    await fetch(`http://localhost:5000/inquiries/${id}`, { method: "DELETE" });
-    if (expandedId === id) setExpandedId(null);
-    fetchInquiries();
+    try {
+      await deleteInquiry(id);
+      alert("Inquiry moved to Recycle Bin.");
+      if (expandedId === id) setExpandedId(null);
+      fetchInquiries();
+      fetchRecycleCount();
+    } catch (err) {
+      alert("Failed to delete inquiry");
+    }
   };
 
   /* ── INLINE REMARK UPDATE ── */
   const updateField = async (inq, key, val) => {
     const updated = { ...inq, [key]: val };
     setInquiries(prev => prev.map(item => item.id === inq.id ? updated : item));
-    await fetch(`http://localhost:5000/inquiries/${inq.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updated)
-    });
+    try {
+      await updateInquiry(inq.id, updated);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   /* ── SEARCH ── */
@@ -163,12 +175,21 @@ function Inquiries() {
           <h1 className="buyers-page-title">Inquiries</h1>
           <p className="buyers-page-sub">{inquiries.length} inquir{inquiries.length !== 1 ? "ies" : "y"} recorded</p>
         </div>
-        <button
-          className="comp-add-btn"
-          onClick={() => { setForm(EMPTY_FORM); setEditId(null); setShowForm(true); }}
-        >
-          <FiPlus size={16} /> Add Inquiry
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            className="comp-add-btn"
+            onClick={() => { setForm(EMPTY_FORM); setEditId(null); setShowForm(true); }}
+          >
+            <FiPlus size={16} /> Add Inquiry
+          </button>
+          <button
+            className="comp-add-btn"
+            style={{ background: "#f8f9fa", color: "#333", border: "1px solid #ddd" }}
+            onClick={() => navigate("/inquiries/recycle-bin")}
+          >
+            Recycle Bin ({recycleCount})
+          </button>
+        </div>
       </div>
 
       {/* SEARCH */}

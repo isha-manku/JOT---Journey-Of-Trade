@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Sellers() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [sellers, setSellers]   = useState([]);
   const [recycleCount, setRecycleCount] = useState(0);
   const [editId, setEditId]     = useState(null);
@@ -24,6 +25,17 @@ function Sellers() {
     fetchSellers();
     fetchRecycleCount();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.openAddModal) {
+      setForm({ name: "", country: "", email: "", phone: "", product: "" });
+      setEditId(null);
+      setSelectedFiles([]);
+      setFileError("");
+      setShowForm(true);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const fetchRecycleCount = () => {
     fetch("http://localhost:5000/sellers/recycle-bin")

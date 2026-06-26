@@ -94,7 +94,7 @@ router.get("/reference/buyers", authenticateCRMUser, async (req, res) => {
     const { search } = req.query;
     let sql = `
       SELECT b.id, b.buyer_name, b.company_name, b.email,
-             (SELECT COUNT(*) FROM doc_generated_documents WHERE buyer_id = b.id) AS document_count
+             (SELECT COUNT(*) FROM doc_generated_documents WHERE buyer_id = b.id AND (is_deleted = 0 OR is_deleted IS NULL)) AS document_count
       FROM buyers b
       WHERE b.is_deleted = FALSE OR b.is_deleted IS NULL
     `;
@@ -718,14 +718,14 @@ router.get("/documents/buyer/:id/profile", authenticateCRMUser, async (req, res)
        JOIN doc_companies c ON c.id = t.company_id
        JOIN doc_products p ON p.id = t.product_id
        JOIN doc_document_types dt ON dt.id = t.document_type_id
-       WHERE gd.buyer_id = ?`,
+       WHERE gd.buyer_id = ? AND (gd.is_deleted = 0 OR gd.is_deleted IS NULL)`,
       [buyerId]
     );
 
     const manualDocs = await query(
       `SELECT id, company_name, product_name, document_type, file_name, file_path, uploaded_at 
        FROM buyer_documents 
-       WHERE buyer_id = ?`,
+       WHERE buyer_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)`,
       [buyerId]
     );
 
@@ -832,10 +832,29 @@ router.get("/documents/buyer/:id/profile", authenticateCRMUser, async (req, res)
       stats: {
         total_companies: Object.keys(companyMap).length,
         total_products: uniqueProducts.size,
-        total_documents: docs.length
+        total_documents: docs.length + manualDocs.length
       },
       companies: companiesOut
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /documents/generated/:id/delete - Soft delete a generated document
+router.post("/documents/generated/:id/delete", authenticateCRMUser, async (req, res) => {
+  try {
+    const docId = req.params.id;
+    await query("UPDATE doc_generated_documents SET is_deleted = TRUE, deleted_at = NOW() WHERE id = ?", [docId]);
+    await query("UPDATE doc_generated_document_versions SET is_deleted = TRUE, deleted_at = NOW() WHERE document_id = ?", [docId]);
+    
+    // Audit log
+    await query(
+      "INSERT INTO doc_audit_logs (id, entity_type, entity_id, action, actor, detail) VALUES (?, ?, ?, ?, ?, ?)",
+      [uuid(), "generated_document", docId, "delete", req.user.username, JSON.stringify({ reason: "Document soft deleted via global delete" })]
+    );
+
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

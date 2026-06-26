@@ -10,6 +10,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DownloadIcon from "@mui/icons-material/Download";
+import DeleteIcon from "@mui/icons-material/Delete";
 import HistoryIcon from "@mui/icons-material/History";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
@@ -100,6 +101,20 @@ export default function BuyerProfileDocumentsPage() {
     }
   };
 
+  const handleDeleteDocument = async (doc: any) => {
+    if (!window.confirm("Are you sure you want to delete this document? This action cannot be undone.")) return;
+    try {
+      if (doc.is_manual) {
+        await docApi.deleteBuyerDocument(doc.id);
+      } else {
+        await docApi.deleteGeneratedDocument(doc.id);
+      }
+      profile.refetch();
+    } catch (err: any) {
+      alert("Error deleting document: " + (err.response?.data?.error || err.message));
+    }
+  };
+
   const profile = useQuery({
     queryKey: ["buyerProfile", buyerId],
     queryFn: () => docApi.buyerProfile(buyerId!),
@@ -166,23 +181,41 @@ export default function BuyerProfileDocumentsPage() {
         <Typography variant="h5" sx={{ ml: 3, flexGrow: 1, fontWeight: 700, color: '#ffffff', fontFamily: '"Playfair Display", serif' }}>
           Buyer Profile &amp; Documents
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<FolderOpenIcon />}
-          onClick={() => setUploadModalOpen(true)}
-          sx={{ 
-            bgcolor: '#c9a96e', 
-            color: '#0e2318', 
-            fontWeight: 700, 
-            borderRadius: '8px',
-            px: 2.5,
-            py: 1,
-            textTransform: 'none',
-            '&:hover': { bgcolor: '#b38e4a' } 
-          }}
-        >
-          Upload Document
-        </Button>
+        <Stack direction="column" spacing={1}>
+          <Button
+            variant="contained"
+            startIcon={<FolderOpenIcon />}
+            onClick={() => setUploadModalOpen(true)}
+            sx={{ 
+              bgcolor: '#c9a96e', 
+              color: '#0e2318', 
+              fontWeight: 700, 
+              borderRadius: '8px',
+              px: 2.5,
+              py: 1,
+              textTransform: 'none',
+              '&:hover': { bgcolor: '#b38e4a' } 
+            }}
+          >
+            Upload Document
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/', { state: { prefillBuyer: profile.data.buyer } })}
+            sx={{ 
+              color: '#c9a96e', 
+              borderColor: '#c9a96e',
+              fontWeight: 700, 
+              borderRadius: '8px',
+              px: 2.5,
+              py: 1,
+              textTransform: 'none',
+              '&:hover': { borderColor: '#b38e4a', color: '#b38e4a', bgcolor: 'rgba(201, 169, 110, 0.08)' } 
+            }}
+          >
+            Generate Document
+          </Button>
+        </Stack>
       </Box>
 
       {/* Buyer Information Card (Full Width) */}
@@ -346,7 +379,7 @@ export default function BuyerProfileDocumentsPage() {
           <Stack direction="row" spacing={2} justifyContent="center">
             <Button 
               variant="contained" 
-              onClick={() => navigate("/")} 
+              onClick={() => navigate('/', { state: { prefillBuyer: profile.data.buyer } })}
               sx={{ 
                 px: 4, py: 1.5, borderRadius: 2, 
                 bgcolor: '#0e2318', color: '#ffffff',
@@ -540,6 +573,20 @@ export default function BuyerProfileDocumentsPage() {
                                     }}
                                   >
                                     <DownloadIcon fontSize="small"/>
+                                  </IconButton>
+                                </Tooltip>
+                                
+                                <Tooltip title="Delete Document" arrow>
+                                  <IconButton 
+                                    size="small"
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc); }}
+                                    sx={{ 
+                                      width: 36, height: 36, borderRadius: 2,
+                                      color: '#d32f2f', 
+                                      '&:hover': { bgcolor: '#ffebee', transform: 'scale(1.1)' }
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small"/>
                                   </IconButton>
                                 </Tooltip>
                                 

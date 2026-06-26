@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Paper, Stepper, Step, StepLabel, Box, Typography, Button, Alert, Stack, CircularProgress
 } from "@mui/material";
@@ -30,6 +30,9 @@ const getErrorMessage = (error: any) => {
 export default function DocumentGenerationPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
+  const prefillBuyer = location.state?.prefillBuyer;
   const editId = searchParams.get("edit");
   const isEditMode = !!editId;
 
@@ -72,6 +75,9 @@ export default function DocumentGenerationPage() {
     onSuccess: (doc) => { 
       if (isEditMode) {
         navigate(-1);
+      } else if (prefillBuyer) {
+        queryClient.invalidateQueries({ queryKey: ["buyerProfile", String(prefillBuyer.id)] });
+        navigate(`/buyers/${prefillBuyer.id}/documents`);
       } else {
         setResult(doc); 
         setStep(2); 
@@ -111,7 +117,7 @@ export default function DocumentGenerationPage() {
       )}
 
       {activeStep === 0 && !isEditMode && (
-        <CascadingSelect onComplete={(s) => { setSelection(s); setStep(1); }} />
+        <CascadingSelect prefillBuyer={prefillBuyer} onComplete={(s) => { setSelection(s); setStep(1); }} />
       )}
 
       {activeStep === 1 && (
@@ -164,8 +170,8 @@ export default function DocumentGenerationPage() {
             <Button variant="contained" onClick={() => setPreviewDoc({ id: result.id, number: result.document_number, version: result.latest_version })}>
               Preview Document
             </Button>
-            <Button variant="outlined" href={docApi.pdfUrl(result.id, result.latest_version)} target="_blank">
-              Open in New Tab
+            <Button variant="outlined" onClick={() => navigate(`/buyers/${result.buyer_id}/documents`)}>
+              View Buyer
             </Button>
             <Button variant="outlined" href={docApi.pdfUrl(result.id, result.latest_version, true)}>
               Download PDF

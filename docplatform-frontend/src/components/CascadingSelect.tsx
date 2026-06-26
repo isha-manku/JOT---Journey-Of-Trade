@@ -4,20 +4,23 @@ import { TextField, MenuItem, Stack, Typography, Divider, Button, Alert } from "
 import { refApi } from "../api";
 import type { Selection } from "../types";
 
-interface Props { onComplete: (s: Selection) => void; }
+interface Props { 
+  onComplete: (s: Selection) => void;
+  prefillBuyer?: any;
+}
 
 /** Company -> Product -> DocumentType cascading dropdowns + Buyer details. */
-export default function CascadingSelect({ onComplete }: Props) {
+export default function CascadingSelect({ onComplete, prefillBuyer }: Props) {
   const [company, setCompany] = useState("");
   const [product, setProduct] = useState("");
   const [docType, setDocType] = useState("");
 
   // Buyer information fields
-  const [buyerName, setBuyerName] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [country, setCountry] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [buyerName, setBuyerName] = useState(prefillBuyer?.buyer_name || "");
+  const [companyName, setCompanyName] = useState(prefillBuyer?.company_name || "");
+  const [country, setCountry] = useState(prefillBuyer?.country || "");
+  const [phone, setPhone] = useState(prefillBuyer?.phone || "");
+  const [email, setEmail] = useState(prefillBuyer?.email || "");
 
   const [error, setError] = useState<string | null>(null);
 
@@ -97,20 +100,30 @@ export default function CascadingSelect({ onComplete }: Props) {
 
       <TextField label="Buyer Name *" value={buyerName} required
         helperText="Min 2 characters"
+        InputProps={{ readOnly: !!prefillBuyer?.buyer_name }}
+        sx={{ bgcolor: prefillBuyer?.buyer_name ? 'rgba(0,0,0,0.03)' : 'transparent' }}
         onChange={e => { setBuyerName(e.target.value); setError(null); }} />
 
       <TextField label="Company Name (Buyer) *" value={companyName} required
         helperText="Min 2 characters"
+        InputProps={{ readOnly: !!prefillBuyer?.company_name }}
+        sx={{ bgcolor: prefillBuyer?.company_name ? 'rgba(0,0,0,0.03)' : 'transparent' }}
         onChange={e => { setCompanyName(e.target.value); setError(null); }} />
 
       <TextField label="Country *" value={country} required
+        InputProps={{ readOnly: !!prefillBuyer?.country }}
+        sx={{ bgcolor: prefillBuyer?.country ? 'rgba(0,0,0,0.03)' : 'transparent' }}
         onChange={e => { setCountry(e.target.value); setError(null); }} />
 
       <TextField label="Phone Number *" value={phone} required
         helperText="Min 5 digits"
+        InputProps={{ readOnly: !!prefillBuyer?.phone }}
+        sx={{ bgcolor: prefillBuyer?.phone ? 'rgba(0,0,0,0.03)' : 'transparent' }}
         onChange={e => { setPhone(e.target.value); setError(null); }} />
 
       <TextField label="Email (Optional)" value={email}
+        InputProps={{ readOnly: !!prefillBuyer?.email }}
+        sx={{ bgcolor: prefillBuyer?.email ? 'rgba(0,0,0,0.03)' : 'transparent' }}
         onChange={e => { setEmail(e.target.value); setError(null); }} />
 
       {error && <Alert severity="error">{error}</Alert>}

@@ -21,6 +21,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import BuyerDocs      from "./pages/BuyerDocs";
 import SellerDocs     from "./pages/SellerDocs";
 import Inquiries      from "./pages/Inquiries";
+import InquiriesRecycleBin from "./pages/InquiriesRecycleBin";
 import CalendarPage   from "./pages/CalendarPage";
 import Analytics      from "./pages/Analytics";
 import ProductAnalytics from "./pages/ProductAnalytics";
@@ -192,6 +193,7 @@ function Layout() {
           <Route path="/" element={<Login />} />
           <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/inquiries"  element={<ProtectedRoute><Inquiries /></ProtectedRoute>} />
+          <Route path="/inquiries/recycle-bin" element={<ProtectedRoute><InquiriesRecycleBin /></ProtectedRoute>} />
           <Route path="/seller-inquiries" element={<ProtectedRoute><SellerInquiries /></ProtectedRoute>} />
           <Route path="/buyers"     element={<ProtectedRoute><Buyers /></ProtectedRoute>} />
           <Route path="/sellers"    element={<ProtectedRoute><Sellers /></ProtectedRoute>} />

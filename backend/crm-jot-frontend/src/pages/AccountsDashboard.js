@@ -155,51 +155,32 @@ export default function AccountsDashboard({ onDrilldown, username, onBack }) {
 
   // Reference tables for filters
   const [buyersList, setBuyersList] = useState([]);
-  const [sellersList, setSellersList] = useState([]);
-  const [companiesList, setCompaniesList] = useState([]);
-  const [productsList, setProductsList] = useState([]);
 
   // Centralized Global Filter State
   const [filters, setFilters] = useState({
-    start_date: "",
-    end_date: "",
     buyer_id: "",
-    seller_id: "",
-    supplier_company_id: "",
-    product_id: "",
-    loading_port: "",
-    destination_port: "",
-    payment_mode: "",
-    status: "Completed" // defaultCompleted
+    status: "All"
   });
-
-  // Unique ports & payment modes from master list
-  const [loadingPorts, setLoadingPorts] = useState([]);
-  const [destPorts, setDestPorts] = useState([]);
-  const paymentModes = ["DLC MT700", "SBLC MT760", "TT MT103", "Cash", "Advance"];
 
   // Fetch reference lists for filters
   const fetchFilterReferences = async () => {
     try {
-      const [resB, resS, resC, resP, resT] = await Promise.all([
-        fetch("http://localhost:5000/buyers").then(r => r.json()).catch(() => []),
-        fetch("http://localhost:5000/sellers").then(r => r.json()).catch(() => []),
-        fetch("http://localhost:5000/companies").then(r => r.json()).catch(() => []),
-        fetch("http://localhost:5000/products").then(r => r.json()).catch(() => []),
-        fetch("http://localhost:5000/accounts", { headers: { "x-user-role": "admin" } }).then(r => r.json()).catch(() => [])
-      ]);
+      const resT = await fetch("http://localhost:5000/accounts", { headers: { "x-user-role": "admin" } })
+        .then(r => r.json())
+        .catch(() => []);
 
-      setBuyersList(resB);
-      setSellersList(resS);
-      setCompaniesList(resC);
-      setProductsList(resP);
-
-      // Extract unique ports from all transactions
       if (Array.isArray(resT)) {
-        const uniqueLoad = [...new Set(resT.map(t => t.loading_port).filter(Boolean))].sort();
-        const uniqueDest = [...new Set(resT.map(t => t.destination_port).filter(Boolean))].sort();
-        setLoadingPorts(uniqueLoad);
-        setDestPorts(uniqueDest);
+        const uniqueBuyersMap = new Map();
+        resT.forEach(t => {
+          if (t.buyer_id && t.buyer_name) {
+            uniqueBuyersMap.set(t.buyer_id, { id: t.buyer_id, buyer_name: t.buyer_name });
+          }
+        });
+        
+        const uniqueBuyers = Array.from(uniqueBuyersMap.values())
+          .sort((a, b) => a.buyer_name.localeCompare(b.buyer_name));
+          
+        setBuyersList(uniqueBuyers);
       }
     } catch (e) {
       console.error("Error fetching reference datasets", e);
@@ -243,16 +224,8 @@ export default function AccountsDashboard({ onDrilldown, username, onBack }) {
 
   const handleClearFilters = () => {
     setFilters({
-      start_date: "",
-      end_date: "",
       buyer_id: "",
-      seller_id: "",
-      supplier_company_id: "",
-      product_id: "",
-      loading_port: "",
-      destination_port: "",
-      payment_mode: "",
-      status: "Completed"
+      status: "All"
     });
   };
 
@@ -538,11 +511,7 @@ export default function AccountsDashboard({ onDrilldown, username, onBack }) {
           </button>
         </div>
       )}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
-        <div>
-          <h1 style={styles.dashboardTitle}>Commodity Trading Intelligence Cockpit</h1>
-          <p style={styles.dashboardSub}>Real-time profitability, brokerage intelligence, shipment performance, route analytics and buyer insights.</p>
-        </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-start", marginBottom: "20px" }}>
         <div style={{ display: "flex", gap: "10px" }}>
           <button style={styles.outlineBtn} onClick={handleCSVExport}>
             <FiDownload /> Export CSV
@@ -580,24 +549,6 @@ export default function AccountsDashboard({ onDrilldown, username, onBack }) {
         </div>
 
         <div style={styles.filterGroup}>
-          <span style={styles.filterLabel}>Start Date</span>
-          <input 
-            type="date" 
-            style={styles.filterInput}
-            value={filters.start_date}
-            onChange={e => handleFilterChange("start_date", e.target.value)}
-          />
-        </div>
-        <div style={styles.filterGroup}>
-          <span style={styles.filterLabel}>End Date</span>
-          <input 
-            type="date" 
-            style={styles.filterInput}
-            value={filters.end_date}
-            onChange={e => handleFilterChange("end_date", e.target.value)}
-          />
-        </div>
-        <div style={styles.filterGroup}>
           <span style={styles.filterLabel}>Buyer</span>
           <select 
             style={styles.filterInput}
@@ -606,86 +557,6 @@ export default function AccountsDashboard({ onDrilldown, username, onBack }) {
           >
             <option value="">All Buyers</option>
             {buyersList.map(b => <option key={b.id} value={b.id}>{b.buyer_name}</option>)}
-          </select>
-        </div>
-        <div style={styles.filterGroup}>
-          <span style={styles.filterLabel}>Seller</span>
-          <select 
-            style={styles.filterInput}
-            value={filters.seller_id}
-            onChange={e => handleFilterChange("seller_id", e.target.value)}
-          >
-            <option value="">All Sellers</option>
-            {sellersList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </div>
-        <div style={styles.filterGroup}>
-          <span style={styles.filterLabel}>Company</span>
-          <select 
-            style={styles.filterInput}
-            value={filters.supplier_company_id}
-            onChange={e => handleFilterChange("supplier_company_id", e.target.value)}
-          >
-            <option value="">All Suppliers</option>
-            {companiesList.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-        <div style={styles.filterGroup}>
-          <span style={styles.filterLabel}>Product</span>
-          <select 
-            style={styles.filterInput}
-            value={filters.product_id}
-            onChange={e => handleFilterChange("product_id", e.target.value)}
-          >
-            <option value="">All Products</option>
-            {productsList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
-        </div>
-        <div style={styles.filterGroup}>
-          <span style={styles.filterLabel}>Loading Port</span>
-          <select 
-            style={styles.filterInput}
-            value={filters.loading_port}
-            onChange={e => handleFilterChange("loading_port", e.target.value)}
-          >
-            <option value="">All Loading Ports</option>
-            {loadingPorts.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
-        </div>
-        <div style={styles.filterGroup}>
-          <span style={styles.filterLabel}>Destination Port</span>
-          <select 
-            style={styles.filterInput}
-            value={filters.destination_port}
-            onChange={e => handleFilterChange("destination_port", e.target.value)}
-          >
-            <option value="">All Destinations</option>
-            {destPorts.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
-        </div>
-        <div style={styles.filterGroup}>
-          <span style={styles.filterLabel}>Payment Mode</span>
-          <select 
-            style={styles.filterInput}
-            value={filters.payment_mode}
-            onChange={e => handleFilterChange("payment_mode", e.target.value)}
-          >
-            <option value="">All Modes</option>
-            {paymentModes.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
-        </div>
-        <div style={styles.filterGroup}>
-          <span style={styles.filterLabel}>Status</span>
-          <select 
-            style={styles.filterInput}
-            value={filters.status}
-            onChange={e => handleFilterChange("status", e.target.value)}
-          >
-            <option value="Completed">Completed Only</option>
-            <option value="Pending Financial Review">Pending Review</option>
-            <option value="Draft">Drafts</option>
-            <option value="Cancelled">Cancelled</option>
-            <option value="All">All Statuses</option>
           </select>
         </div>
       </div>
