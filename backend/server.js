@@ -102,47 +102,110 @@ db.query(`
   if (err) { console.log("Users table error:", err); return; }
   console.log("✅ Users table ready");
 
-  // auto-create seller_documents table
+  // auto-create sellers table
   db.query(`
-    CREATE TABLE IF NOT EXISTS seller_documents (
+    CREATE TABLE IF NOT EXISTS sellers (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      seller_id INT NOT NULL,
-      company_name VARCHAR(255) NOT NULL,
-      product_name VARCHAR(255) NOT NULL,
-      file_name VARCHAR(255) NOT NULL,
-      file_path VARCHAR(255) NOT NULL,
-      uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      uploaded_by VARCHAR(255) NULL,
-      FOREIGN KEY (seller_id) REFERENCES sellers(id) ON DELETE CASCADE
+      name VARCHAR(255),
+      country VARCHAR(100),
+      email VARCHAR(255),
+      phone VARCHAR(50),
+      product VARCHAR(255),
+      is_deleted BOOLEAN DEFAULT FALSE,
+      deleted_at DATETIME NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `, (err) => {
-    if (err) { console.log("seller_documents table error:", err); return; }
-    console.log("✅ seller_documents table ready");
-    db.query("ALTER TABLE seller_documents ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE", (alterErr) => {
-      if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("seller_documents is_deleted alter error:", alterErr);
-    });
-    db.query("ALTER TABLE seller_documents ADD COLUMN deleted_at DATETIME", (alterErr) => {
-      if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("seller_documents deleted_at alter error:", alterErr);
+    if (err) { console.log("sellers table error:", err); return; }
+    console.log("✅ sellers table ready");
+
+    // auto-create seller_documents table
+    db.query(`
+      CREATE TABLE IF NOT EXISTS seller_documents (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        seller_id INT NOT NULL,
+        company_name VARCHAR(255) NOT NULL,
+        product_name VARCHAR(255) NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
+        file_path VARCHAR(255) NOT NULL,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        uploaded_by VARCHAR(255) NULL,
+        FOREIGN KEY (seller_id) REFERENCES sellers(id) ON DELETE CASCADE
+      )
+    `, (err) => {
+      if (err) { console.log("seller_documents table error:", err); return; }
+      console.log("✅ seller_documents table ready");
+      db.query("ALTER TABLE seller_documents ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE", (alterErr) => {
+        if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("seller_documents is_deleted alter error:", alterErr);
+      });
+      db.query("ALTER TABLE seller_documents ADD COLUMN deleted_at DATETIME", (alterErr) => {
+        if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("seller_documents deleted_at alter error:", alterErr);
+      });
     });
   });
 
-  // auto-create buyer_documents table
+  // auto-create buyers table
   db.query(`
-    CREATE TABLE IF NOT EXISTS buyer_documents (
+    CREATE TABLE IF NOT EXISTS buyers (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      buyer_id INT NOT NULL,
-      company_name VARCHAR(255) NULL,
-      product_name VARCHAR(255) NULL,
-      document_type VARCHAR(255) NULL,
-      file_name VARCHAR(255) NOT NULL,
-      file_path VARCHAR(255) NOT NULL,
-      uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      uploaded_by VARCHAR(255) NULL,
-      FOREIGN KEY (buyer_id) REFERENCES buyers(id) ON DELETE CASCADE
+      buyer_name VARCHAR(255),
+      company_name VARCHAR(255),
+      country VARCHAR(100),
+      email VARCHAR(255),
+      phone VARCHAR(50),
+      address TEXT,
+      notes TEXT,
+      products TEXT,
+      is_deleted BOOLEAN DEFAULT FALSE,
+      deleted_at DATETIME NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `, (err) => {
-    if (err) { console.log("buyer_documents table error:", err); return; }
-    console.log("✅ buyer_documents table ready");
+    if (err) { console.log("buyers table error:", err); return; }
+    console.log("✅ buyers table ready");
+
+    // auto-create buyer_documents table
+    db.query(`
+      CREATE TABLE IF NOT EXISTS buyer_documents (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        buyer_id INT NOT NULL,
+        company_name VARCHAR(255) NULL,
+        product_name VARCHAR(255) NULL,
+        document_type VARCHAR(255) NULL,
+        file_name VARCHAR(255) NOT NULL,
+        file_path VARCHAR(255) NOT NULL,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        uploaded_by VARCHAR(255) NULL,
+        FOREIGN KEY (buyer_id) REFERENCES buyers(id) ON DELETE CASCADE
+      )
+    `, (err) => {
+      if (err) { console.log("buyer_documents table error:", err); return; }
+      console.log("✅ buyer_documents table ready");
+    });
+  });
+
+  // auto-create inquiries table
+  db.query(`
+    CREATE TABLE IF NOT EXISTS inquiries (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      buyer_name VARCHAR(255),
+      company_name VARCHAR(255),
+      country VARCHAR(100),
+      email VARCHAR(255),
+      phone VARCHAR(50),
+      products TEXT,
+      inquiry_date DATE,
+      source VARCHAR(100),
+      status VARCHAR(100),
+      notes TEXT,
+      buyer_quality_rating VARCHAR(100),
+      is_deleted BOOLEAN DEFAULT FALSE,
+      deleted_at DATETIME NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `, (err) => {
+    if (err) { console.log("inquiries table error:", err); return; }
+    console.log("✅ inquiries table ready");
   });
 
   // Idempotent migration for inquiries soft-delete columns
