@@ -1,0 +1,110 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=3cm,bottom=3cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{xcolor}
+\definecolor{marooncolor}{RGB}{128,0,0}
+\usepackage{array}
+\usepackage{xeCJK}
+\IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+}{
+    \IfFontExistsTF{Noto Serif CJK SC}{
+        \setCJKmainfont{Noto Serif CJK SC}
+        \setCJKsansfont{Noto Serif CJK SC}
+    }{
+        \IfFontExistsTF{SimSun}{
+            \setCJKmainfont{SimSun}
+            \setCJKsansfont{SimSun}
+        }{
+            \IfFontExistsTF{Microsoft YaHei}{
+                \setCJKmainfont{Microsoft YaHei}
+                \setCJKsansfont{Microsoft YaHei}
+            }{
+                \IfFontExistsTF{FandolSong}{
+                    \setCJKmainfont{FandolSong}
+                    \setCJKsansfont{FandolSong}
+                }{
+                    % Fallback to whatever is default
+                }
+            }
+        }
+    }
+}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage{helvet}
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+\begin{document}
+
+\begin{center}
+  {\Large\textbf{\underline{SALES AND PURCHASE AGREEMENT (SPA)}}}
+\end{center}
+
+\vspace{0.5cm}
+
+\noindent \textbf{Date:} \VAR{spa_date} \hfill \textbf{Contract No:} \VAR{contract_no}
+
+\vspace{0.8cm}
+\begin{center}{\large\textbf{\color{marooncolor}THE PARTIES}}\end{center}
+\vspace{0.3cm}
+
+\noindent \textbf{SELLER:} \VAR{seller_company}\\
+\textbf{Address:} \VAR{seller_address}\\
+\textbf{Represented by:} \VAR{seller_contact}\\
+\textbf{Email:} \VAR{seller_email}
+
+\vspace{0.5cm}
+\noindent \textbf{BUYER:} \VAR{buyer_company}\\
+\textbf{Address:} \VAR{buyer_address}\\
+\textbf{Represented by:} \VAR{buyer_contact_person}\\
+\textbf{Email:} \VAR{buyer_email}
+
+\vspace{0.8cm}
+\begin{center}{\large\textbf{\color{marooncolor}1. PRODUCT AND ORIGIN}}\end{center}
+\vspace{0.2cm}
+\noindent The Seller agrees to sell and the Buyer agrees to purchase the following commodity: \textbf{\VAR{product_name}}.\\
+\textbf{Origin:} \VAR{product_origin}\\
+\textbf{Quality/Specification:} As per Annex A (Specification Sheet).
+
+\vspace{0.5cm}
+\begin{center}{\large\textbf{\color{marooncolor}2. QUANTITY AND PRICING}}\end{center}
+\vspace{0.2cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{5cm}|>{\raggedright\arraybackslash}X|}
+\hline
+Total Quantity & \VAR{total_quantity} \\ \hline
+Contract Price & \VAR{contract_price} \\ \hline
+Total Contract Value & \VAR{total_value} \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{0.5cm}
+\begin{center}{\large\textbf{\color{marooncolor}3. DELIVERY TERMS}}\end{center}
+\vspace{0.2cm}
+\noindent \textbf{Terms:} CIF \VAR{destination_port}\\
+\textbf{Loading Port:} \VAR{loading_port}\\
+\textbf{Delivery Time:} \VAR{delivery_time}
+
+\vspace{0.5cm}
+\begin{center}{\large\textbf{\color{marooncolor}4. PAYMENT TERMS}}\end{center}
+\vspace{0.2cm}
+\noindent \VAR{payment_terms_description}
+
+\vspace{1.5cm}
+\begin{center}{\large\textbf{\underline{AUTHORIZED SIGNATURES}}}\end{center}
+\vspace{1cm}
+
+\noindent
+\begin{tabularx}{\textwidth}{@{}X X@{}}
+\textbf{\underline{SELLER}} & \textbf{\underline{BUYER}} \\
+\vspace{2cm} & \vspace{2cm} \\
+\rule{6cm}{0.4pt} & \rule{6cm}{0.4pt} \\
+\textbf{\VAR{seller_contact}} & \textbf{\VAR{buyer_contact_person}} \\
+\VAR{seller_company} & \VAR{buyer_company}
+\end{tabularx}
+
+\end{document}

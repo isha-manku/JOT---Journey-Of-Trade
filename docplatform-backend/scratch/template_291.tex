@@ -1,0 +1,37 @@
+
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\begin{document}
+
+\begin{center}
+{\LARGE \textbf{\VAR{seller_company}}}\\[2pt]
+{\small \VAR{seller_address}}\mbox{}\mbox{}\\[10pt]
+{\Large \textbf{LETTER OF INTENT (LOI)}}
+\end{center}
+
+\vspace{1em}
+\noindent \textbf{Date:} \VAR{loi_date} \hfill \textbf{Ref:} \VAR{reference_no}
+
+\vspace{1em}
+\noindent We, \textbf{\VAR{buyer_company}}, hereby confirm our irrevocable intent to
+purchase the following commodity under the terms below:
+
+\vspace{1em}
+\begin{tabular}{ll}
+\textbf{Product:} & \VAR{product_name}\mbox{}\\
+\textbf{Quantity:} & \VAR{quantity} \VAR{unit}\mbox{}\\
+\textbf{Unit Price:} & \VAR{unit_price}\mbox{}\\
+\textbf{Destination Port:} & \VAR{destination_port}\mbox{}\\
+\textbf{Delivery Time:} & \VAR{delivery_time}\mbox{}\\
+\textbf{Payment Terms:} & \VAR{payment_terms}\mbox{}\\
+\end{tabular}
+
+\vspace{2em}
+\noindent \textbf{Authorized Signatory}\mbox{}\\
+\VAR{buyer_company}
+
+\vspace{3em}
+\noindent {\small Seller Bank: \VAR{seller_bank} --- This document is generated electronically.}
+\end{document}

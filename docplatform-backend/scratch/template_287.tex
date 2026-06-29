@@ -1,0 +1,559 @@
+
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=3.5cm,bottom=3.8cm,left=2cm,right=2cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\definecolor{lightgray}{HTML}{F2F2F2}
+\definecolor{marooncolor}{RGB}{128,0,0}
+\usepackage{array}
+\usepackage{fancyhdr}
+% removed fontenc
+\usepackage{xeCJK}
+\IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+}{
+    \IfFontExistsTF{Noto Serif CJK SC}{
+        \setCJKmainfont{Noto Serif CJK SC}
+        \setCJKsansfont{Noto Serif CJK SC}
+    }{
+        \IfFontExistsTF{SimSun}{
+            \setCJKmainfont{SimSun}
+            \setCJKsansfont{SimSun}
+        }{
+            \IfFontExistsTF{Microsoft YaHei}{
+                \setCJKmainfont{Microsoft YaHei}
+                \setCJKsansfont{Microsoft YaHei}
+            }{
+                \IfFontExistsTF{FandolSong}{
+                    \setCJKmainfont{FandolSong}
+                    \setCJKsansfont{FandolSong}
+                }{
+                    % Fallback to whatever is default
+                }
+            }
+        }
+    }
+}
+
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{helvet}
+\usepackage{eso-pic}
+\AddToShipoutPictureBG{
+  \AtPageLowerLeft{%
+    \includegraphics[width=1cm,height=\paperheight]{sidebar.png}%
+  }
+  \AtPageLowerLeft{%
+    \hspace*{1cm}%
+    \includegraphics[width=0.3cm,height=\paperheight]{golden_bar.png}%
+  }
+  \put(0,0){%
+    \parbox[b][\paperheight]{\paperwidth}{%
+      \vfill
+      \centering
+      \includegraphics[width=0.7\textwidth,keepaspectratio]{watermark.png}%
+      \vfill
+    }
+  }
+}
+
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+% Configure Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\includegraphics[width=18.73cm,height=4.17cm,keepaspectratio]{header_logo.jpg}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\setlength{\headheight}{80pt}
+
+\begin{document}
+\BLOCK{ if _lang == 'zh' }
+\setlength{\parindent}{0pt}
+
+\begin{center}
+  {\Large\textbf{\underline{\VAR{labels.fco_title}  \VAR{product_name}}}}
+\end{center}
+
+\vspace{0.3cm}
+
+\
+oindent\textbf{\VAR{labels.date}: \VAR{fco_date}} \hfill \textbf{\VAR{labels.reference}: \VAR{reference_no}}
+
+\vspace{0.5cm}
+
+\
+oindent\textbf{\VAR{labels.to}}
+
+\vspace{0.2cm}
+
+\
+oindent\textbf{\VAR{labels.company_name}:} \VAR{buyer_company}\\
+\textbf{\VAR{labels.address}:} \VAR{buyer_address}\\
+\textbf{\VAR{labels.website}:} \VAR{buyer_website}\\
+\textbf{\VAR{labels.email}:} \VAR{buyer_email}\\
+\textbf{\VAR{labels.phone}:} \VAR{buyer_phone}
+
+\vspace{0.4cm}
+
+\
+oindent\textbf{\VAR{labels.dear_sir}}
+
+\vspace{0.3cm}
+
+\
+oindent \VAR{labels.intro_p1}
+
+\vspace{0.4cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.trial_shipment_title}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{6cm} >{\raggedright\arraybackslash}X}
+\VAR{labels.trial_container} & \VAR{trial_container} \\ \VAR{labels.price} & \VAR{trial_price} \\ \VAR{labels.trial_shipment_value} & \VAR{trial_shipment_value} \\ \VAR{labels.trial_quantity_mt} & \VAR{trial_quantity_mt} \\ \VAR{labels.loading_capacity} & \VAR{loading_capacity} \\ \VAR{labels.loading_port} & \VAR{loading_port} \\ \VAR{labels.destination_port} & \VAR{destination_port} \\ \VAR{labels.delivery_time} & \VAR{delivery_time} \\ \end{tabularx}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.contract_shipment_title}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{6cm} >{\raggedright\arraybackslash}X}
+\VAR{labels.quantity} & \VAR{contract_quantity} \\ \VAR{labels.price} & \VAR{contract_price} \\ \VAR{labels.monthly_shipment_value} & \VAR{monthly_shipment_value} \\ \VAR{labels.annual_contract_value} & \VAR{annual_contract_value} \\ \VAR{labels.contract_duration} & \VAR{contract_duration} \\ \VAR{labels.loading_capacity} & \VAR{contract_loading_capacity} \\ \VAR{labels.annual_contract_quantity} & \VAR{annual_contract_quantity} \\ \VAR{labels.loading_port} & \VAR{contract_loading_port} \\ \VAR{labels.destination_port} & \VAR{contract_destination_port} \\ \VAR{labels.delivery_time} & \VAR{contract_delivery_time} \\ \end{tabularx}
+\end{center}
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.product_specification}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5.5cm} >{\raggedright\arraybackslash}X}
+\multicolumn{1}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5.5cm}}{\VAR{labels.category}} & \multicolumn{1}{>{\bfseries\raggedright\arraybackslash}X}{\VAR{labels.specification}} \\ \VAR{labels.product_name_label} & \VAR{product_name} \\ \VAR{labels.grade} & \VAR{spec_grade} \\ \VAR{labels.origin} & \VAR{spec_origin} \\ \VAR{labels.origin_cert} & \VAR{spec_certification} \\ \VAR{labels.processing} & \VAR{spec_processing} \\ \VAR{labels.appearance} & \VAR{spec_appearance} \\ \VAR{labels.odor} & \VAR{spec_odor} \\ \VAR{labels.bones} & \VAR{spec_bones} \\ \VAR{labels.blood_stains} & \VAR{spec_blood_stains} \\ \VAR{labels.moisture_content} & \VAR{spec_moisture} \\ \VAR{labels.damage} & \VAR{spec_damage} \\ \VAR{labels.chicken_paw_pad} & \VAR{spec_paw_pad} \\ \VAR{labels.weight_per_piece} & \VAR{spec_weight_per_piece} \\ \VAR{labels.length_per_piece} & \VAR{spec_length_per_piece} \\ \VAR{labels.packaging} & \VAR{spec_packaging} \\ \VAR{labels.inner_packing} & \VAR{spec_inner_packing} \\ \VAR{labels.carton_weight} & \VAR{spec_carton_weight} \\ \VAR{labels.freezing_temp} & \VAR{spec_freezing_temp} \\ \VAR{labels.storage_temp} & \VAR{spec_storage_temp} \\ \VAR{labels.transport_temp} & \VAR{spec_transport_temp} \\ \VAR{labels.freezing_process} & \VAR{spec_freezing_process} \\ \VAR{labels.shelf_life} & \VAR{spec_shelf_life} \\ \VAR{labels.packaging_note} & \VAR{spec_packaging_note} \\ \end{tabularx}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.product_discharge}}}\end{center}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt, topsep=2pt]
+\item \VAR{labels.discharge_p1}
+\item \VAR{labels.discharge_p2}
+\item \VAR{labels.discharge_p3}
+\item \VAR{labels.discharge_p4}
+\item \VAR{labels.discharge_p5}
+\end{itemize}
+
+\
+ewpage
+
+\begin{center}
+  {\large\textbf{\color{marooncolor}\VAR{labels.commercial_terms}}}\\[4pt]
+  {\small\color{marooncolor}\VAR{labels.commercial_note}}
+\end{center}
+\vspace{0.2cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.trial_shipment}}}\end{center}
+\vspace{0.1cm}
+\
+oindent \VAR{labels.trial_payment_text}
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.monthly_shipment}}}\end{center}
+\vspace{0.1cm}
+\
+oindent \VAR{labels.monthly_payment_text}
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.payment_tt}}}\end{center}
+\vspace{0.1cm}
+\
+oindent \VAR{labels.payment_tt_text}
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.dlc}}}\end{center}
+\vspace{0.1cm}
+\
+oindent \VAR{labels.dlc_text}
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.telex}}}\end{center}
+\vspace{0.1cm}
+\
+oindent \VAR{labels.telex_text}
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}\VAR{labels.product_doc}}}}\end{center}
+\vspace{0.2cm}
+\
+oindent \VAR{labels.doc_intro}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]
+\item \VAR{labels.doc_1}
+\item \VAR{labels.doc_2}
+\item \VAR{labels.doc_3}
+\item \VAR{labels.doc_4}
+\item \VAR{labels.doc_5}
+\item \VAR{labels.doc_6}
+\item \VAR{labels.doc_7}
+\item \VAR{labels.doc_8}
+\item \VAR{labels.doc_9}
+\item \VAR{labels.doc_10}
+\item \VAR{labels.doc_11}
+\end{itemize}
+
+\vspace{0.3cm}
+\begin{center}
+  {\large\textbf{\color{marooncolor}\VAR{labels.procedures}}}\\[4pt]
+  {\small\color{marooncolor}\VAR{labels.proc_note}}
+\end{center}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]
+\item \VAR{labels.proc_1}
+\item \VAR{labels.proc_2}
+\item \VAR{labels.proc_3}
+\item \VAR{labels.proc_4}
+\item \VAR{labels.proc_5}
+\item \VAR{labels.proc_6}
+\item \VAR{labels.proc_7}
+\item \VAR{labels.proc_8}
+\item \VAR{labels.proc_9}
+\item \VAR{labels.proc_10}
+\item \VAR{labels.proc_11}
+\item \VAR{labels.proc_12}
+\item \VAR{labels.proc_13}
+\item \VAR{labels.proc_14}
+\end{itemize}
+
+\
+ewpage
+
+\
+oindent
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}X|>{\bfseries\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}X|}
+\multicolumn{2}{|>{\centering\arraybackslash}p{7.5cm}|}{\textbf{\color{marooncolor}\VAR{labels.seller_details}}} & \multicolumn{2}{>{\centering\arraybackslash}X|}{\textbf{\color{marooncolor}\VAR{labels.seller_bank}}} \\
+\VAR{labels.company_name} & Ronsons Trading FZ-LLC & \VAR{labels.bank_name} & MASHREQ \\ \VAR{labels.address} & Compass Building, Al Shohada Road, Al Hamara, Industrial Zone-FZ, Ras Al Khaimah, United Arab Emirates & \VAR{labels.address} & Beside Al Hooth Hypermarket, Al Muntasir RD, Al Nakheel, Ras Al Khaimah, United Arab Emirates \\ \VAR{labels.contact_person} & Mr. Hirdey Batth & \VAR{labels.account_name} & RONSONS TRADING FZ-LLC. \\ \VAR{labels.email} & ceo@ronsonstrading.com & \VAR{labels.account_number} & 019101772389 \\ \VAR{labels.website} & www.ronsonstrading.com & IBAN & AE380330000019101772389 \\ \VAR{labels.whatsapp} & +1 (604) 613-2109 \
+ewline +971 50 838 0262 & \VAR{labels.swift_code} & BOMLAEAD \\ \end{tabularx}
+
+\vspace{0.6cm}
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}\VAR{labels.buyer_company_info}}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5cm} >{\raggedright\arraybackslash}X}
+\VAR{labels.company_name} & \VAR{buyer_company} \\ \VAR{labels.address} & \VAR{buyer_address} \\ \VAR{labels.contact_person} & \VAR{buyer_contact_person} \\ \VAR{labels.email} & \VAR{buyer_email} \\ \VAR{labels.country} & \VAR{buyer_country} \\ \VAR{labels.phone_no} & \VAR{buyer_phone} \\ \end{tabularx}
+\end{center}
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}\VAR{labels.buyer_bank_info}}}}\end{center}
+\vspace{0.2cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5cm} >{\raggedright\arraybackslash}X}
+\VAR{labels.bank_name} & \VAR{buyer_bank_name} \\ \VAR{labels.bank_address} & \VAR{buyer_bank_address} \\ \VAR{labels.bank_swift_code} & \VAR{buyer_bank_swift} \\ \VAR{labels.account_name} & \VAR{buyer_account_name} \\ \VAR{labels.account_number} & \VAR{buyer_account_number} \\ \VAR{labels.bank_officer} & \VAR{buyer_bank_officer_email} \\ \end{tabularx}
+\end{center}
+
+\vspace{0.5cm}
+
+\
+oindent \VAR{labels.bank_charges_note}
+
+\vspace{0.3cm}
+
+\
+oindent \VAR{labels.note_1}
+
+\vspace{0.3cm}
+
+\
+oindent \VAR{labels.note_2}
+
+\vspace{0.4cm}
+
+\
+oindent\textbf{\VAR{labels.validity_offer}}\\
+\VAR{labels.validity_text}
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\underline{\VAR{labels.auth_sig}}}}\end{center}
+\vspace{0.8cm}
+
+\
+oindent\textbf{\underline{\VAR{labels.seller_sig}}}
+
+\vspace{0.6cm}
+
+\
+oindent\includegraphics[width=6cm,keepaspectratio]{signature_stamp.png}\\[4pt]
+\rule{7cm}{0.4pt}\\[4pt]
+\textbf{\VAR{signatory_name}}\\
+\textbf{\VAR{signatory_title}}\\
+\textbf{\VAR{labels.date}: \VAR{signing_date}}
+
+\vspace{2.5cm}
+
+\
+oindent\textbf{\underline{\VAR{labels.buyer_sig}}}
+
+\vspace{2.5cm}
+
+\
+oindent\rule{7cm}{0.4pt}\\[4pt]
+\textbf{Mr.}\\
+\textbf{Title}\\
+\textbf{\VAR{labels.date}:}
+
+
+\BLOCK{ else }
+\setlength{\parindent}{0pt}
+
+\begin{center}
+  {\Large\textbf{\underline{FULL CORPORATE OFFER FOR \VAR{product_name}}}}
+\end{center}
+
+\vspace{0.3cm}
+
+\
+oindent\textbf{Date: \VAR{fco_date}} \hfill \textbf{\VAR{reference_no}}
+
+\vspace{0.5cm}
+
+\
+oindent\textbf{To}
+
+\vspace{0.2cm}
+
+\
+oindent\textbf{Company Name:} \VAR{buyer_company}\\
+\textbf{Address:} \VAR{buyer_address}\\
+\textbf{Website:} \VAR{buyer_website}\\
+\textbf{Email:} \VAR{buyer_email}\\
+\textbf{Phone Number:} \VAR{buyer_phone}
+
+\vspace{0.4cm}
+
+\
+oindent\textbf{Dear Sir,}
+
+\vspace{0.3cm}
+
+\
+oindent We, \textbf{\VAR{seller_company}}, hereby formally confirm our intent and capability to supply \textbf{\VAR{product_name}}. We affirm that our company is fully prepared, willing, and able to sell the product strictly in accordance with the specifications, quantities, pricing, and commercial terms outlined in this \textbf{Full Corporate Offer (FCO).} This declaration is issued with full corporate authority and complete responsibility on behalf of our company.
+
+\vspace{0.4cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}QUANTITY \& PRICING FOR TRIAL SHIPMENT}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5.5cm} >{\raggedright\arraybackslash}X}
+Trial Container & \VAR{trial_container} \\ Price & \VAR{trial_price} \\ Trial Shipment Value & \VAR{trial_shipment_value} \\ Trial Quantity in MT & \VAR{trial_quantity_mt} \\ Loading Capacity & \VAR{loading_capacity} \\ Loading Port & \VAR{loading_port} \\ Destination Port & \VAR{destination_port} \\ Delivery Time & \VAR{delivery_time} \\ \end{tabularx}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}QUANITY \& PRICING FOR YEARLY CONTRACT SHIPMENT}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5.5cm} >{\raggedright\arraybackslash}X}
+Quantity & \VAR{contract_quantity} \\ Price & \VAR{contract_price} \\ Monthly Shipment Value & \VAR{monthly_shipment_value} \\ Annual Contract Value & \VAR{annual_contract_value} \\ Contract Duration & \VAR{contract_duration} \\ Loading Capacity & \VAR{contract_loading_capacity} \\ Annual Contract Quantity & \VAR{annual_contract_quantity} \\ Loading Port & \VAR{contract_loading_port} \\ Destination Port & \VAR{contract_destination_port} \\ Delivery Time & \VAR{contract_delivery_time} \\ \end{tabularx}
+\end{center}
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\color{marooncolor}PRODUCT SPECIFICATION}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5cm} >{\raggedright\arraybackslash}X}
+\multicolumn{1}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5cm}}{CATEGORY} & \multicolumn{1}{>{\bfseries\raggedright\arraybackslash}X}{SPECIFICATION} \\ Product Name & \VAR{product_name} \\ Grade & \VAR{spec_grade} \\ Origin & \VAR{spec_origin} \\ Origin / Certification & \VAR{spec_certification} \\ Processing & \VAR{spec_processing} \\ Appearance & \VAR{spec_appearance} \\ Odor & \VAR{spec_odor} \\ Bones & \VAR{spec_bones} \\ Blood / Blood Stains & \VAR{spec_blood_stains} \\ Moisture Content & \VAR{spec_moisture} \\ Damage & \VAR{spec_damage} \\ Chicken Paw Pad & \VAR{spec_paw_pad} \\ Weight per Piece & \VAR{spec_weight_per_piece} \\ Length per Piece & \VAR{spec_length_per_piece} \\ Packaging & \VAR{spec_packaging} \\ Inner Packing & \VAR{spec_inner_packing} \\ Carton Weight & \VAR{spec_carton_weight} \\ Freezing Temperature & \VAR{spec_freezing_temp} \\ Storage Temperature & \VAR{spec_storage_temp} \\ Transportation Temperature & \VAR{spec_transport_temp} \\ Freezing Process & \VAR{spec_freezing_process} \\ Shelf Life & \VAR{spec_shelf_life} \\ Packaging & \VAR{spec_packaging_note} \\ \end{tabularx}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}PRODUCT DISCHARGE}}\end{center}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt, topsep=2pt]
+\item The shipment shall begin within 15-20 days after receipt and confirmation of the payment instrument in seller's Bank, after the contract is signed.
+\item The Date of bill of Lading shall be considered the date of delivery.
+\item Seller is responsible for all supervision, fees and/ or levies at the port of loading.
+\item Not later than 72 hours from the completion of loading, the seller's agent shall email the buyer and inform the vessel's sailing date and the expected time of arrival at the port of destination.
+\item All port of loading charges are for the account of the seller and all port of discharge charges are for the account of the buyer.
+\end{itemize}
+
+\
+ewpage
+
+\begin{center}
+  {\large\textbf{\color{marooncolor}COMMERCIAL TERMS}}\\[4pt]
+  {\small\color{marooncolor}(This is our basis payment terms but still it should be editable)}
+\end{center}
+\vspace{0.2cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}TRIAL SHIPMENT}}\end{center}
+\vspace{0.1cm}
+\
+oindent The Buyer will provide irrevocable, operative, and transferable DLC (MT700) for trial containers. The Buyer shall make 100\% payment at the loading port against presentation of shipping documents via TT (MT 103). The Seller shall ship the goods as per the agreed Proforma Invoice and, upon completion of loading at the port of shipment, present copies of the shipping documents, including but not limited to the Bill of Lading, Commercial Invoice, Packing List, Health Certificate, and other required export documents, to the Buyer. Full payment shall be remitted by the Buyer immediately upon confirmation of loading and presentation of documents. Release of the original shipping documents shall be made only after receipt of 100\% payment through normal banking channels via TT (MT103).
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}MONTHLY SHIPMENT}}\end{center}
+\vspace{0.1cm}
+\
+oindent Buyer will open an irrevocable, operative, and transferable DLC (MT700) for the value of one month shipment quantity against the proforma invoice \& SPA, issued and confirmed by world top 100 Banks valid for 365 + 1 days (or 180 days x 2 subject to the issuing bank's rule). Upon completion of loading and issuance of the Bill of Lading, the Seller shall provide copies of the commercial invoice, Bill of Lading, Packing List, and other relevant shipping documents to the Buyer. The Buyer shall remit 100\% payment immediately upon confirmation of the above mentioned shipping documents. Payment shall be effected via MT103 / TT bank-to-bank SWIFT transfer. Release of the original Bill of Lading and full set of original shipping documents shall be made only after confirmation of full payment through normal banking channels.
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}PAYMENT VIA TELEGRAPHIC TRANSFER (TT/MT103)}}\end{center}
+\vspace{0.1cm}
+\
+oindent The Buyer shall effect payment for shipments by way of Telegraphic Transfer (TT/MT103) upon receipt of confirmation from the Seller's nominated bank via SWIFT that the original shipping documents have been duly submitted and are held in custody by the bank. The Seller shall, prior to such confirmation, provide the Buyer with scanned/digital copies of all relevant shipping documents for advance review and verification. The Buyer will still be providing DLC MT700 as a security financial instrument for contract shipment.
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}DOCUMENTARY LETTER OF CREDIT (DLC/MT700)}}\end{center}
+\vspace{0.1cm}
+\
+oindent The DLC (MT700) shall serve as a supporting financial instrument for the purpose of providing transactional assurance and security to both parties. For the avoidance of doubt, the DLC shall not constitute the primary mode of payment. Actual settlement for each shipment shall be effected exclusively via TT/MT103.
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}TELEX RELEASE}}\end{center}
+\vspace{0.1cm}
+\
+oindent The Seller shall arrange telex release of the cargo upon receipt of full payment, unless otherwise mutually agreed.
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}PRODUCT DOCUMENTATION}}}\end{center}
+\vspace{0.2cm}
+\
+oindent A full set of the following documents which will be legitimate for shipment from Brazil will be presented.
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]
+\item Full set of clean on -- board marine bill of lading made out to order and blank endorsed, 1/3 clearly marked `Freight Prepaid'' in 1 original
+\item Commercial Invoice issued by the seller indicating the contract number, DLC/SBLC number, Description of the goods, gross / net weights of the goods in 1 Original.
+\item Packaging list 1 originals showing contract no., seal no., container no., gross / net weight, B/L no., date. Quantity loaded and loading port.
+\item Certificate of origin issued by the relevant authority of the country of origin of Brazil in 1 original
+\item Certificate of Quality and quantity issued by CCIC Brazil, 1 original
+\item Veterinary health certificate issued by veterinary office for the record of China entry- Exit inspection and quarantine in 1 originals
+\item Insurance policy/ certificate in 1 original for 110\% of the invoice value, covering ocean marine transportation all risk.
+\item Commodity bilingual English- Chinese label samples in 1 original.
+\item Slaughterhouse SIF certificate in 1 copy
+\item Export / shipper certificate of GACC Registration in 1 Copy
+\item HALAL certificate in 1 original
+\end{itemize}
+
+\vspace{0.3cm}
+\begin{center}
+  {\large\textbf{\color{marooncolor}PROCEDURES}}\\[4pt]
+  {\small\color{marooncolor}(This is our basis procedure but still it should be editable)}
+\end{center}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]
+\item The Buyer issues the \textbf{LOI (Letter of Intent)} to the Seller.
+\item The Seller issues the \textbf{FCO (Full Corporate Offer)} to the Buyer.
+\item Upon acceptance, the Buyer signs, seals, and returns the FCO.
+\item The Buyer issues the \textbf{ICPO (Irrevocable Corporate Purchase Order).}
+\item The Seller issues the \textbf{SPA (Sales and Purchase Agreement).}
+\item The Buyer provides \textbf{POF (Proof of Funds)} by \textbf{BCL (Bank Comfort Letter).}
+\item Upon signing and sealing of the SPA, the Seller issues the Proforma Invoice (PI).
+\item The Buyer's bank issues an irrevocable, operative, and transferable \textbf{DLC (MT700),} covering the agreed shipment quantity in accordance with the SPA and payment terms. The DLC shall be issued and confirmed by a Top 100 World Bank and remain valid as per agreed contract terms.
+\item The Seller arranges inspection for quality and quantity through CCIC Brazil at the Seller's expense, completes loading, and prepares the shipping documents.
+\item Upon completion of loading and issuance of the Bill of Lading, the Seller provides copies of shipping documents to the Buyer, including but not limited to the Bill of Lading, Commercial Invoice, Packing List, Health Certificate, and other relevant export documents.
+\item The Buyer remits 100\% payment immediately upon confirmation of loading and presentation of shipping documents via TT / MT103 bank-to-bank SWIFT transfer.
+\item Release of the original Bill of Lading and full set of original shipping documents shall be made only after confirmation of 100\% payment through normal banking channels.
+\item The Seller permits the Buyer or the Buyer's appointed representative to witness the loading process at the loading warehouse, at the Buyer's expense.
+\item The Buyer shall be responsible for customs clearance, unloading at destination, and any penalties arising from delayed unloading. The Buyer shall notify the Seller in writing of the appointed clearing agent details at the time of payment confirmation.
+\end{itemize}
+
+\
+ewpage
+
+\
+oindent
+\begin{tabular}{|>{\bfseries}p{3cm}|p{5.2cm}|>{\bfseries}p{3cm}|p{4.2cm}|}
+\multicolumn{2}{|>{\centering\arraybackslash}p{7.5cm}|}{\textbf{\color{marooncolor}SELLER DETAILS}} & \multicolumn{2}{>{\centering\arraybackslash}p{7.3cm}|}{\textbf{\color{marooncolor}SELLER BANKING DETAILS}} \\
+Company Name & Ronsons Trading FZ-LLC & Bank Name & MASHREQ \\ Address & Compass Building, Al Shohada Road, Al Hamara, Industrial Zone-FZ, Ras Al Khaimah, United Arab Emirates & Address & Beside Al Hooth Hypermarket, Al Muntasir RD, Al Nakheel, Ras Al Khaimah, United Arab Emirates \\ Contact Person & Mr. Hirdey Batth & Account Name & RONSONS TRADING FZ-LLC. \\ Email & ceo@ronsonstrading.com & Account Number & 019101772389 \\ Website & www.ronsonstrading.com & IBAN & AE380330000019101772389 \\ WhatsApp & +1 (604) 613-2109 \
+ewline +971 50 838 0262 & Swift Code & BOMLAEAD \\ \end{tabular}
+
+\vspace{0.6cm}
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}BUYER COMPANY INFORMATION}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}X}
+Company Name & \VAR{buyer_company} \\ Address & \VAR{buyer_address} \\ Contact Person & \VAR{buyer_contact_person} \\ Email Address & \VAR{buyer_email} \\ Country & \VAR{buyer_country} \\ Phone No. & \VAR{buyer_phone} \\ \end{tabularx}
+\end{center}
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}BUYER BANK INFORMATION}}}\end{center}
+\vspace{0.2cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}X}
+Bank Name & \VAR{buyer_bank_name} \\ Bank Address & \VAR{buyer_bank_address} \\ Bank Swift Code & \VAR{buyer_bank_swift} \\ Account Name & \VAR{buyer_account_name} \\ Account Number & \VAR{buyer_account_number} \\ Bank Officer/Email & \VAR{buyer_bank_officer_email} \\ \end{tabularx}
+\end{center}
+
+\vspace{0.5cm}
+
+\
+oindent\textbf{Bank Charges:} All banking Charges from Buyer's Bank shall be borne by the buyer, and all banking charges incurred at Seller's Financier's Bank will be borne by the Seller Financier's.
+
+\vspace{0.3cm}
+
+\
+oindent\textbf{Note:} No contact with the Seller's or Buyer's bank(s) shall be made without the explicit written permission of the Seller or Buyer. In the event that an alternate bank account is to be used, the Seller and Buyer shall notify each other in writing of the new bank coordinates. Both parties are required to inform each other in advance before forwarding any financial instructions or correspondence to the bank.
+
+\vspace{0.3cm}
+
+\
+oindent\textbf{Please Note:} A final SPA will be signed between end seller and \textbf{\VAR{buyer_company}} once this FCO is accepted, signed and sealed by the buyer.
+
+\vspace{0.4cm}
+
+\
+oindent\textbf{VALIDITY OF OFFER}\\
+This FCO remains valid until \textbf{\VAR{validity}}
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\underline{AUTHORIZED SIGNATURES}}}\end{center}
+\vspace{0.8cm}
+
+\
+oindent\textbf{\underline{FOR AND ON BEHALF OF \VAR{seller_company} (SELLER)}}
+
+\vspace{0.6cm}
+
+\
+oindent\includegraphics[width=6cm,keepaspectratio]{signature_stamp.png}\\[4pt]
+\rule{7cm}{0.4pt}\\[4pt]
+\textbf{\VAR{signatory_name}}\\
+\textbf{\VAR{signatory_title}}\\
+\textbf{Date: \VAR{signing_date}}
+
+\vspace{2.5cm}
+
+\
+oindent\textbf{\underline{FOR AND ON BEHALF OF \VAR{buyer_company} (BUYER)}}
+
+\vspace{2.5cm}
+
+\
+oindent\rule{7cm}{0.4pt}\\[4pt]
+\textbf{Mr.}\\
+\textbf{Title}\\
+\textbf{Date:}
+
+
+\BLOCK{ endif }
+\end{document}

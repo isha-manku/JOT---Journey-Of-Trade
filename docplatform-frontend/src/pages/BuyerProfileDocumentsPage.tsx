@@ -5,7 +5,7 @@ import {
   Box, Typography, Button, Stack, Table, TableHead, TableRow, TableCell, TableBody,
   Accordion, AccordionSummary, AccordionDetails, Drawer, IconButton,
   Dialog, DialogTitle, DialogContent, CircularProgress, Alert, Divider,
-  Grid, Tooltip
+  Grid, Tooltip, Menu, MenuItem
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -35,6 +35,58 @@ export default function BuyerProfileDocumentsPage() {
   const isRecycleBin = source === 'recycle-bin';
   const [previewDoc, setPreviewDoc] = useState<PreviewDoc | null>(null);
   const [historyDoc, setHistoryDoc] = useState<{ id: string, number: string } | null>(null);
+
+  const [previewMenuAnchor, setPreviewMenuAnchor] = useState<null | HTMLElement>(null);
+  const [selectedDocForPreview, setSelectedDocForPreview] = useState<any>(null);
+
+  const handlePreviewMenuOpen = (e: React.MouseEvent<HTMLElement>, doc: any) => {
+    setPreviewMenuAnchor(e.currentTarget);
+    setSelectedDocForPreview(doc);
+  };
+
+  const handlePreviewMenuClose = () => {
+    setPreviewMenuAnchor(null);
+    setSelectedDocForPreview(null);
+  };
+
+  const handlePreviewSelect = (language: 'en' | 'zh') => {
+    if (selectedDocForPreview) {
+      setPreviewDoc({ 
+        id: selectedDocForPreview.id, 
+        number: selectedDocForPreview.document_number, 
+        version: selectedDocForPreview.latest_version, 
+        is_manual: selectedDocForPreview.is_manual, 
+        file_path: selectedDocForPreview.file_path,
+        language
+      });
+    }
+    handlePreviewMenuClose();
+  };
+
+  const [downloadMenuAnchor, setDownloadMenuAnchor] = useState<null | HTMLElement>(null);
+  const [selectedDocForDownload, setSelectedDocForDownload] = useState<any>(null);
+
+  const handleDownloadMenuOpen = (e: React.MouseEvent<HTMLElement>, doc: any) => {
+    setDownloadMenuAnchor(e.currentTarget);
+    setSelectedDocForDownload(doc);
+  };
+
+  const handleDownloadMenuClose = () => {
+    setDownloadMenuAnchor(null);
+    setSelectedDocForDownload(null);
+  };
+
+  const handleDownloadSelect = (language: 'en' | 'zh') => {
+    if (selectedDocForDownload) {
+      window.location.href = docApi.pdfUrl(
+        selectedDocForDownload.id, 
+        selectedDocForDownload.latest_version, 
+        true, 
+        language
+      );
+    }
+    handleDownloadMenuClose();
+  };
 
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
@@ -529,7 +581,7 @@ export default function BuyerProfileDocumentsPage() {
                                 <Tooltip title="Preview Document" arrow>
                                   <IconButton 
                                     size="small"
-                                    onClick={() => setPreviewDoc({ id: doc.id, number: doc.document_number, version: doc.latest_version, is_manual: doc.is_manual, file_path: doc.file_path })}
+                                    onClick={(e) => handlePreviewMenuOpen(e, doc)}
                                     sx={{ 
                                       width: 36, height: 36, borderRadius: 2,
                                       color: '#0e2318', 
@@ -563,7 +615,13 @@ export default function BuyerProfileDocumentsPage() {
                                 <Tooltip title="Download PDF" arrow>
                                   <IconButton 
                                     size="small"
-                                    href={doc.is_manual ? `http://localhost:5000/buyer-documents/download/${doc.file_path?.split(/[\\\\/]/).pop()}` : docApi.pdfUrl(doc.id, doc.latest_version, true)}
+                                    onClick={(e) => {
+                                      if (doc.is_manual) {
+                                        window.location.href = `http://localhost:5000/buyer-documents/download/${doc.file_path?.split(/[\\\\/]/).pop()}`;
+                                      } else {
+                                        handleDownloadMenuOpen(e, doc);
+                                      }
+                                    }}
                                     sx={{ 
                                       width: 36, height: 36, borderRadius: 2,
                                       color: '#0e2318', 
@@ -620,6 +678,40 @@ export default function BuyerProfileDocumentsPage() {
           </AccordionDetails>
         </Accordion>
       ))}
+
+      {/* Language Selection Menu for Document Preview */}
+      <Menu
+        anchorEl={previewMenuAnchor}
+        open={Boolean(previewMenuAnchor)}
+        onClose={handlePreviewMenuClose}
+        PaperProps={{
+          sx: { mt: 1, boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)', borderRadius: 2 }
+        }}
+      >
+        <MenuItem onClick={() => handlePreviewSelect('en')} sx={{ fontWeight: 600 }}>
+          English
+        </MenuItem>
+        <MenuItem onClick={() => handlePreviewSelect('zh')} sx={{ fontWeight: 600, color: '#c9a96e' }}>
+          Chinese (Bilingual)
+        </MenuItem>
+      </Menu>
+
+      {/* Language Selection Menu for Download */}
+      <Menu
+        anchorEl={downloadMenuAnchor}
+        open={Boolean(downloadMenuAnchor)}
+        onClose={handleDownloadMenuClose}
+        PaperProps={{
+          sx: { mt: 1, boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)', borderRadius: 2 }
+        }}
+      >
+        <MenuItem onClick={() => handleDownloadSelect('en')} sx={{ fontWeight: 600 }}>
+          Download English
+        </MenuItem>
+        <MenuItem onClick={() => handleDownloadSelect('zh')} sx={{ fontWeight: 600, color: '#c9a96e' }}>
+          Download Chinese (Bilingual)
+        </MenuItem>
+      </Menu>
 
       {/* PDF Preview Drawer */}
       <PDFPreviewDrawer previewDoc={previewDoc} onClose={() => setPreviewDoc(null)} />

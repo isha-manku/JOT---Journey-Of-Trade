@@ -1,0 +1,83 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=3cm,bottom=3cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{xcolor}
+\definecolor{marooncolor}{RGB}{128,0,0}
+\usepackage{array}
+\usepackage{xeCJK}
+\IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+}{
+    \IfFontExistsTF{Noto Serif CJK SC}{
+        \setCJKmainfont{Noto Serif CJK SC}
+        \setCJKsansfont{Noto Serif CJK SC}
+    }{
+        \IfFontExistsTF{SimSun}{
+            \setCJKmainfont{SimSun}
+            \setCJKsansfont{SimSun}
+        }{
+            \IfFontExistsTF{Microsoft YaHei}{
+                \setCJKmainfont{Microsoft YaHei}
+                \setCJKsansfont{Microsoft YaHei}
+            }{
+                \IfFontExistsTF{FandolSong}{
+                    \setCJKmainfont{FandolSong}
+                    \setCJKsansfont{FandolSong}
+                }{
+                    % Fallback to whatever is default
+                }
+            }
+        }
+    }
+}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{helvet}
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+\begin{document}
+\begin{center}
+  {\Large\textbf{\underline{IRREVOCABLE CORPORATE PURCHASE ORDER (ICPO)}}}
+\end{center}
+
+\vspace{0.5cm}
+\noindent \textbf{Date:} \VAR{icpo_date} \hfill \textbf{ICPO Ref:} \VAR{icpo_ref}
+
+\vspace{0.5cm}
+\noindent \textbf{To: \VAR{seller_company}}
+
+\vspace{0.5cm}
+\noindent We, \textbf{\VAR{buyer_company}}, represented by \VAR{buyer_contact_person}, hereby state and represent that it is our intention to purchase, and we hereby confirm that we are ready, willing and able to purchase the following commodity as per the specification and in the quantity and for the price as specified in the terms and conditions as stated below.
+
+\vspace{0.5cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{5cm}|>{\raggedright\arraybackslash}X|}
+\hline
+Commodity & \VAR{product_name} \\ \hline
+Origin & \VAR{product_origin} \\ \hline
+Total Quantity & \VAR{total_quantity} \\ \hline
+Target Price & \VAR{target_price} \\ \hline
+Destination Port & \VAR{destination_port} \\ \hline
+Payment Terms & \VAR{payment_terms} \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{1cm}
+\begin{center}{\large\textbf{\color{marooncolor}BUYER BANKING DETAILS}}\end{center}
+\vspace{0.3cm}
+\noindent
+\textbf{Bank Name:} \VAR{buyer_bank_name}\\
+\textbf{Bank Address:} \VAR{buyer_bank_address}\\
+\textbf{Account Name:} \VAR{buyer_account_name}\\
+\textbf{Account Number:} \VAR{buyer_account_number}\\
+\textbf{SWIFT Code:} \VAR{buyer_swift_code}
+
+\vspace{1.5cm}
+\noindent\textbf{For and on behalf of \VAR{buyer_company}}\\
+\vspace{1.5cm}\\
+\rule{6cm}{0.4pt} \\
+\textbf{\VAR{buyer_contact_person}}\\
+\textbf{\VAR{buyer_title}}
+\end{document}

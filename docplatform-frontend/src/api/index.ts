@@ -85,11 +85,13 @@ export const docApi = {
   versions: (document_id: string) =>
     api.get<DocumentVersion[]>(`/documents/${document_id}/versions`).then(r => r.data),
 
-  pdfUrl: (document_id: string, version?: number, download = false) => {
-    let url = `${api.defaults.baseURL}/documents/${document_id}/pdf`;
+  pdfUrl: (document_id: string, version?: number, download = false, language = "en") => {
+    const base = api.defaults.baseURL === "/doc-api" ? "" : api.defaults.baseURL;
+    let url = `${base}/documents/${document_id}/pdf`;
     const params = new URLSearchParams();
     if (version) params.set("version", String(version));
     if (download) params.set("download", "true");
+    if (language !== "en") params.set("language", language);
     const qs = params.toString();
     return qs ? `${url}?${qs}` : url;
   },
@@ -119,8 +121,8 @@ export const sellerApi = {
   profile: (sellerId: string | number) =>
     axios.get<SellerProfile>(`/sellers/${sellerId}/profile`).then(r => r.data),
   
-  downloadUrl: (filename: string) => `/seller-documents/download/${filename}`,
+  downloadUrl: (filename: string) => `http://localhost:5000/seller-documents/download/${filename}`,
   
-  previewUrl: (filename: string) => `/uploads/seller_documents/${filename}`
+  previewUrl: (filename: string) => `http://localhost:5000/uploads/seller_documents/${filename}`
 };
 

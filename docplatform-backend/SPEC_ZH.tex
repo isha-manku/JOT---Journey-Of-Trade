@@ -1,0 +1,78 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=3cm,bottom=3cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\definecolor{marooncolor}{RGB}{128,0,0}
+\usepackage{array}
+\usepackage{xeCJK}
+\IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+}{
+    \IfFontExistsTF{Noto Serif CJK SC}{
+        \setCJKmainfont{Noto Serif CJK SC}
+        \setCJKsansfont{Noto Serif CJK SC}
+    }{
+        \IfFontExistsTF{SimSun}{
+            \setCJKmainfont{SimSun}
+            \setCJKsansfont{SimSun}
+        }{
+            \IfFontExistsTF{Microsoft YaHei}{
+                \setCJKmainfont{Microsoft YaHei}
+                \setCJKsansfont{Microsoft YaHei}
+            }{
+                \IfFontExistsTF{FandolSong}{
+                    \setCJKmainfont{FandolSong}
+                    \setCJKsansfont{FandolSong}
+                }{
+                    % Fallback to whatever is default
+                }
+            }
+        }
+    }
+}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{helvet}
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+\begin{document}
+\begin{center}
+  {\Large\textbf{\underline{PRODUCT SPECIFICATION SHEET}}}
+\end{center}
+
+\vspace{0.8cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{6cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\multicolumn{2}{|c|}{\cellcolor{lightgray}\textbf{GENERAL INFORMATION}} \\ \hline
+Product Name &  \\ \hline
+Grade & Mock spec grade \\ \hline
+Origin & Mock spec origin \\ \hline
+Certification & Mock spec certification \\ \hline
+
+\multicolumn{2}{|c|}{\cellcolor{lightgray}\textbf{PHYSICAL CHARACTERISTICS}} \\ \hline
+Appearance & Mock spec appearance \\ \hline
+Odor & Mock spec odor \\ \hline
+Moisture Content & Mock spec moisture \\ \hline
+Broken Bones & Mock spec bones \\ \hline
+Weight per Piece & Mock spec weight per piece \\ \hline
+Length per Piece & Mock spec length per piece \\ \hline
+
+\multicolumn{2}{|c|}{\cellcolor{lightgray}\textbf{PACKAGING \& STORAGE}} \\ \hline
+Processing Method & Mock spec processing \\ \hline
+Packaging Details & Mock spec packaging \\ \hline
+Carton Weight & Mock spec carton weight \\ \hline
+Freezing Temperature & Mock spec freezing temp \\ \hline
+Storage Temperature & Mock spec storage temp \\ \hline
+Transportation Temperature & Mock spec transport temp \\ \hline
+Shelf Life & Mock spec shelf life \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{1.5cm}
+\noindent\textbf{Issued by: }\\
+\noindent\textbf{Date:} Mock spec date
+\end{document}
