@@ -1,20 +1,6 @@
 [
   {
     "buyer": "Global Traders Inc.",
-    "company": "Pacific Gulf Trading Co.",
-    "product": "Frozen Chicken Liver",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: (pymysql.err.IntegrityError) (1062, \"Duplicate entry 'PI-001608' for key 'doc_generated_documents.document_number'\")\n[SQL: INSERT INTO doc_generated_documents (id, document_number, template_id, buyer_id) VALUES (%s, %s, %s, %s)]\n[parameters: ('51607b640bad430ab3b86af845a05f46', 'PI-001608', 'aa8eee5e918e43cbbdbc2039fe9764bd', 44)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)"
-  },
-  {
-    "buyer": "Global Traders Inc.",
-    "company": "Atlantic Commodities Ltd.",
-    "product": "Frozen Chicken Hearts",
-    "doctype": "FCO",
-    "error": "Exception: (pymysql.err.IntegrityError) (1062, \"Duplicate entry 'FCO-001828' for key 'doc_generated_documents.document_number'\")\n[SQL: INSERT INTO doc_generated_documents (id, document_number, template_id, buyer_id) VALUES (%s, %s, %s, %s)]\n[parameters: ('7184cecd391b46d4b8c77dde58d2e9fe', 'FCO-001828', 'adba53e6e4c24b8984c6a70c3c300a40', 44)]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)"
-  },
-  {
-    "buyer": "Global Traders Inc.",
     "company": "Ronsons Trading FZ-LLC",
     "product": "Frozen Duck Wings",
     "doctype": "Proforma Invoice",
