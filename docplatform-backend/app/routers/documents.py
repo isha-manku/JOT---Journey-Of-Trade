@@ -1,4 +1,5 @@
 """Module 1 (Document Generation) + Module 2 (Buyer Documents) endpoints."""
+import asyncio
 import io
 import uuid
 from fastapi import APIRouter, Depends, Query, HTTPException
@@ -184,6 +185,7 @@ async def stream_pdf(
     document_id: uuid.UUID,
     version: int | None = Query(None, description="Defaults to latest"),
     download: bool = Query(False),
+    language: str = Query("en"),
     db: AsyncSession = Depends(get_db),
 ):
     doc = await db.get(GeneratedDocument, document_id)
@@ -211,7 +213,30 @@ async def stream_pdf(
         "unit": product.unit,
         **dv.form_values,  # form values win for any overlapping keys
     }
-    pdf_bytes = compile_pdf(dv.template_version.latex_source, context)
+    
+    # Backwards compatibility for legacy templates
+    if "seller_bank_name" in context and "seller_bank" not in context:
+        context["seller_bank"] = context["seller_bank_name"]
+    if "seller_swift" in context and "seller_bank_swift" not in context:
+        context["seller_bank_swift"] = context["seller_swift"]
+    class SafeDict(dict):
+        def __missing__(self, key):
+            return '{' + key + '}'
+
+    safe_context = SafeDict(context)
+
+    if language == "zh":
+        from app.utils.translator import translate_context
+        from app.utils.labels import LABELS_ZH
+        context = translate_context(context)
+        context["_lang"] = "zh"
+        context["labels"] = {k: v.format_map(safe_context) if isinstance(v, str) else v for k, v in LABELS_ZH.items()}
+    else:
+        from app.utils.labels import LABELS_EN
+        context["_lang"] = "en"
+        context["labels"] = {k: v.format_map(safe_context) if isinstance(v, str) else v for k, v in LABELS_EN.items()}
+
+    pdf_bytes = await asyncio.to_thread(compile_pdf, dv.template_version.latex_source, context)
     await svc.audit(db, "GeneratedDocument", doc.id, "download" if download else "view")
     await db.commit()
 

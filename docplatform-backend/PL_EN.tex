@@ -1,0 +1,78 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=3cm,bottom=3cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{xcolor}
+\definecolor{marooncolor}{RGB}{128,0,0}
+\usepackage{array}
+\usepackage{xeCJK}
+\IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+}{
+    \IfFontExistsTF{Noto Serif CJK SC}{
+        \setCJKmainfont{Noto Serif CJK SC}
+        \setCJKsansfont{Noto Serif CJK SC}
+    }{
+        \IfFontExistsTF{SimSun}{
+            \setCJKmainfont{SimSun}
+            \setCJKsansfont{SimSun}
+        }{
+            \IfFontExistsTF{Microsoft YaHei}{
+                \setCJKmainfont{Microsoft YaHei}
+                \setCJKsansfont{Microsoft YaHei}
+            }{
+                \IfFontExistsTF{FandolSong}{
+                    \setCJKmainfont{FandolSong}
+                    \setCJKsansfont{FandolSong}
+                }{
+                    % Fallback to whatever is default
+                }
+            }
+        }
+    }
+}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{helvet}
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+\begin{document}
+\begin{center}
+  {\Large\textbf{\underline{PACKING LIST}}}
+\end{center}
+
+\vspace{0.5cm}
+\noindent \textbf{Date:} Mock pl date \hfill \textbf{Invoice No:} Mock invoice no
+
+\vspace{0.5cm}
+\noindent
+\begin{tabularx}{\textwidth}{@{}X X@{}}
+\textbf{SHIPPER / EXPORTER} & \textbf{CONSIGNEE} \\
+ & Mock buyer company \\
+ & Mock buyer address 
+\end{tabularx}
+
+\vspace{1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|c|c|c|}
+\hline
+\textbf{Description of Goods} & \textbf{No. of Cartons} & \textbf{Net Weight ()} & \textbf{Gross Weight ()} \\ \hline
+ & Mock cartons & Mock net weight & Mock gross weight \\ \hline
+\multicolumn{1}{|r|}{\textbf{TOTAL}} & \textbf{Mock cartons} & \textbf{Mock net weight} & \textbf{Mock gross weight} \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{0.5cm}
+\noindent
+\textbf{Vessel / Voyage No:} Mock vessel name\\
+\textbf{Port of Loading:} Mock loading port\\
+\textbf{Port of Discharge:} Mock destination port\\
+\textbf{Container Number(s):} Mock container numbers
+
+\vspace{1.5cm}
+\noindent\textbf{For and on behalf of }\\
+\vspace{1.5cm}\\
+\rule{6cm}{0.4pt} \\
+\textbf{Authorized Signature}
+\end{document}

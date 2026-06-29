@@ -56,8 +56,8 @@ def render_latex(latex_source: str, context: dict) -> str:
 
 def compile_pdf(latex_source: str, context: dict) -> bytes:
     """Render + compile to PDF, return bytes. Cleans up all temp artifacts."""
-    if shutil.which("pdflatex") is None:
-        raise PdfGenerationError("pdflatex not found on PATH. Install a TeX distribution.")
+    if shutil.which("xelatex") is None:
+        raise PdfGenerationError("xelatex not found on PATH. Install a TeX distribution.")
 
     rendered = render_latex(latex_source, context)
     tmpdir = tempfile.mkdtemp(prefix="docgen_")
@@ -66,22 +66,20 @@ def compile_pdf(latex_source: str, context: dict) -> bytes:
         with open(tex_path, "w", encoding="utf-8") as f:
             f.write(rendered)
 
-        # Copy static template images if they exist
-        for img in ["header_logo.jpg", "signature_stamp.png"]:
-            img_path = os.path.join(os.getcwd(), img)
-            if os.path.exists(img_path):
-                shutil.copy(img_path, tmpdir)
+        # Copy all static template images (.png, .jpg, .jpeg) if they exist
+        for f in os.listdir(os.getcwd()):
+            if f.lower().endswith(('.png', '.jpg', '.jpeg')):
+                shutil.copy(os.path.join(os.getcwd(), f), tmpdir)
 
-        # Run twice for references/layout stabilization.
-        for _ in range(2):
-            proc = subprocess.run(
-                ["pdflatex", "-interaction=nonstopmode", "-halt-on-error", "doc.tex"],
-                cwd=tmpdir, capture_output=True, text=True, timeout=60,
-            )
+        # Run once (no cross-references requiring multiple passes in this template).
+        proc = subprocess.run(
+            ["xelatex", "-synctex=0", "-interaction=nonstopmode", "-halt-on-error", "doc.tex"],
+            cwd=tmpdir, capture_output=True, text=True, timeout=60,
+        )
         pdf_path = os.path.join(tmpdir, "doc.pdf")
         if not os.path.exists(pdf_path):
             raise PdfGenerationError(
-                f"pdflatex failed:\n{proc.stdout[-2000:]}\n{proc.stderr[-1000:]}"
+                f"xelatex failed:\n{proc.stdout[-2000:]}\n{proc.stderr[-1000:]}"
             )
         with open(pdf_path, "rb") as f:
             return f.read()

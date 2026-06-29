@@ -1,0 +1,83 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=3cm,bottom=3cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{xcolor}
+\definecolor{marooncolor}{RGB}{128,0,0}
+\usepackage{array}
+\usepackage{xeCJK}
+\IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+}{
+    \IfFontExistsTF{Noto Serif CJK SC}{
+        \setCJKmainfont{Noto Serif CJK SC}
+        \setCJKsansfont{Noto Serif CJK SC}
+    }{
+        \IfFontExistsTF{SimSun}{
+            \setCJKmainfont{SimSun}
+            \setCJKsansfont{SimSun}
+        }{
+            \IfFontExistsTF{Microsoft YaHei}{
+                \setCJKmainfont{Microsoft YaHei}
+                \setCJKsansfont{Microsoft YaHei}
+            }{
+                \IfFontExistsTF{FandolSong}{
+                    \setCJKmainfont{FandolSong}
+                    \setCJKsansfont{FandolSong}
+                }{
+                    % Fallback to whatever is default
+                }
+            }
+        }
+    }
+}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{helvet}
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+\begin{document}
+\begin{center}
+  {\Large\textbf{\underline{IRREVOCABLE CORPORATE PURCHASE ORDER (ICPO)}}}
+\end{center}
+
+\vspace{0.5cm}
+\noindent \textbf{Date:} Mock icpo date \hfill \textbf{ICPO Ref:} Mock icpo ref
+
+\vspace{0.5cm}
+\noindent \textbf{To: }
+
+\vspace{0.5cm}
+\noindent We, \textbf{Mock buyer company}, represented by Mock buyer contact person, hereby state and represent that it is our intention to purchase, and we hereby confirm that we are ready, willing and able to purchase the following commodity as per the specification and in the quantity and for the price as specified in the terms and conditions as stated below.
+
+\vspace{0.5cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{5cm}|>{\raggedright\arraybackslash}X|}
+\hline
+Commodity &  \\ \hline
+Origin & Mock product origin \\ \hline
+Total Quantity & Mock total quantity \\ \hline
+Target Price & Mock target price \\ \hline
+Destination Port & Mock destination port \\ \hline
+Payment Terms & Mock payment terms \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{1cm}
+\begin{center}{\large\textbf{\color{marooncolor}BUYER BANKING DETAILS}}\end{center}
+\vspace{0.3cm}
+\noindent
+\textbf{Bank Name:} Mock buyer bank name\\
+\textbf{Bank Address:} Mock buyer bank address\\
+\textbf{Account Name:} Mock buyer account name\\
+\textbf{Account Number:} Mock buyer account number\\
+\textbf{SWIFT Code:} Mock buyer swift code
+
+\vspace{1.5cm}
+\noindent\textbf{For and on behalf of Mock buyer company}\\
+\vspace{1.5cm}\\
+\rule{6cm}{0.4pt} \\
+\textbf{Mock buyer contact person}\\
+\textbf{Mock buyer title}
+\end{document}

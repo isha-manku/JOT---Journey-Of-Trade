@@ -1,0 +1,78 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=3cm,bottom=3cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\definecolor{marooncolor}{RGB}{128,0,0}
+\usepackage{array}
+\usepackage{xeCJK}
+\IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+}{
+    \IfFontExistsTF{Noto Serif CJK SC}{
+        \setCJKmainfont{Noto Serif CJK SC}
+        \setCJKsansfont{Noto Serif CJK SC}
+    }{
+        \IfFontExistsTF{SimSun}{
+            \setCJKmainfont{SimSun}
+            \setCJKsansfont{SimSun}
+        }{
+            \IfFontExistsTF{Microsoft YaHei}{
+                \setCJKmainfont{Microsoft YaHei}
+                \setCJKsansfont{Microsoft YaHei}
+            }{
+                \IfFontExistsTF{FandolSong}{
+                    \setCJKmainfont{FandolSong}
+                    \setCJKsansfont{FandolSong}
+                }{
+                    % Fallback to whatever is default
+                }
+            }
+        }
+    }
+}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{helvet}
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+\begin{document}
+\begin{center}
+  {\Large\textbf{\underline{PRODUCT SPECIFICATION SHEET}}}
+\end{center}
+
+\vspace{0.8cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{6cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\multicolumn{2}{|c|}{\cellcolor{lightgray}\textbf{GENERAL INFORMATION}} \\ \hline
+Product Name & \VAR{product_name} \\ \hline
+Grade & \VAR{spec_grade} \\ \hline
+Origin & \VAR{spec_origin} \\ \hline
+Certification & \VAR{spec_certification} \\ \hline
+
+\multicolumn{2}{|c|}{\cellcolor{lightgray}\textbf{PHYSICAL CHARACTERISTICS}} \\ \hline
+Appearance & \VAR{spec_appearance} \\ \hline
+Odor & \VAR{spec_odor} \\ \hline
+Moisture Content & \VAR{spec_moisture} \\ \hline
+Broken Bones & \VAR{spec_bones} \\ \hline
+Weight per Piece & \VAR{spec_weight_per_piece} \\ \hline
+Length per Piece & \VAR{spec_length_per_piece} \\ \hline
+
+\multicolumn{2}{|c|}{\cellcolor{lightgray}\textbf{PACKAGING \& STORAGE}} \\ \hline
+Processing Method & \VAR{spec_processing} \\ \hline
+Packaging Details & \VAR{spec_packaging} \\ \hline
+Carton Weight & \VAR{spec_carton_weight} \\ \hline
+Freezing Temperature & \VAR{spec_freezing_temp} \\ \hline
+Storage Temperature & \VAR{spec_storage_temp} \\ \hline
+Transportation Temperature & \VAR{spec_transport_temp} \\ \hline
+Shelf Life & \VAR{spec_shelf_life} \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{1.5cm}
+\noindent\textbf{Issued by: \VAR{seller_company}}\\
+\noindent\textbf{Date:} \VAR{spec_date}
+\end{document}

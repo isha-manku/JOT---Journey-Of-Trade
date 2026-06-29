@@ -1,0 +1,90 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=3cm,bottom=3cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{xcolor}
+\definecolor{marooncolor}{RGB}{128,0,0}
+\usepackage{array}
+\usepackage{xeCJK}
+\IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+}{
+    \IfFontExistsTF{Noto Serif CJK SC}{
+        \setCJKmainfont{Noto Serif CJK SC}
+        \setCJKsansfont{Noto Serif CJK SC}
+    }{
+        \IfFontExistsTF{SimSun}{
+            \setCJKmainfont{SimSun}
+            \setCJKsansfont{SimSun}
+        }{
+            \IfFontExistsTF{Microsoft YaHei}{
+                \setCJKmainfont{Microsoft YaHei}
+                \setCJKsansfont{Microsoft YaHei}
+            }{
+                \IfFontExistsTF{FandolSong}{
+                    \setCJKmainfont{FandolSong}
+                    \setCJKsansfont{FandolSong}
+                }{
+                    % Fallback to whatever is default
+                }
+            }
+        }
+    }
+}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{helvet}
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+\begin{document}
+\begin{center}
+  {\Large\textbf{\underline{PROFORMA INVOICE}}}
+\end{center}
+
+\vspace{0.5cm}
+\noindent \textbf{Date:} \VAR{pi_date} \hfill \textbf{PI No:} \VAR{pi_no}
+
+\vspace{0.5cm}
+\noindent
+\begin{tabularx}{\textwidth}{@{}X X@{}}
+\textbf{SELLER} & \textbf{BUYER} \\
+\VAR{seller_company} & \VAR{buyer_company} \\
+\VAR{seller_address} & \VAR{buyer_address} \\
+Email: \VAR{seller_email} & Email: \VAR{buyer_email}
+\end{tabularx}
+
+\vspace{1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|c|c|c|}
+\hline
+\textbf{Description of Goods} & \textbf{Quantity} & \textbf{Unit Price (\VAR{currency})} & \textbf{Total (\VAR{currency})} \\ \hline
+\VAR{product_name} & \VAR{quantity} \VAR{unit} & \VAR{unit_price} & \VAR{total_amount} \\ \hline
+\multicolumn{3}{|r|}{\textbf{GRAND TOTAL (\VAR{currency})}} & \textbf{\VAR{total_amount}} \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{0.5cm}
+\noindent
+\textbf{Delivery Terms:} \VAR{delivery_terms}\\
+\textbf{Loading Port:} \VAR{loading_port}\\
+\textbf{Destination Port:} \VAR{destination_port}\\
+\textbf{Payment Terms:} \VAR{payment_terms}
+
+\vspace{0.8cm}
+\begin{center}{\large\textbf{\color{marooncolor}SELLER BANKING DETAILS}}\end{center}
+\vspace{0.2cm}
+\noindent
+\textbf{Bank Name:} \VAR{seller_bank_name}\\
+\textbf{Bank Address:} \VAR{seller_bank_address}\\
+\textbf{Account Name:} \VAR{seller_account_name}\\
+\textbf{Account Number:} \VAR{seller_account_number}\\
+\textbf{IBAN:} \VAR{seller_iban}\\
+\textbf{SWIFT Code:} \VAR{seller_swift}
+
+\vspace{1.5cm}
+\noindent\textbf{For and on behalf of \VAR{seller_company}}\\
+\vspace{1.5cm}\\
+\rule{6cm}{0.4pt} \\
+\textbf{\VAR{seller_contact}}
+\end{document}

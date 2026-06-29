@@ -1,3 +1,4 @@
+from sqlalchemy import select
 """
 Seed FCO (Full Corporate Offer) template for Ronsons Trading FZ-LLC.
 Creates Company, Product, DocumentType, Template, TemplateVersion, and DocumentSchema.
@@ -17,10 +18,13 @@ FCO_LATEX = r"""
 \documentclass[a4paper,11pt]{article}
 \usepackage[top=3.5cm,bottom=3.8cm,left=2cm,right=2cm]{geometry}
 \usepackage{xcolor}
+\definecolor{marooncolor}{RGB}{128,0,0}
 \usepackage{array}
 \usepackage{fancyhdr}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
+% removed fontenc
+\usepackage{xeCJK}
+\setCJKmainfont{SimSun}
+
 \usepackage{parskip}
 \usepackage{graphicx}
 \usepackage{lmodern}
@@ -28,46 +32,291 @@ FCO_LATEX = r"""
 \usepackage{multirow}
 \usepackage{helvet}
 \usepackage{eso-pic}
+\usepackage{tabularx}
 \renewcommand{\familydefault}{\sfdefault}
-
-\definecolor{goldcolor}{RGB}{180,140,50}
-\definecolor{marooncolor}{RGB}{110,25,25}
-
-\AddToShipoutPictureBG{%
-  \AtPageUpperLeft{%
-    \raisebox{-90pt}{%
-      \includegraphics[width=\paperwidth,height=90pt,keepaspectratio=false]{header_logo.jpg}%
-    }%
-  }%
-}
-
-\pagestyle{fancy}
-\fancyhf{}
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
-\setlength{\headheight}{90pt}
-\setlength{\headsep}{6pt}
-\setlength{\topmargin}{-72pt}
-\setlength{\voffset}{0pt}
-
-\fancyhead[C]{}
-
-\fancyfoot[L]{%
-  \footnotesize
-  Address : Compass Building, Al Shohada Road, Al Hamara,\\
-  Industrial Zone-FZ, Ras Al Khaimah, United Arab Emirates%
-}
-\fancyfoot[R]{%
-  \footnotesize
-  Website: www.ronsonstrading.com\\
-  Email: ceo@ronsonstrading.com\\
-  Tele: +1-604-613-2109%
-}
-\fancyfoot[C]{\footnotesize\thepage}
-\renewcommand{\footrule}{{\color{marooncolor}\hrule width\headwidth height 0.8pt}\vskip 3pt}
-\renewcommand{\footrulewidth}{0.8pt}
-
 \begin{document}
+\BLOCK{ if _lang == 'zh' }
+\setlength{\parindent}{0pt}
+
+\begin{center}
+  {\Large\textbf{\underline{\VAR{labels.fco_title}  \VAR{product_name}}}}
+\end{center}
+
+\vspace{0.3cm}
+
+\noindent\textbf{\VAR{labels.date}: \VAR{fco_date}} \hfill \textbf{\VAR{labels.reference}: \VAR{reference_no}}
+
+\vspace{0.5cm}
+
+\noindent\textbf{\VAR{labels.to}}
+
+\vspace{0.2cm}
+
+\noindent\textbf{\VAR{labels.company_name}:} \VAR{buyer_company}\\
+\textbf{\VAR{labels.address}:} \VAR{buyer_address}\\
+\textbf{\VAR{labels.website}:} \VAR{buyer_website}\\
+\textbf{\VAR{labels.email}:} \VAR{buyer_email}\\
+\textbf{\VAR{labels.phone}:} \VAR{buyer_phone}
+
+\vspace{0.4cm}
+
+\noindent\textbf{\VAR{labels.dear_sir}}
+
+\vspace{0.3cm}
+
+\noindent \VAR{labels.intro_p1}
+
+\vspace{0.4cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.trial_shipment_title}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{6cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\VAR{labels.trial_container} & \VAR{trial_container} \\ \hline
+\VAR{labels.price} & \VAR{trial_price} \\ \hline
+\VAR{labels.trial_shipment_value} & \VAR{trial_shipment_value} \\ \hline
+\VAR{labels.trial_quantity_mt} & \VAR{trial_quantity_mt} \\ \hline
+\VAR{labels.loading_capacity} & \VAR{loading_capacity} \\ \hline
+\VAR{labels.loading_port} & \VAR{loading_port} \\ \hline
+\VAR{labels.destination_port} & \VAR{destination_port} \\ \hline
+\VAR{labels.delivery_time} & \VAR{delivery_time} \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.contract_shipment_title}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{6cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\VAR{labels.quantity} & \VAR{contract_quantity} \\ \hline
+\VAR{labels.price} & \VAR{contract_price} \\ \hline
+\VAR{labels.monthly_shipment_value} & \VAR{monthly_shipment_value} \\ \hline
+\VAR{labels.annual_contract_value} & \VAR{annual_contract_value} \\ \hline
+\VAR{labels.contract_duration} & \VAR{contract_duration} \\ \hline
+\VAR{labels.loading_capacity} & \VAR{contract_loading_capacity} \\ \hline
+\VAR{labels.annual_contract_quantity} & \VAR{annual_contract_quantity} \\ \hline
+\VAR{labels.loading_port} & \VAR{contract_loading_port} \\ \hline
+\VAR{labels.destination_port} & \VAR{contract_destination_port} \\ \hline
+\VAR{labels.delivery_time} & \VAR{contract_delivery_time} \\ \hline
+\end{tabularx}
+\end{center}
+
+\newpage
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.product_specification}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{5.5cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\multicolumn{1}{|>{\bfseries\centering\arraybackslash}p{5.5cm}|}{\VAR{labels.category}} & \multicolumn{1}{>{\bfseries\centering\arraybackslash}X|}{\VAR{labels.specification}} \\ \hline
+\VAR{labels.product_name_label} & \VAR{product_name} \\ \hline
+\VAR{labels.grade} & \VAR{spec_grade} \\ \hline
+\VAR{labels.origin} & \VAR{spec_origin} \\ \hline
+\VAR{labels.origin_cert} & \VAR{spec_certification} \\ \hline
+\VAR{labels.processing} & \VAR{spec_processing} \\ \hline
+\VAR{labels.appearance} & \VAR{spec_appearance} \\ \hline
+\VAR{labels.odor} & \VAR{spec_odor} \\ \hline
+\VAR{labels.bones} & \VAR{spec_bones} \\ \hline
+\VAR{labels.blood_stains} & \VAR{spec_blood_stains} \\ \hline
+\VAR{labels.moisture_content} & \VAR{spec_moisture} \\ \hline
+\VAR{labels.damage} & \VAR{spec_damage} \\ \hline
+\VAR{labels.chicken_paw_pad} & \VAR{spec_paw_pad} \\ \hline
+\VAR{labels.weight_per_piece} & \VAR{spec_weight_per_piece} \\ \hline
+\VAR{labels.length_per_piece} & \VAR{spec_length_per_piece} \\ \hline
+\VAR{labels.packaging} & \VAR{spec_packaging} \\ \hline
+\VAR{labels.inner_packing} & \VAR{spec_inner_packing} \\ \hline
+\VAR{labels.carton_weight} & \VAR{spec_carton_weight} \\ \hline
+\VAR{labels.freezing_temp} & \VAR{spec_freezing_temp} \\ \hline
+\VAR{labels.storage_temp} & \VAR{spec_storage_temp} \\ \hline
+\VAR{labels.transport_temp} & \VAR{spec_transport_temp} \\ \hline
+\VAR{labels.freezing_process} & \VAR{spec_freezing_process} \\ \hline
+\VAR{labels.shelf_life} & \VAR{spec_shelf_life} \\ \hline
+\VAR{labels.packaging_note} & \VAR{spec_packaging_note} \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.product_discharge}}}\end{center}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt, topsep=2pt]
+\item \VAR{labels.discharge_p1}
+\item \VAR{labels.discharge_p2}
+\item \VAR{labels.discharge_p3}
+\item \VAR{labels.discharge_p4}
+\item \VAR{labels.discharge_p5}
+\end{itemize}
+
+\newpage
+
+\begin{center}
+  {\large\textbf{\color{marooncolor}\VAR{labels.commercial_terms}}}\\[4pt]
+  {\small\color{marooncolor}\VAR{labels.commercial_note}}
+\end{center}
+\vspace{0.2cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.trial_shipment}}}\end{center}
+\vspace{0.1cm}
+\noindent \VAR{labels.trial_payment_text}
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.monthly_shipment}}}\end{center}
+\vspace{0.1cm}
+\noindent \VAR{labels.monthly_payment_text}
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.payment_tt}}}\end{center}
+\vspace{0.1cm}
+\noindent \VAR{labels.payment_tt_text}
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.dlc}}}\end{center}
+\vspace{0.1cm}
+\noindent \VAR{labels.dlc_text}
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}\VAR{labels.telex}}}\end{center}
+\vspace{0.1cm}
+\noindent \VAR{labels.telex_text}
+
+\newpage
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}\VAR{labels.product_doc}}}}\end{center}
+\vspace{0.2cm}
+\noindent \VAR{labels.doc_intro}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]
+\item \VAR{labels.doc_1}
+\item \VAR{labels.doc_2}
+\item \VAR{labels.doc_3}
+\item \VAR{labels.doc_4}
+\item \VAR{labels.doc_5}
+\item \VAR{labels.doc_6}
+\item \VAR{labels.doc_7}
+\item \VAR{labels.doc_8}
+\item \VAR{labels.doc_9}
+\item \VAR{labels.doc_10}
+\item \VAR{labels.doc_11}
+\end{itemize}
+
+\vspace{0.3cm}
+\begin{center}
+  {\large\textbf{\color{marooncolor}\VAR{labels.procedures}}}\\[4pt]
+  {\small\color{marooncolor}\VAR{labels.proc_note}}
+\end{center}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]
+\item \VAR{labels.proc_1}
+\item \VAR{labels.proc_2}
+\item \VAR{labels.proc_3}
+\item \VAR{labels.proc_4}
+\item \VAR{labels.proc_5}
+\item \VAR{labels.proc_6}
+\item \VAR{labels.proc_7}
+\item \VAR{labels.proc_8}
+\item \VAR{labels.proc_9}
+\item \VAR{labels.proc_10}
+\item \VAR{labels.proc_11}
+\item \VAR{labels.proc_12}
+\item \VAR{labels.proc_13}
+\item \VAR{labels.proc_14}
+\end{itemize}
+
+\newpage
+
+\noindent
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}X|>{\bfseries\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\multicolumn{2}{|>{\centering\arraybackslash}p{7.5cm}|}{\textbf{\color{marooncolor}\VAR{labels.seller_details}}} & \multicolumn{2}{>{\centering\arraybackslash}X|}{\textbf{\color{marooncolor}\VAR{labels.seller_bank}}} \\
+\hline
+\VAR{labels.company_name} & Ronsons Trading FZ-LLC & \VAR{labels.bank_name} & MASHREQ \\ \hline
+\VAR{labels.address} & Compass Building, Al Shohada Road, Al Hamara, Industrial Zone-FZ, Ras Al Khaimah, United Arab Emirates & \VAR{labels.address} & Beside Al Hooth Hypermarket, Al Muntasir RD, Al Nakheel, Ras Al Khaimah, United Arab Emirates \\ \hline
+\VAR{labels.contact_person} & Mr. Hirdey Batth & \VAR{labels.account_name} & RONSONS TRADING FZ-LLC. \\ \hline
+\VAR{labels.email} & ceo@ronsonstrading.com & \VAR{labels.account_number} & 019101772389 \\ \hline
+\VAR{labels.website} & www.ronsonstrading.com & IBAN & AE380330000019101772389 \\ \hline
+\VAR{labels.whatsapp} & +1 (604) 613-2109 \newline +971 50 838 0262 & \VAR{labels.swift_code} & BOMLAEAD \\ \hline
+\end{tabularx}
+
+\vspace{0.6cm}
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}\VAR{labels.buyer_company_info}}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{5cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\VAR{labels.company_name} & \VAR{buyer_company} \\ \hline
+\VAR{labels.address} & \VAR{buyer_address} \\ \hline
+\VAR{labels.contact_person} & \VAR{buyer_contact_person} \\ \hline
+\VAR{labels.email} & \VAR{buyer_email} \\ \hline
+\VAR{labels.country} & \VAR{buyer_country} \\ \hline
+\VAR{labels.phone_no} & \VAR{buyer_phone} \\ \hline
+\end{tabularx}
+\end{center}
+
+\newpage
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}\VAR{labels.buyer_bank_info}}}}\end{center}
+\vspace{0.2cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{5cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\VAR{labels.bank_name} & \VAR{buyer_bank_name} \\ \hline
+\VAR{labels.bank_address} & \VAR{buyer_bank_address} \\ \hline
+\VAR{labels.bank_swift_code} & \VAR{buyer_bank_swift} \\ \hline
+\VAR{labels.account_name} & \VAR{buyer_account_name} \\ \hline
+\VAR{labels.account_number} & \VAR{buyer_account_number} \\ \hline
+\VAR{labels.bank_officer} & \VAR{buyer_bank_officer_email} \\ \hline
+\end{tabularx}
+\end{center}
+
+\vspace{0.5cm}
+
+\noindent \VAR{labels.bank_charges_note}
+
+\vspace{0.3cm}
+
+\noindent \VAR{labels.note_1}
+
+\vspace{0.3cm}
+
+\noindent \VAR{labels.note_2}
+
+\vspace{0.4cm}
+
+\noindent\textbf{\VAR{labels.validity_offer}}\\
+\VAR{labels.validity_text}
+
+\newpage
+
+\begin{center}{\large\textbf{\underline{\VAR{labels.auth_sig}}}}\end{center}
+\vspace{0.8cm}
+
+\noindent\textbf{\underline{\VAR{labels.seller_sig}}}
+
+\vspace{0.6cm}
+
+\noindent\includegraphics[width=6cm,keepaspectratio]{signature_stamp.png}\\[4pt]
+\rule{7cm}{0.4pt}\\[4pt]
+\textbf{\VAR{signatory_name}}\\
+\textbf{\VAR{signatory_title}}\\
+\textbf{\VAR{labels.date}: \VAR{signing_date}}
+
+\vspace{2.5cm}
+
+\noindent\textbf{\underline{\VAR{labels.buyer_sig}}}
+
+\vspace{2.5cm}
+
+\noindent\rule{7cm}{0.4pt}\\[4pt]
+\textbf{Mr.}\\
+\textbf{Title}\\
+\textbf{\VAR{labels.date}:}
+
+
+\BLOCK{ else }
 \setlength{\parindent}{0pt}
 
 \begin{center}
@@ -347,6 +596,8 @@ This FCO remains valid until \textbf{\VAR{validity}}
 \textbf{Title}\\
 \textbf{Date:}
 
+
+\BLOCK{ endif }
 \end{document}
 """
 
@@ -434,45 +685,50 @@ STATIC_CONTEXT = {
     "product_name": "Frozen Chicken Paws",
 }
 
+
+from sqlalchemy import select
+
 async def main():
     # Ensure tables exist
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSessionLocal() as db:
-        company = Company(
-            name="Ronsons Trading FZ-LLC",
-            code="RONSONS",
-            branding=STATIC_CONTEXT,
-        )
-        product = Product(name="Frozen Chicken Paws", code="FCP", unit="MT")
-        doctype = DocumentType(
-            name="FCO",
-            code="FCO",
-            description="Full Corporate Offer",
-        )
-        db.add_all([company, product, doctype])
-        await db.flush()
+        # Check if Template exists
+        tpl_query = await db.execute(select(Template).where(Template.name == "Ronsons Frozen Chicken Paws FCO"))
+        tpl = tpl_query.scalars().first()
+        
+        if not tpl:
+            # We assume company and product already exist if template exists, 
+            # if not, we create them
+            company = Company(name="Ronsons Trading FZ-LLC", code="RONSONS", branding=STATIC_CONTEXT)
+            product = Product(name="Frozen Chicken Paws", code="FCP", unit="MT")
+            doctype = DocumentType(name="FCO", code="FCO", description="Full Corporate Offer")
+            db.add_all([company, product, doctype])
+            await db.flush()
 
-        tpl = Template(
-            name="Ronsons Frozen Chicken Paws FCO",
-            company_id=company.id,
-            product_id=product.id,
-            document_type_id=doctype.id,
-        )
-        db.add(tpl)
-        await db.flush()
+            tpl = Template(name="Ronsons Frozen Chicken Paws FCO", company_id=company.id, product_id=product.id, document_type_id=doctype.id)
+            db.add(tpl)
+            await db.flush()
 
-        db.add(TemplateVersion(template_id=tpl.id, version=1, latex_source=FCO_LATEX))
-        schema = DocumentSchema(template_id=tpl.id, version=1)
-        db.add(schema)
-        await db.flush()
+            db.add(TemplateVersion(template_id=tpl.id, version=1, latex_source=FCO_LATEX))
+            schema = DocumentSchema(template_id=tpl.id, version=1)
+            db.add(schema)
+            await db.flush()
 
-        for f in FIELDS:
-            db.add(SchemaField(schema_id=schema.id, **f))
+            for f in FIELDS:
+                db.add(SchemaField(schema_id=schema.id, **f))
+        else:
+            # UPSERT TemplateVersion
+            tv_query = await db.execute(select(TemplateVersion).where(TemplateVersion.template_id == tpl.id, TemplateVersion.version == 1))
+            tv = tv_query.scalars().first()
+            if tv:
+                tv.latex_source = FCO_LATEX
+            else:
+                db.add(TemplateVersion(template_id=tpl.id, version=1, latex_source=FCO_LATEX))
 
         await db.commit()
-        print(f"Seeded FCO template.  company_id={company.id}  template_id={tpl.id}")
+        print(f"Upserted FCO template. template_id={tpl.id}")
 
 if __name__ == "__main__":
     asyncio.run(main())

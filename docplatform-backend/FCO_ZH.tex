@@ -1,0 +1,312 @@
+
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=3.5cm,bottom=3.8cm,left=2cm,right=2cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\definecolor{lightgray}{HTML}{F2F2F2}
+\definecolor{marooncolor}{RGB}{128,0,0}
+\usepackage{array}
+\usepackage{fancyhdr}
+% removed fontenc
+\usepackage{xeCJK}
+\IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+}{
+    \IfFontExistsTF{Noto Serif CJK SC}{
+        \setCJKmainfont{Noto Serif CJK SC}
+        \setCJKsansfont{Noto Serif CJK SC}
+    }{
+        \IfFontExistsTF{SimSun}{
+            \setCJKmainfont{SimSun}
+            \setCJKsansfont{SimSun}
+        }{
+            \IfFontExistsTF{Microsoft YaHei}{
+                \setCJKmainfont{Microsoft YaHei}
+                \setCJKsansfont{Microsoft YaHei}
+            }{
+                \IfFontExistsTF{FandolSong}{
+                    \setCJKmainfont{FandolSong}
+                    \setCJKsansfont{FandolSong}
+                }{
+                    % Fallback to whatever is default
+                }
+            }
+        }
+    }
+}
+
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{helvet}
+\usepackage{eso-pic}
+\AddToShipoutPictureBG{
+  \AtPageLowerLeft{%
+    \includegraphics[width=1cm,height=\paperheight]{sidebar.png}%
+  }
+  \put(0,0){%
+    \parbox[b][\paperheight]{\paperwidth}{%
+      \vfill
+      \centering
+      \includegraphics[width=0.7\textwidth,keepaspectratio]{watermark.png}%
+      \vfill
+    }
+  }
+}
+
+\usepackage{tabularx}
+\renewcommand{\familydefault}{\sfdefault}
+
+% Configure Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\includegraphics[width=\textwidth,height=2.5cm,keepaspectratio]{header_logo.jpg}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\setlength{\headheight}{80pt}
+
+\begin{document}
+\setlength{\parindent}{0pt}
+
+\begin{center}
+  {\Large\textbf{\underline{Mock fco title  }}}
+\end{center}
+
+\vspace{0.3cm}
+
+\
+oindent\textbf{Mock date: Mock fco date} \hfill \textbf{Mock reference: Mock reference no}
+
+\vspace{0.5cm}
+
+\
+oindent\textbf{Mock to}
+
+\vspace{0.2cm}
+
+\
+oindent\textbf{Mock company name:} Mock buyer company\\
+\textbf{Mock address:} Mock buyer address\\
+\textbf{Mock website:} Mock buyer website\\
+\textbf{Mock email:} Mock buyer email\\
+\textbf{Mock phone:} Mock buyer phone
+
+\vspace{0.4cm}
+
+\
+oindent\textbf{Mock dear sir}
+
+\vspace{0.3cm}
+
+\
+oindent Mock intro p1
+
+\vspace{0.4cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}Mock trial shipment title}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{6cm} >{\raggedright\arraybackslash}X}
+Mock trial container & Mock trial container \\ Mock price & Mock trial price \\ Mock trial shipment value & Mock trial shipment value \\ Mock trial quantity mt & Mock trial quantity mt \\ Mock loading capacity & Mock loading capacity \\ Mock loading port & Mock loading port \\ Mock destination port & Mock destination port \\ Mock delivery time & Mock delivery time \\ \end{tabularx}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}Mock contract shipment title}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{6cm} >{\raggedright\arraybackslash}X}
+Mock quantity & Mock contract quantity \\ Mock price & Mock contract price \\ Mock monthly shipment value & Mock monthly shipment value \\ Mock annual contract value & Mock annual contract value \\ Mock contract duration & Mock contract duration \\ Mock loading capacity & Mock contract loading capacity \\ Mock annual contract quantity & Mock annual contract quantity \\ Mock loading port & Mock contract loading port \\ Mock destination port & Mock contract destination port \\ Mock delivery time & Mock contract delivery time \\ \end{tabularx}
+\end{center}
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\color{marooncolor}Mock product specification}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5.5cm} >{\raggedright\arraybackslash}X}
+\multicolumn{1}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5.5cm}}{Mock category} & \multicolumn{1}{>{\bfseries\raggedright\arraybackslash}X}{Mock specification} \\ Mock product name label &  \\ Mock grade & Mock spec grade \\ Mock origin & Mock spec origin \\ Mock origin cert & Mock spec certification \\ Mock processing & Mock spec processing \\ Mock appearance & Mock spec appearance \\ Mock odor & Mock spec odor \\ Mock bones & Mock spec bones \\ Mock blood stains & Mock spec blood stains \\ Mock moisture content & Mock spec moisture \\ Mock damage & Mock spec damage \\ Mock chicken paw pad &  \\ Mock weight per piece & Mock spec weight per piece \\ Mock length per piece & Mock spec length per piece \\ Mock packaging & Mock spec packaging \\ Mock inner packing & Mock spec inner packing \\ Mock carton weight & Mock spec carton weight \\ Mock freezing temp & Mock spec freezing temp \\ Mock storage temp & Mock spec storage temp \\ Mock transport temp & Mock spec transport temp \\ Mock freezing process & Mock spec freezing process \\ Mock shelf life & Mock spec shelf life \\ Mock packaging note & Mock spec packaging note \\ \end{tabularx}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}Mock product discharge}}\end{center}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt, topsep=2pt]
+\item Mock discharge p1
+\item Mock discharge p2
+\item Mock discharge p3
+\item Mock discharge p4
+\item Mock discharge p5
+\end{itemize}
+
+\
+ewpage
+
+\begin{center}
+  {\large\textbf{\color{marooncolor}Mock commercial terms}}\\[4pt]
+  {\small\color{marooncolor}Mock commercial note}
+\end{center}
+\vspace{0.2cm}
+
+\begin{center}{\large\textbf{\color{marooncolor}Mock trial shipment}}\end{center}
+\vspace{0.1cm}
+\
+oindent Mock trial payment text
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}Mock monthly shipment}}\end{center}
+\vspace{0.1cm}
+\
+oindent Mock monthly payment text
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}Mock payment tt}}\end{center}
+\vspace{0.1cm}
+\
+oindent Mock payment tt text
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}Mock dlc}}\end{center}
+\vspace{0.1cm}
+\
+oindent Mock dlc text
+
+\vspace{0.3cm}
+\begin{center}{\large\textbf{\color{marooncolor}Mock telex}}\end{center}
+\vspace{0.1cm}
+\
+oindent Mock telex text
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}Mock product doc}}}\end{center}
+\vspace{0.2cm}
+\
+oindent Mock doc intro
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]
+\item Mock doc 1
+\item Mock doc 2
+\item Mock doc 3
+\item Mock doc 4
+\item Mock doc 5
+\item Mock doc 6
+\item Mock doc 7
+\item Mock doc 8
+\item Mock doc 9
+\item Mock doc 10
+\item Mock doc 11
+\end{itemize}
+
+\vspace{0.3cm}
+\begin{center}
+  {\large\textbf{\color{marooncolor}Mock procedures}}\\[4pt]
+  {\small\color{marooncolor}Mock proc note}
+\end{center}
+\vspace{0.1cm}
+\begin{itemize}[leftmargin=1.5em, itemsep=3pt, topsep=2pt]
+\item Mock proc 1
+\item Mock proc 2
+\item Mock proc 3
+\item Mock proc 4
+\item Mock proc 5
+\item Mock proc 6
+\item Mock proc 7
+\item Mock proc 8
+\item Mock proc 9
+\item Mock proc 10
+\item Mock proc 11
+\item Mock proc 12
+\item Mock proc 13
+\item Mock proc 14
+\end{itemize}
+
+\
+ewpage
+
+\
+oindent
+\begin{tabularx}{\textwidth}{|>{\bfseries\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}X|>{\bfseries\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}X|}
+\multicolumn{2}{|>{\centering\arraybackslash}p{7.5cm}|}{\textbf{\color{marooncolor}Mock seller details}} & \multicolumn{2}{>{\centering\arraybackslash}X|}{\textbf{\color{marooncolor}Mock seller bank}} \\
+Mock company name & Ronsons Trading FZ-LLC & Mock bank name & MASHREQ \\ Mock address & Compass Building, Al Shohada Road, Al Hamara, Industrial Zone-FZ, Ras Al Khaimah, United Arab Emirates & Mock address & Beside Al Hooth Hypermarket, Al Muntasir RD, Al Nakheel, Ras Al Khaimah, United Arab Emirates \\ Mock contact person & Mr. Hirdey Batth & Mock account name & RONSONS TRADING FZ-LLC. \\ Mock email & ceo@ronsonstrading.com & Mock account number & 019101772389 \\ Mock website & www.ronsonstrading.com & IBAN & AE380330000019101772389 \\ Mock whatsapp & +1 (604) 613-2109 \
+ewline +971 50 838 0262 & Mock swift code & BOMLAEAD \\ \end{tabularx}
+
+\vspace{0.6cm}
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}Mock buyer company info}}}\end{center}
+\vspace{0.1cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5cm} >{\raggedright\arraybackslash}X}
+Mock company name & Mock buyer company \\ Mock address & Mock buyer address \\ Mock contact person & Mock buyer contact person \\ Mock email & Mock buyer email \\ Mock country & Mock buyer country \\ Mock phone no & Mock buyer phone \\ \end{tabularx}
+\end{center}
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\underline{\color{marooncolor}Mock buyer bank info}}}\end{center}
+\vspace{0.2cm}
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\columncolor{lightgray}\bfseries\raggedright\arraybackslash}p{5cm} >{\raggedright\arraybackslash}X}
+Mock bank name & Mock buyer bank name \\ Mock bank address & Mock buyer bank address \\ Mock bank swift code & Mock buyer bank swift \\ Mock account name & Mock buyer account name \\ Mock account number & Mock buyer account number \\ Mock bank officer & Mock buyer bank officer email \\ \end{tabularx}
+\end{center}
+
+\vspace{0.5cm}
+
+\
+oindent Mock bank charges note
+
+\vspace{0.3cm}
+
+\
+oindent Mock note 1
+
+\vspace{0.3cm}
+
+\
+oindent Mock note 2
+
+\vspace{0.4cm}
+
+\
+oindent\textbf{Mock validity offer}\\
+Mock validity text
+
+\
+ewpage
+
+\begin{center}{\large\textbf{\underline{Mock auth sig}}}\end{center}
+\vspace{0.8cm}
+
+\
+oindent\textbf{\underline{Mock seller sig}}
+
+\vspace{0.6cm}
+
+\
+oindent\includegraphics[width=6cm,keepaspectratio]{signature_stamp.png}\\[4pt]
+\rule{7cm}{0.4pt}\\[4pt]
+\textbf{Mock signatory name}\\
+\textbf{Mock signatory title}\\
+\textbf{Mock date: Mock signing date}
+
+\vspace{2.5cm}
+
+\
+oindent\textbf{\underline{Mock buyer sig}}
+
+\vspace{2.5cm}
+
+\
+oindent\rule{7cm}{0.4pt}\\[4pt]
+\textbf{Mr.}\\
+\textbf{Title}\\
+\textbf{Mock date:}
+
+
+\end{document}
