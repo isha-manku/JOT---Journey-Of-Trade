@@ -246,6 +246,26 @@ async def stream_pdf(
         io.BytesIO(pdf_bytes), media_type="application/pdf",
         headers={"Content-Disposition": f'{disposition}; filename="{filename}"'},
     )
+
+@router.post("/generated/{document_id}/delete")
+async def delete_generated_document(document_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(GeneratedDocument, document_id)
+    if not doc:
+        raise HTTPException(404, "Document not found.")
+    
+    doc.is_deleted = True
+    
+    # Also soft delete versions
+    q = select(GeneratedDocumentVersion).where(GeneratedDocumentVersion.document_id == document_id)
+    versions = (await db.scalars(q)).all()
+    for v in versions:
+        v.is_deleted = True
+        
+    await svc.audit(db, "GeneratedDocument", doc.id, "delete")
+    await db.commit()
+    
+    return {"success": True}
+
 # --- Buyer Profile ---
 @router.get("/buyer/{buyer_id}/profile", response_model=BuyerProfileOut)
 async def get_buyer_profile(buyer_id: int, db: AsyncSession = Depends(get_db)):

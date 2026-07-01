@@ -663,10 +663,26 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
     const products = await query("SELECT name, unit FROM doc_products WHERE id = ?", [tpl.product_id]);
     const product = products[0];
 
+    const lang = req.query.language || "en";
+    const { labels_en, labels_zh } = require("./labels");
+    const rawLabels = lang === "zh" ? labels_zh : labels_en;
+
+    const labels = {};
+    for (const [k, v] of Object.entries(rawLabels)) {
+      if (typeof v === "string") {
+        labels[k] = v
+          .replace(/\{seller_company\}/g, formValues.seller_company || companyBranding.seller_company || "Seller")
+          .replace(/\{product_name\}/g, product.name || "");
+      } else {
+        labels[k] = v;
+      }
+    }
+
     const context = {
       ...companyBranding,
       product_name: product.name,
       unit: product.unit,
+      labels,
       ...formValues
     };
 

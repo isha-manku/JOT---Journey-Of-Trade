@@ -1042,6 +1042,201 @@ app.get("/messages/latest-id", (req, res) => {
   const userId = parseInt(req.query.userId || 0);
 
   if (!userId) return res.json({ id: 0 });
+  if (!title || !date) return res.status(400).send("Title and date required");
+  db.query(
+    "INSERT INTO events (title,description,date,time,type,user) VALUES (?,?,?,?,?,?)",
+    [title, description || "", date, time || "00:00", type || "Meeting", user || ""],
+    (err, result) => {
+      if (err) return res.status(500).send(err);
+      res.json({ id: result.insertId, title, description, date, time, type, user });
+    }
+  );
+});
+app.put("/events/:id", (req, res) => {
+  const { title, description, date, time, type, user } = req.body;
+  db.query(
+    "UPDATE events SET title=?,description=?,date=?,time=?,type=?,user=? WHERE id=?",
+    [title, description || "", date, time || "00:00", type || "Meeting", user || "", req.params.id],
+    (err) => {
+      if (err) return res.status(500).send(err);
+      res.send("Event updated");
+    }
+  );
+});
+app.delete("/events/:id", (req, res) => {
+  db.query("DELETE FROM events WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    res.send("Event deleted");
+  });
+});
+
+// =============================================================================
+//  HISTORY
+// =============================================================================
+app.post("/history", (req, res) => {
+  const { inquiry_id, action_type, action_by } = req.body;
+  db.query("INSERT INTO inquiry_history (inquiry_id,action_type,action_by) VALUES (?,?,?)",
+    [inquiry_id, action_type, action_by], (err) => {
+      if (err) return res.send(err);
+      res.send("History Added");
+    });
+});
+app.get("/history/:id", (req, res) => {
+  db.query("SELECT * FROM inquiry_history WHERE inquiry_id=? ORDER BY id DESC",
+    [req.params.id], (err, result) => {
+      if (err) return res.send(err);
+      res.json(result);
+    });
+});
+
+// =============================================================================
+//  ACTIVITIES
+// =============================================================================
+app.get("/activities", (req, res) => {
+  db.query("SELECT * FROM crm_activity ORDER BY id DESC LIMIT 5", (err, result) => {
+    if (err) return res.send(err);
+    res.json(result);
+  });
+});
+// ── ADD THIS ROUTE TO server.js (paste before app.listen) ────────────────────
+
+// PUT /users/:id/password  — change password with current password verification
+app.put("/users/:id/password", (req, res) => {
+  const { id } = req.params;
+  const { current_password, new_password } = req.body;
+
+  if (!current_password || !new_password)
+    return res.status(400).json({ error: "Both current and new password required" });
+
+  // First verify current password is correct
+  db.query("SELECT * FROM users WHERE id=? AND password=?", [id, current_password], (err, result) => {
+    if (err) return res.status(500).json({ error: "Server error" });
+    if (result.length === 0)
+      return res.status(401).json({ error: "Current password is incorrect" });
+
+    // Update to new password
+    db.query("UPDATE users SET password=? WHERE id=?", [new_password, id], (err) => {
+      if (err) return res.status(500).json({ error: "Failed to update password" });
+      res.json({ message: "Password updated successfully" });
+    });
+  });
+});
+// UPDATE company
+app.put("/companies/:id", (req, res) => {
+  const { name, address, bank_details, email, phone, website, contact_person, industry } = req.body;
+  const sql = `UPDATE companies SET name=?, address=?, bank_details=?, email=?, phone=?, website=?, contact_person=?, industry=? WHERE id=?`;
+  db.query(sql, [name, address, bank_details, email, phone, website, contact_person, industry, req.params.id], (err) => {
+    if (err) return res.send(err);
+    res.send("Company Updated");
+  });
+});
+
+// DELETE company
+app.delete("/companies/:id", (req, res) => {
+  db.query("DELETE FROM companies WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.send(err);
+    res.send("Company Deleted");
+  });
+});
+// GET /messages — general or DM
+app.get("/messages", (req, res) => {
+  const { channel } = req.query;
+  const me   = parseInt(req.query.me   || 0);
+  const withUser = parseInt(req.query.with || 0);
+ 
+  if (channel === "general") {
+    // All general messages, forever, oldest first
+    db.query(
+      `SELECT * FROM messages
+       WHERE channel = 'general'
+       ORDER BY id ASC`,
+      (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.json(result);
+      }
+    );
+ 
+  } else if (channel === "dm" && me && withUser) {
+    // DM: messages between exactly these two users in both directions
+    db.query(
+      `SELECT * FROM messages
+       WHERE channel = 'dm'
+          AND (
+            (sender_id = ? AND receiver_id = ?)
+            OR
+            (sender_id = ? AND receiver_id = ?)
+          )
+       ORDER BY id ASC`,
+      [me, withUser, withUser, me],
+      (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.json(result);
+      }
+    );
+ 
+  } else {
+    res.json([]);
+  }
+});
+ 
+// POST /messages — send a message
+app.post("/messages", (req, res) => {
+  const { sender_id, sender_name, channel, receiver_id, message } = req.body;
+ 
+  if (!sender_id || !sender_name || !message)
+    return res.status(400).json({ error: "sender_id, sender_name and message are required" });
+ 
+  db.query(
+    "INSERT INTO messages (sender_id, sender_name, channel, receiver_id, message) VALUES (?,?,?,?,?)",
+    [sender_id, sender_name, channel || "general", receiver_id || null, message],
+    (err, result) => {
+      if (err) return res.status(500).send(err);
+      res.json({ id: result.insertId, sender_id, sender_name, channel, receiver_id, message });
+    }
+  );
+});
+ 
+// DELETE /messages/:id — admin or own message
+app.delete("/messages/:id", (req, res) => {
+  db.query("DELETE FROM messages WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    res.send("Message deleted");
+  });
+});
+/* ============================================================
+   Add these 2 routes to server.js BEFORE app.listen
+   ============================================================ */
+
+// GET /messages/unread — count of new messages since lastReadId for this user
+// Counts: general messages NOT sent by me + DMs sent TO me
+app.get("/messages/unread", (req, res) => {
+  const userId     = parseInt(req.query.userId     || 0);
+  const lastReadId = parseInt(req.query.lastReadId || 0);
+
+  if (!userId) return res.json({ count: 0 });
+
+  db.query(
+    `SELECT COUNT(*) AS count FROM messages
+     WHERE id > ?
+       AND sender_id != ?
+       AND (
+         channel = 'general'
+         OR (channel = 'dm' AND receiver_id = ?)
+       )`,
+    [lastReadId, userId, userId],
+    (err, result) => {
+      if (err) return res.status(500).json({ count: 0 });
+      res.json({ count: result[0].count });
+    }
+  );
+});
+
+// GET /messages/latest-id — get the highest message id visible to this user
+// Used to mark all as read when user opens Messages page
+app.get("/messages/latest-id", (req, res) => {
+  const userId = parseInt(req.query.userId || 0);
+
+  if (!userId) return res.json({ id: 0 });
 
   db.query(
     `SELECT MAX(id) AS id FROM messages
@@ -1057,13 +1252,14 @@ app.get("/messages/latest-id", (req, res) => {
     }
   );
 });
+
 // =============================================================================
-//  SELLER INQUIRIES — paste these routes into server.js BEFORE app.listen
+//  SELLER INQUIRIES
 // =============================================================================
 
 // GET all seller inquiries
 app.get("/seller-inquiries", (req, res) => {
-  db.query("SELECT * FROM seller_inquiries ORDER BY id DESC", (err, result) => {
+  db.query("SELECT * FROM seller_inquiries WHERE is_deleted = FALSE OR is_deleted IS NULL ORDER BY id DESC", (err, result) => {
     if (err) return res.status(500).send(err);
     res.json(result);
   });
@@ -1100,7 +1296,7 @@ app.post("/seller-inquiries", (req, res) => {
     ],
     (err, result) => {
       if (err) return res.status(500).send(err);
-      addActivity("seller_inquiry", "New seller inquiry", `${seller_name} — ${product_name}`);
+      addActivity("seller_inquiry", "New seller inquiry", `${seller_name} - ${product_name}`);
       res.json({ id: result.insertId });
     }
   );
@@ -1137,13 +1333,42 @@ app.put("/seller-inquiries/:id", (req, res) => {
   );
 });
 
-// DELETE — seller inquiry
+// DELETE — seller inquiry (Soft Delete)
 app.delete("/seller-inquiries/:id", (req, res) => {
-  db.query("DELETE FROM seller_inquiries WHERE id=?", [req.params.id], (err) => {
+  const deletedBy = req.headers["x-user-name"] || "Unknown";
+  db.query("UPDATE seller_inquiries SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = ? WHERE id = ?", [deletedBy, req.params.id], (err) => {
     if (err) return res.status(500).send(err);
     res.json({ success: true });
   });
 });
+
+app.get("/seller-inquiries/recycle-bin", require("./docplatform_auth").authenticateCRMUser, (req, res) => {
+  if (req.user.role !== "admin") return res.status(403).json({ error: "Access denied. Admin role required." });
+  db.query("SELECT * FROM seller_inquiries WHERE is_deleted = TRUE ORDER BY deleted_at DESC, id DESC", (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json(result);
+  });
+});
+
+app.post("/seller-inquiries/:id/restore", require("./docplatform_auth").authenticateCRMUser, (req, res) => {
+  if (req.user.role !== "admin") return res.status(403).json({ error: "Access denied. Admin role required." });
+  const restoredBy = req.user.username || "Unknown";
+  db.query("UPDATE seller_inquiries SET is_deleted = FALSE, deleted_at = NULL, deleted_by = NULL, restored_at = NOW(), restored_by = ? WHERE id = ?", [restoredBy, req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    res.json({ success: true, message: "Inquiry Restored" });
+  });
+});
+
+app.delete("/seller-inquiries/:id/permanent", require("./docplatform_auth").authenticateCRMUser, (req, res) => {
+  if (req.user.role !== "admin") return res.status(403).json({ error: "Access denied. Admin role required." });
+  const username = req.user.username || "Unknown";
+  db.query("DELETE FROM seller_inquiries WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.status(500).send(err);
+    addActivity("seller_inquiry", "Permanent Delete", `Seller Inquiry #${req.params.id} permanently deleted by ${username}`);
+    res.json({ success: true, message: "Inquiry Permanently Deleted" });
+  });
+});
+
 // =============================================================================
 // DocPlatform routing
 app.use("/docplatform", express.static(path.join(__dirname, "public/docplatform")));
@@ -1153,5 +1378,4 @@ app.use("/docplatform", (req, res) => {
 app.use("/doc-api", require("./docplatform_router"));
 
 app.use(require("./accounts_router"));
-
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));

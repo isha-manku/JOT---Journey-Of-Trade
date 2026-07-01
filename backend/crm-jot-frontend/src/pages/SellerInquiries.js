@@ -3,8 +3,9 @@ import {
   FiPlus, FiSearch, FiX, FiChevronDown, FiChevronUp,
   FiCalendar, FiUser, FiPackage, FiMessageSquare,
   FiPhone, FiActivity, FiCheckCircle, FiAlertCircle,
-  FiDollarSign, FiTag, FiClock
+  FiDollarSign, FiTag, FiClock, FiTrash2
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const EMPTY_FORM = {
   inquiry_date: "",
@@ -66,6 +67,7 @@ function StatusBadge({ val }) {
 }
 
 function SellerInquiries() {
+  const navigate = useNavigate();
   const [inquiries,  setInquiries]  = useState([]);
   const [search,     setSearch]     = useState("");
   const [showForm,   setShowForm]   = useState(false);
@@ -114,7 +116,10 @@ function SellerInquiries() {
   const handleDelete = async (id, e) => {
     e.stopPropagation();
     if (!window.confirm("Delete this seller inquiry?")) return;
-    await fetch(`http://localhost:5000/seller-inquiries/${id}`, { method: "DELETE" });
+    await fetch(`http://localhost:5000/seller-inquiries/${id}`, { 
+      method: "DELETE",
+      headers: { "x-user-name": localStorage.getItem("username") || "Unknown" }
+    });
     if (expandedId === id) setExpandedId(null);
     fetchInquiries();
   };
@@ -182,14 +187,25 @@ function SellerInquiries() {
             {inquiries.length} seller inquir{inquiries.length !== 1 ? "ies" : "y"} recorded
           </p>
         </div>
-        {(role === "admin" || role === "manager" || role === "member") && (
-          <button
-            className="comp-add-btn"
-            onClick={() => { setForm(EMPTY_FORM); setEditId(null); setShowForm(true); }}
-          >
-            <FiPlus size={16} /> Add Seller Inquiry
-          </button>
-        )}
+        <div style={{ display: "flex", gap: "10px" }}>
+          {role === "admin" && (
+            <button
+              className="comp-add-btn"
+              onClick={() => navigate("/seller-inquiries/recycle-bin")}
+              style={{ backgroundColor: "#0e2318", color: "#c9a96e" }}
+            >
+              <FiTrash2 size={16} /> Recycle Bin
+            </button>
+          )}
+          {(role === "admin" || role === "manager" || role === "member") && (
+            <button
+              className="comp-add-btn"
+              onClick={() => { setForm(EMPTY_FORM); setEditId(null); setShowForm(true); }}
+            >
+              <FiPlus size={16} /> Add Seller Inquiry
+            </button>
+          )}
+        </div>
       </div>
 
       {/* SEARCH */}

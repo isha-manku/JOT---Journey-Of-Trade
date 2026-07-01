@@ -7,6 +7,7 @@ import type {
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "/doc-api",
+  withCredentials: true,
 });
 
 if (import.meta.env.DEV) {
@@ -86,7 +87,7 @@ export const docApi = {
     api.get<DocumentVersion[]>(`/documents/${document_id}/versions`).then(r => r.data),
 
   pdfUrl: (document_id: string, version?: number, download = false, language = "en") => {
-    const base = api.defaults.baseURL === "/doc-api" ? "" : api.defaults.baseURL;
+    const base = api.defaults.baseURL || "/doc-api";
     let url = `${base}/documents/${document_id}/pdf`;
     const params = new URLSearchParams();
     if (version) params.set("version", String(version));
@@ -112,7 +113,8 @@ export const docApi = {
       crmBaseUrl = window.location.origin;
     }
     return axios.post<{ success: boolean }>(`${crmBaseUrl}/buyer-documents/${document_id}/delete`, {}, {
-      headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` }
+      headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` },
+      withCredentials: true
     }).then(r => r.data);
   },
 };

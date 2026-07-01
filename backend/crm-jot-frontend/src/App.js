@@ -29,6 +29,7 @@ import Settings       from "./pages/Settings";
 import Messages       from "./pages/Messages";
 
 import SellerInquiries from "./pages/SellerInquiries";
+import SellerInquiriesRecycleBin from "./pages/SellerInquiriesRecycleBin";
 import Accounts        from "./pages/Accounts";
 import "./App.css";
 
@@ -195,6 +196,7 @@ function Layout() {
           <Route path="/inquiries"  element={<ProtectedRoute><Inquiries /></ProtectedRoute>} />
           <Route path="/inquiries/recycle-bin" element={<ProtectedRoute><InquiriesRecycleBin /></ProtectedRoute>} />
           <Route path="/seller-inquiries" element={<ProtectedRoute><SellerInquiries /></ProtectedRoute>} />
+          <Route path="/seller-inquiries/recycle-bin" element={<ProtectedRoute><SellerInquiriesRecycleBin /></ProtectedRoute>} />
           <Route path="/buyers"     element={<ProtectedRoute><Buyers /></ProtectedRoute>} />
           <Route path="/sellers"    element={<ProtectedRoute><Sellers /></ProtectedRoute>} />
           <Route path="/buyers/recycle-bin" element={<ProtectedRoute><BuyersRecycleBin /></ProtectedRoute>} />

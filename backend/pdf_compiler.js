@@ -64,14 +64,20 @@ async function compilePdf(latexSource, context) {
       }
     }
 
-    const cmd = "pdflatex -interaction=nonstopmode -halt-on-error doc.tex";
+    // Try using xelatex instead of pdflatex to support Chinese characters and modern fonts, 
+    // since the templates might include xeCJK. 
+    const cmd = "xelatex -interaction=nonstopmode -halt-on-error doc.tex";
     // Run twice for reference stabilization
-    await execPromise(cmd, { cwd: tmpDir, timeout: 60000 });
-    await execPromise(cmd, { cwd: tmpDir, timeout: 60000 });
+    try {
+      await execPromise(cmd, { cwd: tmpDir, timeout: 60000 });
+      await execPromise(cmd, { cwd: tmpDir, timeout: 60000 });
+    } catch (execErr) {
+      throw new Error(`LaTeX Error:\n${execErr.stdout || execErr.stderr || execErr.message}`);
+    }
 
     const pdfPath = path.join(tmpDir, "doc.pdf");
     if (!fs.existsSync(pdfPath)) {
-      throw new Error("PDF failed to compile");
+      throw new Error("PDF failed to compile. No pdf output file found.");
     }
     return fs.readFileSync(pdfPath);
   } finally {
