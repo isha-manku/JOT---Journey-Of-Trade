@@ -71,9 +71,9 @@ export default function Accounts() {
   const [form, setForm] = useState({
     transaction_date: new Date().toISOString().split("T")[0],
     buyer_id: "",
-    seller_id: "",
+    seller_name_text: "",
     product_id: "",
-    supplier_company_id: "",
+    supplier_company_text: "",
     loading_port: "",
     destination_port: "",
     quantity_mt: "",
@@ -258,9 +258,9 @@ export default function Accounts() {
 
     if (
       !form.buyer_id ||
-      !form.seller_id ||
+      !form.seller_name_text ||
       !form.product_id ||
-      !form.supplier_company_id ||
+      !form.supplier_company_text ||
       !form.loading_port.trim() ||
       !form.destination_port.trim() ||
       !form.quantity_mt ||
@@ -304,9 +304,9 @@ export default function Accounts() {
         setForm({
           transaction_date: new Date().toISOString().split("T")[0],
           buyer_id: "",
-          seller_id: "",
+          seller_name_text: "",
           product_id: "",
-          supplier_company_id: "",
+          supplier_company_text: "",
           loading_port: "",
           destination_port: "",
           quantity_mt: "",
@@ -339,9 +339,9 @@ export default function Accounts() {
     setForm({
       transaction_date: tx.transaction_date.split("T")[0],
       buyer_id: tx.buyer_id || "",
-      seller_id: tx.seller_id || "",
+      seller_name_text: tx.seller_name_text || tx.seller_name || "",
       product_id: tx.product_id || "",
-      supplier_company_id: tx.supplier_company_id || "",
+      supplier_company_text: tx.supplier_company_text || tx.supplier_company_name || "",
       loading_port: tx.loading_port || "",
       destination_port: tx.destination_port || "",
       quantity_mt: tx.quantity_mt || "",
@@ -798,7 +798,7 @@ export default function Accounts() {
           setEditingTxId(null);
           setForm({
             transaction_date: new Date().toISOString().split("T")[0],
-            buyer_id: "", seller_id: "", product_id: "", supplier_company_id: "",
+            buyer_id: "", seller_name_text: "", product_id: "", supplier_company_text: "",
             loading_port: "", destination_port: "",
             quantity_mt: "", selling_price: "", selling_currency: "USD",
             payment_mode: "", ci_no: "", spa_no: "",
@@ -992,16 +992,19 @@ export default function Accounts() {
           <div style={{ ...styles.grid2Col, marginBottom: "20px" }}>
             <div style={styles.formGroup}>
               <label style={styles.label}>Supplier Company (Our Company) *</label>
-              <select 
+              <input 
                 style={styles.select}
-                value={form.supplier_company_id}
-                onChange={e => setForm({ ...form, supplier_company_id: e.target.value })}
+                type="text"
+                list="companiesList"
+                placeholder="Select or Enter Company"
+                value={form.supplier_company_text || ''}
+                onChange={e => setForm({ ...form, supplier_company_text: e.target.value })}
                 required
                 disabled={isLocked}
-              >
-                <option value="">-- Choose Company --</option>
-                {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              />
+              <datalist id="companiesList">
+                {companies.map(c => <option key={c.id} value={c.name} />)}
+              </datalist>
             </div>
             <div style={styles.formGroup}>
               <label style={styles.label}>Transaction Date *</label>

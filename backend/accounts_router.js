@@ -77,7 +77,7 @@ router.post("/payment-modes", async (req, res) => {
 // GET /products (reference products)
 router.get("/products", async (req, res) => {
   try {
-    const results = await query("SELECT * FROM products WHERE is_active = 1 ORDER BY name");
+    const results = await query("SELECT id, name, hs_code AS code FROM settings_products ORDER BY name");
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -116,7 +116,7 @@ router.post("/accounts", async (req, res) => {
   } = req.body;
 
   // Basic validation
-  if (!transaction_date || !buyer_id || !seller_id || !product_id || !supplier_company_id ||
+  if (!transaction_date || !buyer_id || !seller_name_text || !product_id || !supplier_company_text ||
       !loading_port || !destination_port || !quantity_mt || !selling_price || 
       !selling_currency || !payment_mode || !ci_no || !spa_no) {
     return res.status(400).json({ error: "Missing required common fields" });
@@ -174,7 +174,7 @@ router.post("/accounts", async (req, res) => {
     const insertTxSql = `
       INSERT INTO account_transactions (
         transaction_no, transaction_date, created_by, created_by_role, status,
-        buyer_id, seller_id, product_id, supplier_company_id,
+        buyer_id, seller_name_text, product_id, supplier_company_id,
         loading_port, destination_port, quantity_mt, selling_price, selling_currency,
         shipment_value, payment_mode, ci_no, spa_no,
         cost_price, cost_currency, margin, commission_total, net_profit, impfa_no,
@@ -184,7 +184,7 @@ router.post("/accounts", async (req, res) => {
 
     const txParams = [
       transaction_no, transaction_date, username, role, final_status,
-      buyer_id, seller_id, product_id, supplier_company_id,
+      buyer_id, seller_name_text, product_id, supplier_company_id,
       loading_port, destination_port, quantity_mt, selling_price, selling_currency,
       shipment_value, payment_mode, ci_no, spa_no,
       db_cost_price, db_cost_currency, db_margin, db_commission_total, db_net_profit, db_impfa_no,
@@ -254,7 +254,7 @@ router.put("/accounts/:id", async (req, res) => {
 
     const final_date = transaction_date || currentTx.transaction_date;
     const final_buyer = buyer_id || currentTx.buyer_id;
-    const final_seller = seller_id || currentTx.seller_id;
+    const final_seller_text = seller_name_text || currentTx.seller_name_text;
     const final_product = product_id || currentTx.product_id;
     const final_company = supplier_company_id || currentTx.supplier_company_id;
     const final_loading = loading_port || currentTx.loading_port;
@@ -293,7 +293,7 @@ router.put("/accounts/:id", async (req, res) => {
     // 3. Update transaction record
     const updateSql = `
       UPDATE account_transactions SET
-        transaction_date = ?, buyer_id = ?, seller_id = ?, product_id = ?, supplier_company_id = ?,
+        transaction_date = ?, buyer_id = ?, seller_name_text = ?, product_id = ?, supplier_company_id = ?,
         loading_port = ?, destination_port = ?, quantity_mt = ?, selling_price = ?, selling_currency = ?,
         shipment_value = ?, payment_mode = ?, ci_no = ?, spa_no = ?,
         cost_price = ?, cost_currency = ?, margin = ?, commission_total = ?, net_profit = ?, impfa_no = ?,
@@ -302,7 +302,7 @@ router.put("/accounts/:id", async (req, res) => {
     `;
 
     await query(updateSql, [
-      final_date, final_buyer, final_seller, final_product, final_company,
+      final_date, final_buyer, final_seller_text, final_product, final_company,
       final_loading, final_dest, final_qty, final_sel_price, final_sel_curr,
       shipment_value, final_pay_mode, final_ci, final_spa,
       db_cost_price, db_cost_currency, db_margin, db_commission_total, db_net_profit, db_impfa_no,
@@ -347,8 +347,8 @@ router.get("/accounts", async (req, res) => {
       FROM account_transactions tx
       LEFT JOIN buyers b ON tx.buyer_id = b.id
       LEFT JOIN sellers s ON tx.seller_id = s.id
-      LEFT JOIN companies c ON tx.supplier_company_id = c.id
-      LEFT JOIN products p ON tx.product_id = p.id
+      LEFT JOIN settings_companies c ON tx.supplier_company_id = c.id
+      LEFT JOIN settings_products p ON tx.product_id = p.id
       ORDER BY tx.created_at DESC
     `;
     const transactions = await query(sql);
@@ -489,7 +489,7 @@ router.get("/accounts/analytics", async (req, res) => {
       query(`
         SELECT tx.product_id AS id, p.name AS name, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
-        JOIN products p ON tx.product_id = p.id
+        JOIN settings_products p ON tx.product_id = p.id
         WHERE tx.status != 'Draft'
         GROUP BY tx.product_id
         ORDER BY profit DESC LIMIT 1
@@ -499,7 +499,7 @@ router.get("/accounts/analytics", async (req, res) => {
       query(`
         SELECT tx.supplier_company_id AS id, c.name AS name, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
-        JOIN companies c ON tx.supplier_company_id = c.id
+        JOIN settings_companies c ON tx.supplier_company_id = c.id
         WHERE tx.status != 'Draft'
         GROUP BY tx.supplier_company_id
         ORDER BY profit DESC LIMIT 1
@@ -540,7 +540,7 @@ router.get("/accounts/analytics", async (req, res) => {
           COALESCE(AVG(tx.margin), 0) AS avg_margin,
           COUNT(*) AS transaction_count
         FROM account_transactions tx
-        LEFT JOIN products p ON tx.product_id = p.id
+        LEFT JOIN settings_products p ON tx.product_id = p.id
         ${whereSql}
         GROUP BY tx.product_id
         ORDER BY total_profit DESC
@@ -571,7 +571,7 @@ router.get("/accounts/analytics", async (req, res) => {
           COUNT(DISTINCT tx.product_id) AS products_count,
           COUNT(DISTINCT tx.buyer_id) AS buyers_served
         FROM account_transactions tx
-        LEFT JOIN companies c ON tx.supplier_company_id = c.id
+        LEFT JOIN settings_companies c ON tx.supplier_company_id = c.id
         ${whereSql}
         GROUP BY tx.supplier_company_id
         ORDER BY profit DESC
@@ -667,8 +667,8 @@ router.get("/accounts/analytics", async (req, res) => {
           COALESCE(SUM(tx.net_profit), 0) AS profit,
           COALESCE(SUM(tx.quantity_mt), 0) AS quantity
         FROM account_transactions tx
-        LEFT JOIN companies c ON tx.supplier_company_id = c.id
-        LEFT JOIN products p ON tx.product_id = p.id
+        LEFT JOIN settings_companies c ON tx.supplier_company_id = c.id
+        LEFT JOIN settings_products p ON tx.product_id = p.id
         ${whereSql}
         GROUP BY tx.supplier_company_id, tx.product_id
         ORDER BY company_name, profit DESC
@@ -724,8 +724,8 @@ router.get("/accounts/:id", async (req, res) => {
       FROM account_transactions tx
       LEFT JOIN buyers b ON tx.buyer_id = b.id
       LEFT JOIN sellers s ON tx.seller_id = s.id
-      LEFT JOIN companies c ON tx.supplier_company_id = c.id
-      LEFT JOIN products p ON tx.product_id = p.id
+      LEFT JOIN settings_companies c ON tx.supplier_company_id = c.id
+      LEFT JOIN settings_products p ON tx.product_id = p.id
       WHERE tx.id = ?
     `;
     const results = await query(sql, [txId]);
@@ -863,7 +863,7 @@ router.get("/accounts/analytics/buyer/:id", async (req, res) => {
       query(`
         SELECT p.name AS name, COALESCE(SUM(tx.quantity_mt), 0) AS quantity
         FROM account_transactions tx
-        JOIN products p ON tx.product_id = p.id
+        JOIN settings_products p ON tx.product_id = p.id
         ${finalWhere}
         GROUP BY tx.product_id
         ORDER BY quantity DESC LIMIT 1
@@ -912,7 +912,7 @@ router.get("/accounts/analytics/buyer/:id", async (req, res) => {
       query(`
         SELECT tx.product_id, p.name AS product_name, COALESCE(SUM(tx.quantity_mt), 0) AS quantity, COALESCE(SUM(tx.shipment_value), 0) AS revenue, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
-        JOIN products p ON tx.product_id = p.id
+        JOIN settings_products p ON tx.product_id = p.id
         ${finalWhere}
         GROUP BY tx.product_id
         ORDER BY profit DESC
@@ -922,7 +922,7 @@ router.get("/accounts/analytics/buyer/:id", async (req, res) => {
       query(`
         SELECT tx.supplier_company_id AS company_id, c.name AS company_name, COUNT(*) AS transactions, COALESCE(SUM(tx.shipment_value), 0) AS revenue, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
-        JOIN companies c ON tx.supplier_company_id = c.id
+        JOIN settings_companies c ON tx.supplier_company_id = c.id
         ${finalWhere}
         GROUP BY tx.supplier_company_id
         ORDER BY profit DESC
@@ -953,7 +953,7 @@ router.get("/accounts/analytics/buyer/:id", async (req, res) => {
       query(`
         SELECT tx.*, p.name AS product_name
         FROM account_transactions tx
-        LEFT JOIN products p ON tx.product_id = p.id
+        LEFT JOIN settings_products p ON tx.product_id = p.id
         WHERE tx.buyer_id = ?
         ORDER BY tx.transaction_date DESC LIMIT 10
       `, [buyerId])
@@ -1030,7 +1030,7 @@ router.get("/accounts/analytics/seller/:id", async (req, res) => {
       query(`
         SELECT tx.product_id, p.name AS product_name, COALESCE(SUM(tx.quantity_mt), 0) AS quantity, COALESCE(SUM(tx.shipment_value), 0) AS revenue, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
-        JOIN products p ON tx.product_id = p.id
+        JOIN settings_products p ON tx.product_id = p.id
         ${finalWhere}
         GROUP BY tx.product_id
         ORDER BY profit DESC
@@ -1048,7 +1048,7 @@ router.get("/accounts/analytics/seller/:id", async (req, res) => {
       query(`
         SELECT tx.*, p.name AS product_name
         FROM account_transactions tx
-        LEFT JOIN products p ON tx.product_id = p.id
+        LEFT JOIN settings_products p ON tx.product_id = p.id
         WHERE tx.seller_id = ?
         ORDER BY tx.transaction_date DESC LIMIT 10
       `, [sellerId])
@@ -1138,7 +1138,7 @@ router.get("/accounts/analytics/product/:id", async (req, res) => {
       query(`
         SELECT tx.*, p.name AS product_name
         FROM account_transactions tx
-        LEFT JOIN products p ON tx.product_id = p.id
+        LEFT JOIN settings_products p ON tx.product_id = p.id
         WHERE tx.product_id = ?
         ORDER BY tx.transaction_date DESC LIMIT 10
       `, [productId])
@@ -1206,7 +1206,7 @@ router.get("/accounts/analytics/company/:id", async (req, res) => {
       query(`
         SELECT p.name AS product_name, COALESCE(SUM(tx.quantity_mt), 0) AS quantity, COALESCE(SUM(tx.shipment_value), 0) AS revenue, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
-        JOIN products p ON tx.product_id = p.id
+        JOIN settings_products p ON tx.product_id = p.id
         ${finalWhere}
         GROUP BY tx.product_id
         ORDER BY profit DESC
@@ -1247,7 +1247,7 @@ router.get("/accounts/analytics/company/:id", async (req, res) => {
       query(`
         SELECT tx.*, p.name AS product_name
         FROM account_transactions tx
-        LEFT JOIN products p ON tx.product_id = p.id
+        LEFT JOIN settings_products p ON tx.product_id = p.id
         WHERE tx.supplier_company_id = ?
         ORDER BY tx.transaction_date DESC LIMIT 10
       `, [companyId])
@@ -1317,7 +1317,7 @@ router.get("/accounts/analytics/port", async (req, res) => {
       query(`
         SELECT p.name AS product_name, COALESCE(SUM(tx.quantity_mt), 0) AS quantity, COALESCE(SUM(tx.shipment_value), 0) AS revenue, COALESCE(SUM(tx.net_profit), 0) AS profit
         FROM account_transactions tx
-        JOIN products p ON tx.product_id = p.id
+        JOIN settings_products p ON tx.product_id = p.id
         ${finalWhere}
         GROUP BY tx.product_id
         ORDER BY profit DESC
@@ -1332,7 +1332,7 @@ router.get("/accounts/analytics/port", async (req, res) => {
       query(`
         SELECT tx.*, p.name AS product_name
         FROM account_transactions tx
-        LEFT JOIN products p ON tx.product_id = p.id
+        LEFT JOIN settings_products p ON tx.product_id = p.id
         WHERE tx.loading_port = ? OR tx.destination_port = ?
         ORDER BY tx.transaction_date DESC LIMIT 10
       `, [portName, portName])

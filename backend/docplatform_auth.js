@@ -54,7 +54,7 @@ function getCookie(req, name) {
 }
 
 /**
- * Express middleware to authenticate CRM user.
+ * Express middleware to authenticate CRM user and check against database sessions.
  */
 function authenticateCRMUser(req, res, next) {
   const token = getCookie(req, "crm_session");
@@ -62,8 +62,18 @@ function authenticateCRMUser(req, res, next) {
   if (!decoded) {
     return res.status(401).json({ error: "Unauthorized: Invalid or expired CRM session." });
   }
-  req.user = decoded; // { id, username, role }
-  next();
+
+  const db = require("./db");
+  db.query("SELECT revoked FROM sessions WHERE token=?", [token], (err, results) => {
+    if (err || results.length === 0 || results[0].revoked) {
+      return res.status(401).json({ error: "Unauthorized: Session has been remotely revoked." });
+    }
+    // Update last activity timestamp
+    db.query("UPDATE sessions SET last_activity=CURRENT_TIMESTAMP WHERE token=?", [token], () => {});
+    
+    req.user = decoded; // { id, username, role }
+    next();
+  });
 }
 
 module.exports = { signToken, verifyToken, authenticateCRMUser };

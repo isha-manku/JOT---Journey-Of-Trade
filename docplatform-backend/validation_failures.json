@@ -1,86 +1,356 @@
 [
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Duck Wings",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Pacific Gulf Trading Co., Product Sunflower Oil, DocType FCO"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Gizzards",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Pacific Gulf Trading Co., Product Sunflower Oil, DocType Specification Sheet"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Breast",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Pacific Gulf Trading Co., Product Sunflower Oil, DocType Packing List"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Hearts",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Pacific Gulf Trading Co., Product Sunflower Oil, DocType LOI"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Drumsticks",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Pacific Gulf Trading Co., Product Sunflower Oil, DocType ICPO"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Paws",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Pacific Gulf Trading Co., Product Sunflower Oil, DocType SPA"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Liver",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Pacific Gulf Trading Co., Product Sunflower Oil, DocType Proforma Invoice"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Leg Quarters",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Ronsons Trading FZ-LLC, Product Sunflower Oil, DocType FCO"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Feet",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Ronsons Trading FZ-LLC, Product Sunflower Oil, DocType Specification Sheet"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Whole",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Ronsons Trading FZ-LLC, Product Sunflower Oil, DocType Packing List"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Thighs",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Ronsons Trading FZ-LLC, Product Sunflower Oil, DocType LOI"
   },
   {
-    "buyer": "Global Traders Inc.",
-    "company": "Ronsons Trading FZ-LLC",
-    "product": "Frozen Chicken Wings",
-    "doctype": "Proforma Invoice",
-    "error": "Exception: 'seller_bank_address' is undefined"
+    "error": "MISSING TEMPLATE: Company Ronsons Trading FZ-LLC, Product Sunflower Oil, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Ronsons Trading FZ-LLC, Product Sunflower Oil, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Ronsons Trading FZ-LLC, Product Sunflower Oil, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Southern Cross Exports Pty, Product Sunflower Oil, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Southern Cross Exports Pty, Product Sunflower Oil, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Southern Cross Exports Pty, Product Sunflower Oil, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Southern Cross Exports Pty, Product Sunflower Oil, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Southern Cross Exports Pty, Product Sunflower Oil, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Southern Cross Exports Pty, Product Sunflower Oil, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Southern Cross Exports Pty, Product Sunflower Oil, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Feet, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Feet, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Feet, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Feet, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Feet, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Feet, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Feet, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Whole, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Whole, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Whole, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Whole, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Whole, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Whole, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Whole, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Hearts, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Hearts, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Hearts, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Hearts, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Hearts, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Hearts, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Hearts, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Liver, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Liver, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Liver, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Liver, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Liver, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Liver, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Liver, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Paws, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Paws, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Paws, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Paws, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Paws, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Paws, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Paws, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Wings, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Wings, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Wings, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Wings, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Wings, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Wings, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Wings, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Gizzards, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Gizzards, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Gizzards, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Gizzards, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Gizzards, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Gizzards, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Gizzards, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Breast, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Breast, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Breast, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Breast, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Breast, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Breast, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Breast, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Leg Quarters, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Leg Quarters, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Leg Quarters, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Leg Quarters, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Leg Quarters, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Leg Quarters, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Leg Quarters, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Duck Wings, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Duck Wings, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Duck Wings, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Duck Wings, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Duck Wings, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Duck Wings, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Duck Wings, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Thighs, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Thighs, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Thighs, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Thighs, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Thighs, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Thighs, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Thighs, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Drumsticks, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Drumsticks, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Drumsticks, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Drumsticks, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Drumsticks, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Drumsticks, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Frozen Chicken Drumsticks, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Sunflower Oil, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Sunflower Oil, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Sunflower Oil, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Sunflower Oil, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Sunflower Oil, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Western Agro, Product Sunflower Oil, DocType Proforma Invoice"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Atlantic Commodities Ltd., Product Sunflower Oil, DocType FCO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Atlantic Commodities Ltd., Product Sunflower Oil, DocType Specification Sheet"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Atlantic Commodities Ltd., Product Sunflower Oil, DocType Packing List"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Atlantic Commodities Ltd., Product Sunflower Oil, DocType LOI"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Atlantic Commodities Ltd., Product Sunflower Oil, DocType ICPO"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Atlantic Commodities Ltd., Product Sunflower Oil, DocType SPA"
+  },
+  {
+    "error": "MISSING TEMPLATE: Company Atlantic Commodities Ltd., Product Sunflower Oil, DocType Proforma Invoice"
   }
 ]

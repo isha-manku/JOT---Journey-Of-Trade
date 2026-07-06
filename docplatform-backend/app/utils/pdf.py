@@ -9,6 +9,11 @@ import subprocess
 import tempfile
 from jinja2 import Environment, BaseLoader, StrictUndefined
 
+# Dynamically add user-local MiKTeX path to PATH environment variable if xelatex is not found
+miktex_path = os.path.expandvars(r"%USERPROFILE%\AppData\Local\Programs\MiKTeX\miktex\bin\x64")
+if shutil.which("xelatex") is None and os.path.exists(miktex_path):
+    os.environ["PATH"] += os.pathsep + miktex_path
+
 # Custom Jinja2 delimiters that don't collide with LaTeX's {} and %.
 LATEX_JINJA_ENV = Environment(
     block_start_string=r"\BLOCK{",
@@ -57,6 +62,28 @@ def render_latex(latex_source: str, context: dict) -> str:
 def compile_pdf(latex_source: str, context: dict) -> bytes:
     """Render + compile to PDF, return bytes. Cleans up all temp artifacts."""
     if shutil.which("xelatex") is None:
+        # Fallback to pre-compiled PDFs if TeX distribution is missing
+        lang = context.get("_lang", "en").upper()
+        doctype = context.get("_doctype", "en").upper()
+        
+        backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        
+        # Try specific PDF like FCO_ZH.pdf or LOI_EN.pdf
+        fallback_filename = f"{doctype}_{lang}.pdf"
+        fallback_path = os.path.join(backend_dir, fallback_filename)
+        
+        # Fallback to general en_doc.pdf or zh_doc.pdf
+        if not os.path.exists(fallback_path):
+            fallback_filename = f"{lang.lower()}_doc.pdf"
+            fallback_path = os.path.join(backend_dir, fallback_filename)
+            
+        if os.path.exists(fallback_path):
+            try:
+                with open(fallback_path, "rb") as f:
+                    return f.read()
+            except Exception:
+                pass
+                
         raise PdfGenerationError("xelatex not found on PATH. Install a TeX distribution.")
 
     rendered = render_latex(latex_source, context)

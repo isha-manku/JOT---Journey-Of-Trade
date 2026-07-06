@@ -941,7 +941,7 @@ export default function AccountsDashboard({ onDrilldown, username, onBack }) {
                       <div style={{ fontWeight: 600, fontSize: "13px" }}>USD {Number(c.commission).toLocaleString()}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", color: "#28a745" }}>Net Profit</div>
+                      <div style={{ fontSize: "10px", textTransform: "uppercase", color: "#28a745" }}>Net Profit</div>
                       <div style={{ fontWeight: 700, fontSize: "14px", color: "#28a745" }}>USD {Number(c.profit).toLocaleString()}</div>
                     </div>
                   </div>
@@ -1003,7 +1003,7 @@ export default function AccountsDashboard({ onDrilldown, username, onBack }) {
                       <div style={{ fontWeight: 600, fontSize: "13px" }}>USD {Number(s.commission_impact).toLocaleString()}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", color: "#0e2318" }}>Net Profit</div>
+                      <div style={{ fontSize: "10px", textTransform: "uppercase", color: "#0e2318" }}>Net Profit</div>
                       <div style={{ fontWeight: 700, fontSize: "14px", color: "#0e2318" }}>USD {Number(s.profit).toLocaleString()}</div>
                     </div>
                   </div>

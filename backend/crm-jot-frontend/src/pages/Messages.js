@@ -49,6 +49,27 @@ const groupByDate = (msgs) => {
 function Messages() {
   const [users,        setUsers]        = useState([]);
   const [messages,     setMessages]     = useState([]);
+  const [unreadData,   setUnreadData]   = useState({ total: 0, senders: [] });
+
+  const fetchUnread = () => {
+    fetch(`http://localhost:5000/messages/unread?userId=${myId()}`)
+      .then(r => r.json())
+      .then(data => {
+        setUnreadData(data);
+        window.dispatchEvent(new CustomEvent('unreadMessagesUpdate', { detail: data }));
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchUnread();
+    const handleEvent = (e) => {
+      if (e.detail) setUnreadData(e.detail);
+    };
+    window.addEventListener('unreadMessagesUpdate', handleEvent);
+    return () => window.removeEventListener('unreadMessagesUpdate', handleEvent);
+  }, []);
+
   const [channel,      setChannel]      = useState("general"); // "general" | userId (DM)
   const [channelLabel, setChannelLabel] = useState("# General");
   const [text,         setText]         = useState("");
@@ -122,10 +143,21 @@ function Messages() {
   };
 
   // ── Switch channel ───────────────────────────────────────────────────────────
-  const switchChannel = (ch, label) => {
+  const switchChannel = async (ch, label) => {
     setChannel(ch);
     setChannelLabel(label);
     setMessages([]);
+
+    await fetch(`http://localhost:5000/messages/read`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: myId(),
+        channel: ch === "general" ? "general" : "dm",
+        withUser: ch === "general" ? null : ch
+      })
+    }).catch(() => {});
+    fetchUnread();
   };
 
   // ── Filtered users for DM list ───────────────────────────────────────────────
@@ -149,7 +181,7 @@ function Messages() {
 
         <div className="msg-sidebar-head">
           <h2>Messages</h2>
-          <span className="msg-badge">{messages.length}</span>
+          
         </div>
 
         {/* Search users */}
@@ -171,6 +203,11 @@ function Messages() {
           <span className="msg-channel-hash"><FiHash size={14} /></span>
           <span>General</span>
           <span className="msg-channel-sub">Everyone</span>
+          {unreadData.senders?.some(s => s.channel === "general") && (
+            <span style={{ background: "#d9534f", color: "white", borderRadius: "10px", padding: "1px 6px", fontSize: "10px", marginLeft: "auto" }}>
+              {unreadData.senders.find(s => s.channel === "general").count}
+            </span>
+          )}
         </button>
 
         {/* DM list */}
@@ -191,6 +228,11 @@ function Messages() {
               <span className="msg-dm-role">{u.role}</span>
             </div>
             <div className="msg-online-dot"></div>
+            {unreadData.senders?.some(s => s.sender_id === u.id) && (
+              <span style={{ background: "#d9534f", color: "white", borderRadius: "10px", padding: "1px 6px", fontSize: "10px", marginLeft: "auto" }}>
+                {unreadData.senders.find(s => s.sender_id === u.id).count}
+              </span>
+            )}
           </button>
         ))}
 

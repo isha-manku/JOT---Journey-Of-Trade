@@ -87,11 +87,12 @@ function SellerDocs() {
   useEffect(() => {
     const handleMessage = (e) => {
       if (e.data && e.data.action === "navigate" && e.data.to) {
-        if (e.data.to === "/sellers" && source === "recycle-bin") {
-          navigate("/sellers/recycle-bin");
-        } else {
-          navigate(e.data.to);
+        let dest = e.data.to;
+        if (dest === "/login") dest = "/";
+        else if (dest === "/sellers" && source === "recycle-bin") {
+          dest = "/sellers/recycle-bin";
         }
+        navigate(dest);
       }
     };
     window.addEventListener("message", handleMessage);

@@ -8,6 +8,7 @@ const PizZip = require("pizzip");
 const Docxtemplater = require("docxtemplater");
 const path = require("path");
 const multer = require("multer");
+const { router: settingsRouter } = require("./settings_router");
 
 // ── Multer Storage Configuration ─────────────────────────────────────────────
 const storage = multer.diskStorage({
@@ -252,18 +253,34 @@ app.post("/login", (req, res) => {
   if (!username || !password)
     return res.status(400).json({ error: "Username and password required" });
 
+  const ipAddr = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
+  const ua     = req.headers["user-agent"] || "";
+
   db.query(
     "SELECT * FROM users WHERE username=? AND password=?",
     [username, password],
     (err, result) => {
       if (err) return res.status(500).json({ error: "Server error" });
-      if (result.length === 0)
+      if (result.length === 0) {
+        // Record failed login
+        db.query("INSERT INTO login_history (username, ip_address, user_agent, event_type) VALUES (?,?,?,?)",
+          [username, ipAddr, ua, "login_failed"], () => {});
         return res.status(401).json({ error: "Invalid credentials" });
+      }
 
       const user = result[0];
 
+      // Record successful login
+      db.query("INSERT INTO login_history (user_id, username, ip_address, user_agent, event_type) VALUES (?,?,?,?,?)",
+        [user.id, user.username, ipAddr, ua, "login_success"], () => {});
+
       // Issue HttpOnly secure cookie for shared CRM/DocPlatform session
       const token = signToken({ id: user.id, username: user.username, role: user.role });
+      
+      // Store token in active sessions table
+      db.query("INSERT INTO sessions (user_id, token, ip_address, user_agent, expires_at) VALUES (?, ?, ?, ?, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 1 DAY))",
+        [user.id, token, ipAddr, ua], () => {});
+
       res.cookie("crm_session", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -1012,61 +1029,52 @@ app.delete("/messages/:id", (req, res) => {
    Add these 2 routes to server.js BEFORE app.listen
    ============================================================ */
 
-// GET /messages/unread — count of new messages since lastReadId for this user
-// Counts: general messages NOT sent by me + DMs sent TO me
+// GET /messages/unread — returns total unread and breakdown by sender/channel
 app.get("/messages/unread", (req, res) => {
-  const userId     = parseInt(req.query.userId     || 0);
-  const lastReadId = parseInt(req.query.lastReadId || 0);
-
-  if (!userId) return res.json({ count: 0 });
-
-  db.query(
-    `SELECT COUNT(*) AS count FROM messages
-     WHERE id > ?
-       AND sender_id != ?
-       AND (
-         channel = 'general'
-         OR (channel = 'dm' AND receiver_id = ?)
-       )`,
-    [lastReadId, userId, userId],
-    (err, result) => {
-      if (err) return res.status(500).json({ count: 0 });
-      res.json({ count: result[0].count });
-    }
-  );
-});
-
-// GET /messages/latest-id — get the highest message id visible to this user
-// Used to mark all as read when user opens Messages page
-app.get("/messages/latest-id", (req, res) => {
   const userId = parseInt(req.query.userId || 0);
+  if (!userId) return res.json({ total: 0, senders: [] });
 
-  if (!userId) return res.json({ id: 0 });
-  if (!title || !date) return res.status(400).send("Title and date required");
   db.query(
-    "INSERT INTO events (title,description,date,time,type,user) VALUES (?,?,?,?,?,?)",
-    [title, description || "", date, time || "00:00", type || "Meeting", user || ""],
-    (err, result) => {
-      if (err) return res.status(500).send(err);
-      res.json({ id: result.insertId, title, description, date, time, type, user });
+    `SELECT m.sender_id, m.sender_name, m.channel, COUNT(*) AS count 
+     FROM messages m 
+     LEFT JOIN message_reads mr ON m.id = mr.message_id AND mr.user_id = ?
+     WHERE mr.message_id IS NULL
+       AND m.sender_id != ?
+       AND (
+         m.channel = 'general'
+         OR (m.channel = 'dm' AND m.receiver_id = ?)
+       )
+     GROUP BY m.sender_id, m.sender_name, m.channel`,
+    [userId, userId, userId],
+    (err, results) => {
+      if (err) return res.status(500).json({ total: 0, senders: [] });
+      let total = 0;
+      results.forEach(row => total += row.count);
+      res.json({ total, senders: results });
     }
   );
 });
-app.put("/events/:id", (req, res) => {
-  const { title, description, date, time, type, user } = req.body;
-  db.query(
-    "UPDATE events SET title=?,description=?,date=?,time=?,type=?,user=? WHERE id=?",
-    [title, description || "", date, time || "00:00", type || "Meeting", user || "", req.params.id],
-    (err) => {
-      if (err) return res.status(500).send(err);
-      res.send("Event updated");
-    }
-  );
-});
-app.delete("/events/:id", (req, res) => {
-  db.query("DELETE FROM events WHERE id=?", [req.params.id], (err) => {
-    if (err) return res.status(500).send(err);
-    res.send("Event deleted");
+
+// POST /messages/read — mark messages in a conversation as read for a user
+app.post("/messages/read", (req, res) => {
+  const { userId, channel, withUser } = req.body;
+  if (!userId || !channel) return res.status(400).json({ error: "Missing parameters" });
+
+  let sql = `INSERT IGNORE INTO message_reads (message_id, user_id) 
+             SELECT m.id, ? FROM messages m 
+             LEFT JOIN message_reads mr ON m.id = mr.message_id AND mr.user_id = ? 
+             WHERE mr.message_id IS NULL AND m.sender_id != ? AND m.channel = ?`;
+  let params = [userId, userId, userId, channel];
+
+  if (channel === 'dm') {
+    if (!withUser) return res.status(400).json({ error: "Missing withUser" });
+    sql += ` AND m.sender_id = ? AND m.receiver_id = ?`;
+    params.push(withUser, userId);
+  }
+
+  db.query(sql, params, (err) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.json({ success: true });
   });
 });
 
@@ -1378,4 +1386,8 @@ app.use("/docplatform", (req, res) => {
 app.use("/doc-api", require("./docplatform_router"));
 
 app.use(require("./accounts_router"));
-app.listen(5000, () => console.log("🚀 Server running on port 5000"));
+app.use("/settings", settingsRouter);
+app.listen(5000, () => {
+  console.log('🚀 Server running on port 5000');
+  require('./notification_cron').initCron();
+});

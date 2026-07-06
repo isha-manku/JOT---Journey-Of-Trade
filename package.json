@@ -9,5 +9,11 @@
     "build-all": "npm run build-doc-frontend && npm run copy-doc-frontend",
     "setup-db": "node backend/setup_accounts.js && node backend/setup_docplatform.js",
     "start": "node backend/server.js"
+  },
+  "dependencies": {
+    "node-cron": "^4.5.0",
+    "nodemailer": "^9.0.3",
+    "qrcode": "^1.5.4",
+    "speakeasy": "^2.0.0"
   }
 }

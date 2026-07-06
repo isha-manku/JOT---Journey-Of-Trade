@@ -119,7 +119,7 @@ function Analytics() {
       {/* ROW 1: Trend + Inquiry Source */}
       <div className="ana-row">
 
-        <div className="jot-card ana-card-lg">
+        <div className="jot-card ana-card-lg" style={{ height: "100%", minHeight: "300px", display: "flex", flexDirection: "column" }}>
           <div className="jot-card-head">
             <h3>Monthly Trend</h3>
             <div className="jot-legend">
@@ -128,8 +128,8 @@ function Analytics() {
             </div>
           </div>
           {trendData.length ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={trendData}>
+            <ResponsiveContainer width="100%" height="100%" style={{ flex: 1 }}>
+              <LineChart data={trendData} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0ede6" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#aaa" }} />
                 <YAxis tick={{ fontSize: 11, fill: "#aaa" }} allowDecimals={false} />
@@ -143,11 +143,11 @@ function Analytics() {
           )}
         </div>
 
-        <div className="jot-card ana-card-sm">
+        <div className="jot-card ana-card-sm" style={{ height: "100%", minHeight: "300px", display: "flex", flexDirection: "column" }}>
           <div className="jot-card-head"><h3>Inquiry Sources</h3></div>
           {inquiryBySource.length ? (
             <>
-              <ResponsiveContainer width="100%" height={180}>
+              <ResponsiveContainer width="100%" height="100%" style={{ flex: 1 }}>
                 <PieChart>
                   <Pie data={inquiryBySource} dataKey="value" outerRadius={75} innerRadius={45}>
                     {inquiryBySource.map((_, i) => (
@@ -175,16 +175,16 @@ function Analytics() {
       {/* ROW 2: Top Products + Response Status + Quality */}
       <div className="ana-row-3">
 
-        <div className="jot-card">
+        <div className="jot-card" style={{ height: "100%", minHeight: "300px", display: "flex", flexDirection: "column" }}>
           <div className="jot-card-head"><h3>Top Products</h3></div>
           {inquiryByProduct.length ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={inquiryByProduct.slice(0, 7)} layout="vertical">
+            <ResponsiveContainer width="100%" height="100%" style={{ flex: 1 }}>
+              <BarChart data={inquiryByProduct.slice(0, 7)} layout="vertical" margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0ede6" />
                 <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={80} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={120} />
                 <Tooltip />
-                <Bar dataKey="value" radius={[0, 6, 6, 0]}>
+                <Bar dataKey="value" radius={[0, 6, 6, 0]} >
                   {inquiryByProduct.slice(0, 7).map((_, i) => (
                     <Cell key={i} fill={i % 2 === 0 ? "#0e2318" : "#c9a96e"} />
                   ))}
@@ -194,22 +194,23 @@ function Analytics() {
           ) : <p className="ana-empty">No product data yet.</p>}
         </div>
 
-        <div className="jot-card">
+        <div className="jot-card" style={{ height: "100%", minHeight: "300px", display: "flex", flexDirection: "column" }}>
           <div className="jot-card-head"><h3>Response Status</h3></div>
           {inquiryByStatus.length ? (
             <>
               {inquiryByStatus.map((item, i) => {
                 const max = inquiryByStatus[0].value;
                 return (
-                  <div className="country-row" key={i}>
-                    <div className="country-top">
+                  <div className="country-row" key={i} style={{ marginBottom: "16px" }}>
+                    <div className="country-top" style={{ fontSize: "13px", marginBottom: "4px" }}>
                       <span>{item.name}</span>
-                      <span>{item.value}</span>
+                      <span style={{ fontWeight: "bold" }}>{item.value}</span>
                     </div>
-                    <div className="country-bar-bg">
+                    <div className="country-bar-bg" style={{ height: "10px", background: "#f0ede6", borderRadius: "5px", overflow: "hidden" }}>
                       <div
                         className="country-bar"
                         style={{
+                          height: "100%",
                           width: `${(item.value / max) * 100}%`,
                           background: i % 2 === 0 ? "#0e2318" : "#c9a96e",
                         }}
@@ -222,16 +223,16 @@ function Analytics() {
           ) : <p className="ana-empty">No status data yet.</p>}
         </div>
 
-        <div className="jot-card">
+        <div className="jot-card" style={{ height: "100%", minHeight: "300px", display: "flex", flexDirection: "column" }}>
           <div className="jot-card-head"><h3>Buyer Quality</h3></div>
           {inquiryByQuality.length ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={inquiryByQuality}>
+            <ResponsiveContainer width="100%" height="100%" style={{ flex: 1 }}>
+              <BarChart data={inquiryByQuality} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0ede6" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} >
                   {inquiryByQuality.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
@@ -246,11 +247,11 @@ function Analytics() {
       {/* ROW 3: Buyers by Country + Sellers by Country */}
       <div className="ana-row">
 
-        <div className="jot-card ana-card-lg">
+        <div className="jot-card ana-card-lg" style={{ height: "100%", minHeight: "300px", display: "flex", flexDirection: "column" }}>
           <div className="jot-card-head"><h3>Buyers by Country</h3></div>
           {buyersByCountry.length ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={buyersByCountry.slice(0, 8)}>
+            <ResponsiveContainer width="100%" height="100%" style={{ flex: 1 }}>
+              <BarChart data={buyersByCountry.slice(0, 8)} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0ede6" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
@@ -261,7 +262,7 @@ function Analytics() {
           ) : <p className="ana-empty">No buyer country data yet.</p>}
         </div>
 
-        <div className="jot-card ana-card-sm">
+        <div className="jot-card ana-card-sm" style={{ height: "100%", minHeight: "300px", display: "flex", flexDirection: "column" }}>
           <div className="jot-card-head"><h3>Sellers by Country</h3></div>
           {sellersByCountry.length ? (
             <>

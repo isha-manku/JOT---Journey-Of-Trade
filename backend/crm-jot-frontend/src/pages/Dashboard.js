@@ -157,6 +157,27 @@ function Dashboard() {
 
   const [modal,       setModal]       = useState(null);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
+  
+  const [unreadData, setUnreadData] = useState({ total: 0, senders: [] });
+
+  useEffect(() => {
+    const myId = parseInt(localStorage.getItem("userId") || "0");
+    if (!myId) return;
+    const fetchUnread = () => {
+      fetch(`http://localhost:5000/messages/unread?userId=${myId}`)
+        .then(r => r.json())
+        .then(data => setUnreadData(data))
+        .catch(() => {});
+    };
+    fetchUnread();
+
+    const handleEvent = (e) => {
+      if (e.detail) setUnreadData(e.detail);
+    };
+    window.addEventListener('unreadMessagesUpdate', handleEvent);
+    return () => window.removeEventListener('unreadMessagesUpdate', handleEvent);
+  }, []);
+
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -471,6 +492,28 @@ function Dashboard() {
               <span className="qa-label">Generate Document</span>
               <FiChevronRight size={15} className="qa-arrow" />
             </button>
+          </div>
+
+          <div className="jot-card jot-events-card" style={{ marginBottom: "20px" }}>
+            <h3 style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              Unread Messages
+              {unreadData.total > 0 && <span style={{ background: "#d9534f", color: "white", borderRadius: "12px", padding: "2px 8px", fontSize: "12px" }}>{unreadData.total} Total</span>}
+            </h3>
+            {unreadData.senders && unreadData.senders.length > 0 ? (
+              <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
+                {unreadData.senders.map((s, idx) => (
+                  <li key={idx} style={{ padding: "8px 0", borderBottom: "1px solid #f1f1f1", display: "flex", justifyContent: "space-between", cursor: "pointer" }} onClick={() => navigate("/messages")}>
+                    <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ color: "#c9a96e" }}>•</span>
+                      {s.sender_name || s.channel}
+                    </span>
+                    <span style={{ fontWeight: "bold", color: "#123524" }}>({s.count})</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p style={{ fontSize: 13, color: "#aaa", padding: "8px 0" }}>No unread messages</p>
+            )}
           </div>
 
           <div className="jot-card jot-events-card">

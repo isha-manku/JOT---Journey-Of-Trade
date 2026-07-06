@@ -656,8 +656,10 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
     const latexSource = tplVersions[0].latex_source;
 
     // Load templates, companies, and products for branding context
-    const tpls = await query("SELECT company_id, product_id FROM doc_templates WHERE id = ?", [doc.template_id]);
+    const tpls = await query("SELECT company_id, product_id, document_type_id FROM doc_templates WHERE id = ?", [doc.template_id]);
     const tpl = tpls[0];
+    const doctypes = await query("SELECT code FROM doc_document_types WHERE id = ?", [tpl.document_type_id]);
+    const doctypeCode = doctypes.length > 0 ? doctypes[0].code : "en";
     const companies = await query("SELECT branding FROM doc_companies WHERE id = ?", [tpl.company_id]);
     const companyBranding = typeof companies[0].branding === "string" ? JSON.parse(companies[0].branding) : (companies[0].branding || {});
     const products = await query("SELECT name, unit FROM doc_products WHERE id = ?", [tpl.product_id]);
@@ -683,6 +685,8 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
       product_name: product.name,
       unit: product.unit,
       labels,
+      _lang: lang,
+      _doctype: doctypeCode,
       ...formValues
     };
 

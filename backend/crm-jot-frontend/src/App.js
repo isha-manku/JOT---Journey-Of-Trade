@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 
 import { FiGrid, FiCalendar, FiMessageSquare, FiShoppingBag, FiUsers, FiDollarSign, FiBriefcase, FiFileText, FiBarChart2, FiPackage, FiMessageCircle, FiSettings, FiX, FiCheckCircle, FiLogOut } from "react-icons/fi";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import Buyers         from "./pages/Buyers";
 import BuyersRecycleBin from "./pages/BuyersRecycleBin";
@@ -43,11 +43,11 @@ const NAV_ITEMS = [
   { to: "/sellers",   label: "Sellers",   icon: FiShoppingBag,  roles: ["admin","manager","member"] },
   { to: "/accounts",  label: "Accounts",  icon: FiDollarSign,   roles: ["admin","manager"] },
   { to: "/companies", label: "Companies", icon: FiBriefcase,    roles: ["admin","manager"] },
-  { to: "/generate",  label: "Documents", icon: FiFileText,     roles: ["admin","manager"] },
-  { to: "/analytics", label: "Analytics", icon: FiBarChart2,    roles: ["admin","manager"] },
+  { to: "/generate",  label: "Documents", icon: FiFileText,     roles: ["admin","manager","member"] },
+  { to: "/analytics", label: "Analytics", icon: FiBarChart2,    roles: ["admin","manager","member"] },
   { to: "/product-analytics", label: "Products", icon: FiPackage, roles: ["admin","manager","member"] },
   { to: "/messages",  label: "Messages",  icon: FiMessageCircle,roles: ["admin","manager","member"] },
-  { to: "/settings",  label: "Settings",  icon: FiSettings,     roles: ["admin"] },
+  { to: "/settings",  label: "Settings",  icon: FiSettings,     roles: ["admin", "manager", "member"] },
 ];
 
 // ── Key stored in localStorage to track last-read message id ─────────────────
@@ -61,7 +61,7 @@ function Layout() {
   const role     = localStorage.getItem("role")     || "member";
   const myId     = parseInt(localStorage.getItem("userId") || "0");
 
-  const initials = fullName
+    const initials = fullName
     .split(" ")
     .map((w) => w[0])
     .join("")
@@ -83,34 +83,18 @@ function Layout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myId]);
 
-  // When user navigates TO /messages, mark all as read
-  useEffect(() => {
-    if (location.pathname === "/messages") {
-      markAllRead();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+    // When user navigates TO /messages, mark all as read
+    // Removed because read status is now tracked per conversation in Messages.js
 
   const checkUnread = () => {
     if (!myId) return;
-    const lastReadId = parseInt(localStorage.getItem(LAST_READ_KEY) || "0");
 
-    // Fetch general + all DM messages addressed to me
-    fetch(`http://localhost:5000/messages/unread?userId=${myId}&lastReadId=${lastReadId}`)
-      .then(r => r.json())
-      .then(data => setUnread(data.count || 0))
-      .catch(() => {});
-  };
-
-  const markAllRead = () => {
-    if (!myId) return;
-    fetch(`http://localhost:5000/messages/latest-id?userId=${myId}`)
+    fetch(`http://localhost:5000/messages/unread?userId=${myId}`)
       .then(r => r.json())
       .then(data => {
-        if (data.id) {
-          localStorage.setItem(LAST_READ_KEY, data.id);
-          setUnread(0);
-        }
+        setUnread(data.total || 0);
+        // Also dispatch an event so other components can pick up the data
+        window.dispatchEvent(new CustomEvent('unreadMessagesUpdate', { detail: data }));
       })
       .catch(() => {});
   };

@@ -40,8 +40,19 @@ export default function BuyerProfileDocumentsPage() {
   const [selectedDocForPreview, setSelectedDocForPreview] = useState<any>(null);
 
   const handlePreviewMenuOpen = (e: React.MouseEvent<HTMLElement>, doc: any) => {
-    setPreviewMenuAnchor(e.currentTarget);
-    setSelectedDocForPreview(doc);
+    if (doc.is_manual) {
+      setPreviewDoc({ 
+        id: doc.id, 
+        number: doc.document_number, 
+        version: doc.latest_version, 
+        is_manual: doc.is_manual, 
+        file_path: doc.file_path,
+        language: 'en'
+      });
+    } else {
+      setPreviewMenuAnchor(e.currentTarget);
+      setSelectedDocForPreview(doc);
+    }
   };
 
   const handlePreviewMenuClose = () => {

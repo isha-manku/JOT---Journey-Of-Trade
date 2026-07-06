@@ -82,8 +82,8 @@ function SellerInquiries() {
   const fetchInquiries = () => {
     fetch("http://localhost:5000/seller-inquiries")
       .then(r => r.json())
-      .then(data => setInquiries(data))
-      .catch(() => {});
+      .then(data => setInquiries(Array.isArray(data) ? data : []))
+      .catch(() => setInquiries([]));
   };
 
   /* ── SUBMIT ── */

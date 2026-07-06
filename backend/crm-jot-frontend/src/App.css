@@ -789,6 +789,26 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
 .set-toast-success { background: #0e2318; color: #c9a96e; }
 .set-toast-error   { background: #fee2e2; color: #991b1b; }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.set-sub-heading { font-size: 13px; font-weight: 700; color: #0e2318; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid #f0ede6; }
+.set-form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.set-form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.set-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #f5f2eb; }
+.set-toggle-row span { font-size: 14px; color: #333; font-weight: 500; }
+.set-toggle { width: 44px; height: 24px; border-radius: 12px; background: #e5e0d5; border: none; cursor: pointer; position: relative; transition: background 0.25s; flex-shrink: 0; }
+.set-toggle-on { background: #0e2318; }
+.set-toggle-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); transition: left 0.25s; }
+.set-toggle-on .set-toggle-thumb { left: 23px; }
+.set-read-only-badge { background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; border: 1px solid #fcd34d; white-space: nowrap; }
+.set-layout { display: grid; grid-template-columns: 200px 1fr; gap: 24px; padding: 24px; }
+.set-page { background: #f5f2eb; min-height: 100vh; }
+.set-content { display: flex; flex-direction: column; gap: 20px; }
+.set-field textarea { padding: 10px 14px; border: 1px solid #e5e0d5; border-radius: 10px; font-size: 14px; color: #222; background: #faf9f6; outline: none; transition: border-color 0.2s; font-family: inherit; width: 100%; resize: vertical; }
+.set-field textarea:focus { border-color: #c9a96e; background: white; }
+@media (max-width: 900px) { .set-layout { grid-template-columns: 1fr; } .set-tabs { flex-direction: row; flex-wrap: wrap; position: static; } .set-form-grid-3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .set-form-grid-2, .set-form-grid-3 { grid-template-columns: 1fr; } }
+
+
 
 /* ══════════════════════════════════════════
    MESSAGES PAGE

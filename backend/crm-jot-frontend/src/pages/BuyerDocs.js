@@ -87,7 +87,9 @@ function BuyerDocs() {
   useEffect(() => {
     const handleMessage = (e) => {
       if (e.data && e.data.action === "navigate" && e.data.to) {
-        navigate(e.data.to);
+        let dest = e.data.to;
+        if (dest === "/login") dest = "/";
+        navigate(dest);
       }
     };
     window.addEventListener("message", handleMessage);

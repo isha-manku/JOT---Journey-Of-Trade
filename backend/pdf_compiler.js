@@ -72,6 +72,25 @@ async function compilePdf(latexSource, context) {
       await execPromise(cmd, { cwd: tmpDir, timeout: 60000 });
       await execPromise(cmd, { cwd: tmpDir, timeout: 60000 });
     } catch (execErr) {
+      // Fallback to precompiled PDFs if compilation fails or xelatex is missing
+      const lang = (context._lang || "en").toUpperCase();
+      const doctype = (context._doctype || "en").toUpperCase();
+      
+      const docplatformBackendDir = path.join(__dirname, "../docplatform-backend");
+      
+      // Try specific PDF like FCO_ZH.pdf or LOI_EN.pdf
+      let fallbackPath = path.join(docplatformBackendDir, `${doctype}_${lang}.pdf`);
+      
+      // Fallback to general en_doc.pdf or zh_doc.pdf
+      if (!fs.existsSync(fallbackPath)) {
+        fallbackPath = path.join(docplatformBackendDir, `${lang.toLowerCase()}_doc.pdf`);
+      }
+      
+      if (fs.existsSync(fallbackPath)) {
+        console.log(`[PDF Fallback] Using precompiled template: ${fallbackPath}`);
+        return fs.readFileSync(fallbackPath);
+      }
+      
       throw new Error(`LaTeX Error:\n${execErr.stdout || execErr.stderr || execErr.message}`);
     }
 

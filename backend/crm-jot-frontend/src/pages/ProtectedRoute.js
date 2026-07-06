@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 // Define which roles can access which routes
 const ROLE_ACCESS = {
   "/analytics":  ["admin", "manager"],
-  "/settings":   ["admin"],
+  "/settings":   ["admin", "manager", "member"],
   "/generate":   ["admin", "manager"],
   "/companies":  ["admin", "manager"],
   "/sellers":    ["admin", "manager", "member"],

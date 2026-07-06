@@ -207,10 +207,12 @@ async def stream_pdf(
     tpl = await db.get(Template, doc.template_id)
     company = await db.get(Company, tpl.company_id)
     product = await db.get(Product, tpl.product_id)
+    doctype = await db.get(DocumentType, tpl.document_type_id)
     context = {
         **(company.branding or {}),
         "product_name": product.name,
         "unit": product.unit,
+        "_doctype": doctype.code if doctype else "en",
         **dv.form_values,  # form values win for any overlapping keys
     }
     
