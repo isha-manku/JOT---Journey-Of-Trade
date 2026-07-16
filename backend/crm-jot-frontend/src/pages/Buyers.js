@@ -20,6 +20,8 @@ const EMPTY_FORM = {
   company_name: "",
   address: "",
   email: "",
+  phone: "",
+  mandate_name: "",
   country: "",
   notes: "",
   products: [{ ...EMPTY_PRODUCT }]
@@ -145,6 +147,8 @@ function Buyers() {
       company_name: b.company_name || "",
       address:      b.address      || "",
       email:        b.email        || "",
+      phone:        b.phone        || "",
+      mandate_name: b.mandate_name || "",
       country:      b.country      || "",
       notes:        b.notes        || "",
       products:     b.products?.length ? b.products : [{ ...EMPTY_PRODUCT }]
@@ -435,7 +439,23 @@ function Buyers() {
                     onChange={e => setField("email", e.target.value)}
                   />
                 </div>
-                    <div className="buyers-field">
+                <div className="buyers-field">
+                  <label>Mobile Number</label>
+                  <input
+                    placeholder="e.g. +1 234 567 8900"
+                    value={form.phone}
+                    onChange={e => setField("phone", e.target.value)}
+                  />
+                </div>
+                <div className="buyers-field">
+                  <label>Mandate Name</label>
+                  <input
+                    placeholder="e.g. Acme Corp Mandate"
+                    value={form.mandate_name}
+                    onChange={e => setField("mandate_name", e.target.value)}
+                  />
+                </div>
+                <div className="buyers-field">
                   <label>Country*</label>
                   <input
                     placeholder="e.g. India"

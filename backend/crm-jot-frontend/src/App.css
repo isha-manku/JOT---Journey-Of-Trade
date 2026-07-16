@@ -1120,7 +1120,7 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
 .buyers-search-clear { position: absolute; right: 13px; color: #aaa; cursor: pointer; }
 
 .buyers-table-outer { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow-x: auto; }
-.buyers-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+.buyers-table { width: 100%; border-collapse: collapse; min-width: 1500px; }
 .buyers-table thead tr { background: #0e2318; }
 .buyers-table th { padding: 13px 16px; text-align: left; font-size: 12px; font-weight: 700; color: #c9a96e; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; border: none; background: #0e2318; }
 .buyers-table td { padding: 13px 16px; border-bottom: 1px solid #f5f2eb; font-size: 13px; color: #333; vertical-align: middle; }
@@ -1159,7 +1159,7 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
 
 .buyer-products-wrap { overflow-x: auto; }
 .buyer-products-title { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: #0e2318; margin-bottom: 10px; }
-.buyer-products-table { width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; min-width: 560px; }
+.buyer-products-table { width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; min-width: 1000px; }
 .buyer-products-table th { background: #0e2318; color: #c9a96e; padding: 10px 14px; font-size: 12px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: 0.4px; }
 .buyer-products-table td { padding: 10px 14px; border-bottom: 1px solid #f0ede6; font-size: 13px; background: white; }
 .buyer-products-table tr:last-child td { border-bottom: none; }
