@@ -1,7 +1,15 @@
-all in different terminals
+To run the application manually, open two different terminals and run the following commands:
 
-PS C:\Users\Ujjwal Dwivedi\Desktop\isha-mankucrm\CRM_JOT\backend\crm-jot-frontend> npm start
+**Terminal 1 (Frontend)**
+1. Navigate to the frontend directory:
+   `cd backend\crm-jot-frontend`
+2. Start the React app:
+   `npm start`
 
-PS C:\Users\Ujjwal Dwivedi\Desktop\isha-mankucrm\CRM_JOT\docplatform-backend> python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+**Terminal 2 (Backend)**
+1. Navigate to the backend directory:
+   `cd backend`
+2. Start the Node.js server:
+   `node server.js`
 
-PS C:\Users\Ujjwal Dwivedi\Desktop\isha-mankucrm\CRM_JOT\backend> node server.js
+(Note: The Python docplatform backend has been completely removed. Document generation and PDF conversion are now handled natively by the Node.js backend).

@@ -497,11 +497,208 @@ router.delete("/sessions/all", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-router.delete("/sessions/:id", async (req, res) => {
+// =============================================================================
+//  TEMPLATE DOCX UPLOAD & SCHEMA API
+// =============================================================================
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
+const documentHydrator = require("./documentHydrator.service");
+
+router.get("/templates/:id/docx", async (req, res) => {
   try {
-    await q("UPDATE sessions SET revoked = 1 WHERE id = ?", [req.params.id]);
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const templateId = req.params.id;
+    const versions = await q("SELECT template_binary FROM doc_template_versions WHERE template_id = ? ORDER BY version DESC LIMIT 1", [templateId]);
+    if (versions.length === 0 || !versions[0].template_binary) {
+      return res.status(404).json({ error: "Template DOCX not found" });
+    }
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    res.send(versions[0].template_binary);
+  } catch (err) {
+    console.error("GET /templates/:id/docx Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/templates/:id/upload-docx", upload.single("file"), async (req, res) => {
+  try {
+    const templateId = req.params.id;
+    const fileBuffer = req.file.buffer;
+
+    // Extract schema dynamically using the hydrator
+    const schema = documentHydrator.extractPlaceholders(fileBuffer);
+
+    // Get the latest template version or create one
+    let versions = await q("SELECT id, version FROM doc_template_versions WHERE template_id = ? ORDER BY version DESC LIMIT 1", [templateId]);
+    let templateVersionId;
+    let versionNum = 1;
+
+    if (versions.length > 0) {
+      templateVersionId = versions[0].id;
+      versionNum = versions[0].version;
+      
+      // Update existing version
+      await q("UPDATE doc_template_versions SET template_binary = ?, placeholder_schema = ? WHERE id = ?", [fileBuffer, JSON.stringify(schema), templateVersionId]);
+    } else {
+      const crypto = require("crypto");
+      templateVersionId = crypto.randomUUID().replace(/-/g, "");
+      await q("INSERT INTO doc_template_versions (id, template_id, version, template_binary, placeholder_schema, is_active, latex_source) VALUES (?, ?, ?, ?, ?, 1, '')", 
+        [templateVersionId, templateId, versionNum, fileBuffer, JSON.stringify(schema)]);
+    }
+
+    // Insert or update schema in doc_document_schemas
+    const crypto = require("crypto");
+    let schemas = await q("SELECT id FROM doc_document_schemas WHERE template_id = ? ORDER BY version DESC LIMIT 1", [templateId]);
+    if (schemas.length === 0) {
+      await q("INSERT INTO doc_document_schemas (id, template_id, version, is_active) VALUES (?, ?, ?, 1)", [crypto.randomUUID().replace(/-/g, ""), templateId, versionNum]);
+    }
+
+    // Set engine_type to docx
+    await q("UPDATE doc_templates SET engine_type = 'docx' WHERE id = ?", [templateId]);
+
+    res.json({ success: true, schema, engine_type: 'docx' });
+  } catch (err) {
+    console.error("DOCX Upload Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/templates/:id/form-schema", async (req, res) => {
+  try {
+    const versions = await q("SELECT placeholder_schema FROM doc_template_versions WHERE template_id = ? AND is_active = 1 ORDER BY version DESC LIMIT 1", [req.params.id]);
+    if (versions.length === 0 || !versions[0].placeholder_schema) {
+      return res.json([]);
+    }
+    const schema = typeof versions[0].placeholder_schema === "string" ? JSON.parse(versions[0].placeholder_schema) : versions[0].placeholder_schema;
+    res.json(schema);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/templates/preview", async (req, res) => {
+  // Can be fully wired to hydrator later if preview needed.
+  res.json({ success: true, message: "Preview handled by client or standard pipeline." });
+});
+
+  router.get("/templates", async (req, res) => {
+    try {
+      const templates = await q(`
+        SELECT t.id, t.name, t.is_active, t.engine_type,
+               c.name as company_name, p.name as product_name, d.name as document_type_name
+        FROM doc_templates t
+        JOIN doc_companies c ON t.company_id = c.id
+        JOIN doc_products p ON t.product_id = p.id
+        JOIN doc_document_types d ON t.document_type_id = d.id
+        ORDER BY t.created_at DESC
+      `);
+      res.json(templates);
+    } catch (err) {
+      console.error("GET /templates Error:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  router.delete("/templates/:id", async (req, res) => {
+    try {
+      await q("DELETE FROM doc_document_schemas WHERE template_id = ?", [req.params.id]);
+      await q("DELETE FROM doc_template_versions WHERE template_id = ?", [req.params.id]);
+      await q("DELETE FROM doc_templates WHERE id = ?", [req.params.id]);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("DELETE /templates Error:", err);
+      if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+        return res.status(400).json({ error: "This template cannot be deleted because it has already been used to generate documents. Please use 'Replace DOCX' to update the template instead." });
+      }
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+router.post("/templates", async (req, res) => {
+  try {
+    const { name, company_name, product_name, document_type_name } = req.body;
+    if (!name || !company_name || !product_name || !document_type_name) return res.status(400).json({error: 'All fields required'});
+    
+    // Get IDs by name (simplified for restoration)
+    const crypto = require('crypto');
+    let comp = await q("SELECT id FROM doc_companies WHERE name=?", [company_name]);
+    if(comp.length===0) {
+       const cid = crypto.randomUUID().replace(/-/g, "");
+       await q("INSERT INTO doc_companies (id, name, code, branding, is_active) VALUES (?, ?, ?, '{}', 1)", [cid, company_name, company_name.substring(0,4).toUpperCase()]);
+       comp = [{id: cid}];
+    }
+    
+    let prod = await q("SELECT id FROM doc_products WHERE name=?", [product_name]);
+    if(prod.length===0) {
+       const pid = crypto.randomUUID().replace(/-/g, "");
+       const pcode = product_name.substring(0,3).toUpperCase() + Math.floor(Math.random()*1000).toString();
+       await q("INSERT INTO doc_products (id, name, code, unit, is_active) VALUES (?, ?, ?, 'MT', 1)", [pid, product_name, pcode.substring(0,10)]);
+       prod = [{id: pid}];
+    }
+    
+    let dtype = await q("SELECT id FROM doc_document_types WHERE name=?", [document_type_name]);
+    if(dtype.length===0) {
+       const did = crypto.randomUUID().replace(/-/g, "");
+       const dcode = document_type_name.substring(0,3).toUpperCase() + Math.floor(Math.random()*1000).toString();
+       await q("INSERT INTO doc_document_types (id, name, code, is_active) VALUES (?, ?, ?, 1)", [did, document_type_name, dcode.substring(0,10)]);
+       dtype = [{id: did}];
+    }
+    
+    const tid = crypto.randomUUID().replace(/-/g, "");
+    await q("INSERT INTO doc_templates (id, company_id, product_id, document_type_id, name, is_active, engine_type) VALUES (?, ?, ?, ?, ?, 1, 'docx')", [tid, comp[0].id, prod[0].id, dtype[0].id, name]);
+    
+    res.json({ success: true, id: tid });
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY' && err.message.includes('uq_template_combo')) {
+      return res.status(400).json({ error: "A template already exists for this Company, Product, and Document Type combination. Please edit the existing one instead." });
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/templates/:id/schema", async (req, res) => {
+  try {
+    const { schema } = req.body;
+    if (!schema || !schema.fields) {
+      return res.status(400).json({ error: "Invalid schema format" });
+    }
+    
+    // Find the latest active version of this template
+    const versions = await q("SELECT id FROM doc_template_versions WHERE template_id = ? AND is_active = 1 ORDER BY version DESC LIMIT 1", [req.params.id]);
+    if (versions.length === 0) {
+      return res.status(404).json({ error: "No active version found for this template." });
+    }
+    const versionId = versions[0].id;
+    
+    // Overwrite the placeholder_schema for the engine
+    await q("UPDATE doc_template_versions SET placeholder_schema = ? WHERE id = ?", [JSON.stringify(schema), versionId]);
+    
+    // Find or create doc_document_schemas for the frontend form fields
+    const crypto = require("crypto");
+    const schemas = await q("SELECT id FROM doc_document_schemas WHERE template_id = ? AND is_active = 1 ORDER BY version DESC LIMIT 1", [req.params.id]);
+    let schemaId;
+    if (schemas.length === 0) {
+       schemaId = crypto.randomUUID().replace(/-/g, "");
+       await q("INSERT INTO doc_document_schemas (id, template_id, version, is_active) VALUES (?, ?, 1, 1)", [schemaId, req.params.id]);
+    } else {
+       schemaId = schemas[0].id;
+    }
+
+    // Clear old fields and insert the new ones
+    await q("DELETE FROM doc_schema_fields WHERE schema_id = ?", [schemaId]);
+    if (schema.fields && schema.fields.length > 0) {
+       for (let i = 0; i < schema.fields.length; i++) {
+           const f = schema.fields[i];
+           await q(
+             "INSERT INTO doc_schema_fields (id, schema_id, `key`, label, field_type, `order`, required) VALUES (?, ?, ?, ?, ?, ?, ?)",
+             [crypto.randomUUID().replace(/-/g, ""), schemaId, f.field_key || f.key || `field_${i}`, f.label || f.field_key || `Field ${i}`, f.type || 'text', i, 0]
+           );
+       }
+    }
+
+    res.json({ success: true, message: "Schema saved successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = { router, sendNotificationEmail };

@@ -1385,6 +1385,75 @@ app.use("/docplatform", (req, res) => {
 });
 app.use("/doc-api", require("./docplatform_router"));
 
+// GET - fetch full buyer profile and documents
+app.get("/buyers/:id/profile", (req, res) => {
+  const buyerId = req.params.id;
+  
+  db.query("SELECT * FROM buyers WHERE id = ?", [buyerId], (err, buyerResult) => {
+    if (err) return res.status(500).send(err);
+    if (buyerResult.length === 0) return res.status(404).send("Buyer not found");
+    
+    const buyer = buyerResult[0];
+    
+    db.query("SELECT * FROM buyer_documents WHERE buyer_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)", [buyerId], (err, docResult) => {
+      if (err) return res.status(500).send(err);
+      
+      const companyMap = {};
+      const uniqueProducts = new Set();
+      const uniqueCompanies = new Set();
+      
+      docResult.forEach(doc => {
+        uniqueCompanies.add(doc.company_name);
+        uniqueProducts.add(`${doc.company_name}::${doc.product_name}`);
+        
+        if (!companyMap[doc.company_name]) {
+          companyMap[doc.company_name] = {
+            company_name: doc.company_name,
+            products: {}
+          };
+        }
+        
+        if (!companyMap[doc.company_name].products[doc.product_name]) {
+          companyMap[doc.company_name].products[doc.product_name] = {
+            product_name: doc.product_name,
+            documents: []
+          };
+        }
+        
+        companyMap[doc.company_name].products[doc.product_name].documents.push({
+          id: doc.id,
+          file_name: doc.file_name,
+          file_path: doc.file_path,
+          uploaded_at: doc.uploaded_at,
+          uploaded_by: doc.uploaded_by
+        });
+      });
+      
+      const companiesList = Object.values(companyMap).map(c => ({
+        company_name: c.company_name,
+        products: Object.values(c.products)
+      }));
+      
+      res.json({
+        buyer: {
+          id: buyer.id,
+          name: buyer.name,
+          country: buyer.country,
+          email: buyer.email,
+          phone: buyer.phone,
+          product: buyer.product
+        },
+        stats: {
+          total_companies: uniqueCompanies.size || 1,
+          total_products: uniqueProducts.size || (buyer.product ? 1 : 0),
+          total_documents: docResult.length
+        },
+        companies: companiesList
+      });
+    });
+  });
+});
+
 app.use(require("./accounts_router"));
 app.use("/settings", settingsRouter);
 app.listen(5000, () => {

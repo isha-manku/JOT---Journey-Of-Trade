@@ -165,6 +165,7 @@ WESTERN-AGRO-CRM/
 ## ✨ Features
 
 ### 👥 CRM Core
+- **Tagless Document Engine**: Upload standard unedited `.docx` files and map document text natively using occurrence-based XML hydration. No more ugly `{{tags}}`. PDF conversion handled directly in Node.js via LibreOffice.
 - Buyer & Seller management with documents
 - Company management
 - Inquiry & follow-up tracking
@@ -227,3 +228,29 @@ WESTERN-AGRO-CRM/
 - The backend **auto-creates all database tables** on first start — no manual SQL import needed.
 - The `uploads/` and `node_modules/` folders are excluded from the repository.
 - Never commit your `.env` file — it contains your database password.
+
+
+## ?? Railway Deployment Guide
+
+Yes, this system is 100% capable of being hosted on Railway (railway.app)!
+
+Since the Document Generation Engine requires LibreOffice for PDF conversions, the deployment uses Nixpacks (Railway's default build system) to automatically install the libreoffice system dependency alongside Node.js.
+
+### Deployment Steps:
+
+1. **Push to GitHub**: Push this repository to a GitHub repository.
+2. **Create Railway Project**: Go to [Railway.app](https://railway.app) and click *New Project* -> *Deploy from GitHub repo*.
+3. **Select Repository**: Select the CRM_JOT repository.
+4. **Database Provisioning**: In your Railway Project, click *New* -> *Database* -> *MySQL*. Wait for it to provision.
+5. **Environment Variables**: Go to your Node.js application settings on Railway. Under *Variables*, add:
+   - DB_HOST: (Your Railway MySQL Host)
+   - DB_USER: (Your Railway MySQL User)
+   - DB_PASS: (Your Railway MySQL Password)
+   - DB_NAME: (Your Railway MySQL Database Name)
+   - DB_PORT: (Your Railway MySQL Port)
+   - PORT: (Set to 5000 or any available port)
+6. **Build Settings**: The provided 
+ixpacks.toml in the ackend folder will automatically instruct Railway to install LibreOffice. Railway will auto-detect the Node.js environment.
+7. **Start Command**: Railway will use 
+pm start by default. Ensure your root package.json has a start script that boots both the frontend and backend, or run them as separate services on Railway.
+

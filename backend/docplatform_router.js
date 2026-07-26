@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("./db");
 const { authenticateCRMUser } = require("./docplatform_auth");
-const { compilePdf } = require("./pdf_compiler");
+
 const crypto = require("crypto");
 
 function uuid() {
@@ -38,10 +38,16 @@ function extractFirstNumber(val) {
 // REFERENCE DATA APIs
 // ---------------------------------------------------------------------------
 
-// GET /reference/companies - List active companies
+// GET /reference/companies - List active companies that have templates
 router.get("/reference/companies", authenticateCRMUser, async (req, res) => {
   try {
-    const rows = await query("SELECT * FROM doc_companies WHERE is_active = 1 ORDER BY name");
+    const rows = await query(`
+      SELECT DISTINCT c.* 
+      FROM doc_companies c
+      JOIN doc_templates t ON t.company_id = c.id
+      WHERE c.is_active = 1 AND t.is_active = 1
+      ORDER BY c.name
+    `);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -652,46 +658,24 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
     const docVersion = versions[0];
     const formValues = typeof docVersion.form_values === "string" ? JSON.parse(docVersion.form_values) : docVersion.form_values;
 
-    const tplVersions = await query("SELECT latex_source FROM doc_template_versions WHERE id = ?", [docVersion.template_version_id]);
-    const latexSource = tplVersions[0].latex_source;
-
-    // Load templates, companies, and products for branding context
-    const tpls = await query("SELECT company_id, product_id, document_type_id FROM doc_templates WHERE id = ?", [doc.template_id]);
-    const tpl = tpls[0];
-    const doctypes = await query("SELECT code FROM doc_document_types WHERE id = ?", [tpl.document_type_id]);
-    const doctypeCode = doctypes.length > 0 ? doctypes[0].code : "en";
-    const companies = await query("SELECT branding FROM doc_companies WHERE id = ?", [tpl.company_id]);
-    const companyBranding = typeof companies[0].branding === "string" ? JSON.parse(companies[0].branding) : (companies[0].branding || {});
-    const products = await query("SELECT name, unit FROM doc_products WHERE id = ?", [tpl.product_id]);
-    const product = products[0];
-
-    const lang = req.query.language || "en";
-    const { labels_en, labels_zh } = require("./labels");
-    const rawLabels = lang === "zh" ? labels_zh : labels_en;
-
-    const labels = {};
-    for (const [k, v] of Object.entries(rawLabels)) {
-      if (typeof v === "string") {
-        labels[k] = v
-          .replace(/\{seller_company\}/g, formValues.seller_company || companyBranding.seller_company || "Seller")
-          .replace(/\{product_name\}/g, product.name || "");
-      } else {
-        labels[k] = v;
+    const tplVersions = await query("SELECT template_binary, placeholder_schema FROM doc_template_versions WHERE id = ?", [docVersion.template_version_id]);
+    const templateBinary = tplVersions[0].template_binary;
+    let schemaMappings = [];
+    if (tplVersions[0].placeholder_schema) {
+      schemaMappings = typeof tplVersions[0].placeholder_schema === 'string' 
+        ? JSON.parse(tplVersions[0].placeholder_schema) 
+        : tplVersions[0].placeholder_schema;
+      if (schemaMappings.fields) {
+        schemaMappings = schemaMappings.fields;
       }
     }
 
-    const context = {
-      ...companyBranding,
-      product_name: product.name,
-      unit: product.unit,
-      labels,
-      _lang: lang,
-      _doctype: doctypeCode,
-      ...formValues
-    };
+    if (!templateBinary) {
+      return res.status(500).json({ error: "No DOCX template binary found for this version." });
+    }
 
-    // Compile LaTeX to PDF
-    const pdfBytes = await compilePdf(latexSource, context);
+    const documentHydrator = require("./documentHydrator.service");
+    const pdfBytes = await documentHydrator.hydrateAndRenderPDF(templateBinary, formValues, schemaMappings);
 
     // Audit view/download
     const action = download ? "download" : "view";

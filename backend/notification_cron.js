@@ -16,7 +16,7 @@ async function checkAndSendNotifications() {
     try {
       receivers = JSON.parse(cfg.receivers);
     } catch (e) { return; }
-    if (receivers.length === 0) return;
+    if (!receivers || receivers.length === 0) return;
 
     const transporter = nodemailer.createTransport({
       host: cfg.smtp_host, port: cfg.smtp_port || 587,

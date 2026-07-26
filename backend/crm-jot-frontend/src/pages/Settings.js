@@ -4,8 +4,10 @@ import {
   FiCheck, FiX, FiPlus, FiEye, FiEyeOff, FiShield,
   FiBriefcase, FiPackage, FiTruck, FiBell, FiSettings,
   FiChevronDown, FiChevronRight, FiMail, FiSend,
-  FiRefreshCw, FiKey, FiClock,
+  FiRefreshCw, FiKey, FiClock, FiFileText
 } from "react-icons/fi";
+
+import TemplateSettings from '../components/TemplateSettings';
 
 const API = "http://localhost:5000";
 const uid    = () => localStorage.getItem("userId");
@@ -1185,6 +1187,7 @@ const TABS = [
   { id:"team",          label:"Users & Roles",  icon:FiUsers,      roles:["admin","manager","member"] },
   { id:"product",       label:"Products",       icon:FiPackage,    roles:["admin","manager","member"] },
   { id:"shipping",      label:"Shipping",       icon:FiTruck,      roles:["admin","manager","member"] },
+  { id:"templates",     label:"Templates",      icon:FiFileText,   roles:["admin","manager","member"] },
   { id:"notifications", label:"Notifications",  icon:FiBell,       roles:["admin","manager","member"] },
   { id:"security",      label:"Security",       icon:FiShield,     roles:["admin","manager","member"] },
   { id:"permissions",   label:"Permissions",    icon:FiSettings,   roles:["admin","manager","member"] },
@@ -1204,6 +1207,7 @@ function Settings() {
     team:          <TeamMembers          onToast={showToast}/>,
     product:       <ProductSettings      onToast={showToast}/>,
     shipping:      <ShippingSettings     onToast={showToast}/>,
+    templates:     <TemplateSettings     onToast={showToast}/>,
     notifications: <NotificationSettings onToast={showToast}/>,
     security:      <SecuritySettings     onToast={showToast}/>,
     permissions:   <RolePermissions/>,
@@ -1238,7 +1242,7 @@ function Settings() {
           
           <div className="set-tabs-divider" />
           <div className="set-tabs-label">Operations</div>
-          {visibleTabs.filter(t => ["product", "shipping"].includes(t.id)).map(t => (
+          {visibleTabs.filter(t => ["product", "shipping", "templates"].includes(t.id)).map(t => (
             <button
               key={t.id}
               className={`set-tab ${activeTab===t.id?"set-tab-active":""}`}

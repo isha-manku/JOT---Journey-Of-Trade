@@ -39,3 +39,14 @@ Thumbs.db
 
 # Testing
 coverage/
+
+# Extra ignores
+*.sql
+*.pdf
+*.txt
+backend/node_modules/
+backend/scratch/
+test*
+backend/test*
+.env
+
