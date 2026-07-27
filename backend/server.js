@@ -1456,6 +1456,15 @@ app.get("/buyers/:id/profile", (req, res) => {
 
 app.use(require("./accounts_router"));
 app.use("/settings", settingsRouter);
+
+// Auto-migrate schema for developers pulling from GitHub
+db.query("ALTER TABLE doc_templates ADD COLUMN engine_type VARCHAR(50) DEFAULT 'legacy_pdf'", (err) => {
+  // If error is ER_DUP_FIELDNAME (1060), the column already exists, so we ignore it.
+  if (!err) {
+    console.log("✅ Auto-migrated doc_templates: added engine_type column");
+  }
+});
+
 app.listen(5000, () => {
   console.log('🚀 Server running on port 5000');
   require('./notification_cron').initCron();
