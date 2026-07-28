@@ -87,6 +87,7 @@ export default function TemplateSettings({ onToast }) {
         } else {
           const errData = await uploadRes.json();
           onToast(errData.error || "Failed to upload DOCX file", "error");
+          fetchTemplates(); // Ensure the table updates even if DOCX upload fails
         }
       } else {
         const d = await res.json();

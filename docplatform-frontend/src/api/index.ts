@@ -12,7 +12,7 @@ export const api = axios.create({
 
 if (import.meta.env.DEV) {
   api.interceptors.request.use(request => {
-    console.group(`📡 API Request: ${request.method?.toUpperCase()} ${request.url}`);
+    console.group(`🚀 API Request: ${request.method?.toUpperCase()} ${request.url}`);
     console.log("Base URL:", request.baseURL);
     console.log("Full URL:", `${request.baseURL}${request.url}`);
     console.log("Params:", request.params);
@@ -20,31 +20,35 @@ if (import.meta.env.DEV) {
     console.groupEnd();
     return request;
   });
+}
 
-  api.interceptors.response.use(response => {
+api.interceptors.response.use(response => {
+  if (import.meta.env.DEV) {
     console.group(`✅ API Response: ${response.config.url}`);
     console.log("Status:", response.status);
     console.log("Payload:", response.data);
     console.groupEnd();
-    return response;
-  }, error => {
+  }
+  return response;
+}, error => {
+  if (import.meta.env.DEV) {
     console.group(`❌ API Error: ${error.config?.url}`);
     console.log("Message:", error.message);
     console.log("Response:", error.response?.data);
     console.groupEnd();
-    
-    // Auto-logout if session is invalid
-    if (error.response?.status === 401) {
-      if (window.parent !== window) {
-        window.parent.postMessage({ action: "navigate", to: "/login", forceLogout: true }, "*");
-      } else {
-        window.location.href = "/login";
-      }
+  }
+  
+  // Auto-logout if session is invalid
+  if (error.response?.status === 401) {
+    if (window.parent !== window) {
+      window.parent.postMessage({ action: "navigate", to: "/login", forceLogout: true }, "*");
+    } else {
+      window.location.href = "/login";
     }
-    
-    return Promise.reject(error);
-  });
-}
+  }
+  
+  return Promise.reject(error);
+});
 
 export const refApi = {
   companies: () => api.get<Company[]>("/reference/companies").then(r => r.data),

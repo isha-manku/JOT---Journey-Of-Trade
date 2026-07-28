@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const cors = require("cors");
 const db = require("./db");
 const { signToken } = require("./docplatform_auth");
@@ -10,7 +10,7 @@ const path = require("path");
 const multer = require("multer");
 const { router: settingsRouter } = require("./settings_router");
 
-// ── Multer Storage Configuration ─────────────────────────────────────────────
+// â”€â”€ Multer Storage Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = path.join(__dirname, "uploads/seller_documents");
@@ -89,7 +89,7 @@ app.use("/uploads", (req, res) => {
   `);
 });
 
-// ── AUTO-CREATE users table ───────────────────────────────────────────────────
+// â”€â”€ AUTO-CREATE users table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 db.query(`
   CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -101,7 +101,7 @@ db.query(`
   )
 `, (err) => {
   if (err) { console.log("Users table error:", err); return; }
-  console.log("✅ Users table ready");
+  console.log("âœ… Users table ready");
 
   // auto-create sellers table
   db.query(`
@@ -118,7 +118,7 @@ db.query(`
     )
   `, (err) => {
     if (err) { console.log("sellers table error:", err); return; }
-    console.log("✅ sellers table ready");
+    console.log("âœ… sellers table ready");
 
     // auto-create seller_documents table
     db.query(`
@@ -135,7 +135,7 @@ db.query(`
       )
     `, (err) => {
       if (err) { console.log("seller_documents table error:", err); return; }
-      console.log("✅ seller_documents table ready");
+      console.log("âœ… seller_documents table ready");
       db.query("ALTER TABLE seller_documents ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE", (alterErr) => {
         if (alterErr && alterErr.code !== 'ER_DUP_FIELDNAME') console.log("seller_documents is_deleted alter error:", alterErr);
       });
@@ -163,7 +163,7 @@ db.query(`
     )
   `, (err) => {
     if (err) { console.log("buyers table error:", err); return; }
-    console.log("✅ buyers table ready");
+    console.log("âœ… buyers table ready");
 
     // auto-create buyer_documents table
     db.query(`
@@ -181,7 +181,7 @@ db.query(`
       )
     `, (err) => {
       if (err) { console.log("buyer_documents table error:", err); return; }
-      console.log("✅ buyer_documents table ready");
+      console.log("âœ… buyer_documents table ready");
     });
   });
 
@@ -206,7 +206,7 @@ db.query(`
     )
   `, (err) => {
     if (err) { console.log("inquiries table error:", err); return; }
-    console.log("✅ inquiries table ready");
+    console.log("âœ… inquiries table ready");
   });
 
   // Idempotent migration for inquiries soft-delete columns
@@ -232,13 +232,13 @@ db.query(`
       db.query(
         "INSERT INTO users (full_name, username, password, role) VALUES (?,?,?,?)",
         ["Vikram Singh", "admin", "12345", "admin"],
-        (err) => { if (!err) console.log("✅ Default admin: admin / 12345"); }
+        (err) => { if (!err) console.log("âœ… Default admin: admin / 12345"); }
       );
     }
   });
 });
 
-// ── Activity helper ───────────────────────────────────────────────────────────
+// â”€â”€ Activity helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const addActivity = (type, title, description) => {
   db.query("INSERT INTO crm_activity (type, title, description) VALUES (?,?,?)", [type, title, description]);
 };
@@ -455,7 +455,7 @@ app.delete("/sellers/:id/permanent", (req, res) => {
   });
 });
 
-// ── Upload documents for a seller ───────────────────────────────────────────
+// â”€â”€ Upload documents for a seller â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.post("/sellers/:id/documents", upload.array("documents"), (req, res) => {
   const sellerId = req.params.id;
   const uploaded_by = req.body.uploaded_by || "System";
@@ -484,7 +484,7 @@ app.post("/sellers/:id/documents", upload.array("documents"), (req, res) => {
   });
 });
 
-// ── Get seller profile with documents hierarchy ───────────────────────────────
+// â”€â”€ Get seller profile with documents hierarchy â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get("/sellers/:id/profile", (req, res) => {
   const sellerId = req.params.id;
   
@@ -553,7 +553,7 @@ app.get("/sellers/:id/profile", (req, res) => {
   });
 });
 
-// POST — soft delete seller document
+// POST â€” soft delete seller document
 app.post("/seller-documents/:id/delete", (req, res) => {
   db.query("UPDATE seller_documents SET is_deleted = 1, deleted_at = NOW() WHERE id = ?", [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -561,7 +561,7 @@ app.post("/seller-documents/:id/delete", (req, res) => {
   });
 });
 
-// ── Download endpoint ────────────────────────────────────────────────────────
+// â”€â”€ Download endpoint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get("/seller-documents/download/:filename", (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(__dirname, "uploads/seller_documents", filename);
@@ -578,7 +578,7 @@ app.get("/seller-documents/download/:filename", (req, res) => {
   });
 });
 // ============================================================
-//  JOT CRM — Updated Buyers Routes (server.js / routes/buyers.js)
+//  JOT CRM â€” Updated Buyers Routes (server.js / routes/buyers.js)
 //  Replace your existing buyers GET/POST/PUT routes with these
 // ============================================================
 
@@ -598,7 +598,7 @@ app.get('/buyers/recycle-bin', (req, res) => {
   });
 });
 
-// POST — add new buyer
+// POST â€” add new buyer
 app.post('/buyers', (req, res) => {
   const { buyer_name, company_name, country, email, phone, address, notes, products } = req.body;
   const sql = `
@@ -611,7 +611,7 @@ app.post('/buyers', (req, res) => {
   });
 });
 
-// POST — upload buyer documents (called after buyer creation)
+// POST â€” upload buyer documents (called after buyer creation)
 app.post("/buyer-documents/upload", buyerUpload.array("files"), (req, res) => {
   const { buyer_id, company_name, product_name, document_type, uploaded_by } = req.body;
   if (!buyer_id) return res.status(400).json({ error: "Buyer ID is required" });
@@ -675,7 +675,7 @@ app.post("/buyer-documents/upload", buyerUpload.array("files"), (req, res) => {
   });
 });
 
-// GET — download buyer document
+// GET â€” download buyer document
 app.get("/buyer-documents/download/:filename", (req, res) => {
   const { filename } = req.params;
   const filePath = path.join(__dirname, "uploads/buyer_documents", filename);
@@ -686,7 +686,7 @@ app.get("/buyer-documents/download/:filename", (req, res) => {
   res.download(filePath, cleanName);
 });
 
-// GET — list buyer documents
+// GET â€” list buyer documents
 app.get("/buyer-documents/:buyer_id", (req, res) => {
   db.query("SELECT * FROM buyer_documents WHERE buyer_id = ? AND is_deleted = 0 ORDER BY uploaded_at DESC", [req.params.buyer_id], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -694,7 +694,7 @@ app.get("/buyer-documents/:buyer_id", (req, res) => {
   });
 });
 
-// POST — soft delete buyer document
+// POST â€” soft delete buyer document
 app.post("/buyer-documents/:id/delete", (req, res) => {
   db.query("UPDATE buyer_documents SET is_deleted = 1, deleted_at = NOW() WHERE id = ?", [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -702,7 +702,7 @@ app.post("/buyer-documents/:id/delete", (req, res) => {
   });
 });
 
-// PUT — update buyer
+// PUT â€” update buyer
 app.put('/buyers/:id', (req, res) => {
   const { buyer_name, company_name, country, email, phone, address, notes, products } = req.body;
   const sql = `
@@ -717,7 +717,7 @@ app.put('/buyers/:id', (req, res) => {
   });
 });
 
-// POST — soft delete buyer
+// POST â€” soft delete buyer
 app.post('/buyers/:id/delete', (req, res) => {
   db.query('UPDATE buyers SET is_deleted = TRUE, deleted_at = NOW() WHERE id = ?', [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -725,7 +725,7 @@ app.post('/buyers/:id/delete', (req, res) => {
   });
 });
 
-// POST — restore buyer
+// POST â€” restore buyer
 app.post('/buyers/:id/restore', (req, res) => {
   db.query('UPDATE buyers SET is_deleted = FALSE, deleted_at = NULL WHERE id = ?', [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -920,9 +920,9 @@ app.get("/activities", (req, res) => {
     res.json(result);
   });
 });
-// ── ADD THIS ROUTE TO server.js (paste before app.listen) ────────────────────
+// â”€â”€ ADD THIS ROUTE TO server.js (paste before app.listen) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// PUT /users/:id/password  — change password with current password verification
+// PUT /users/:id/password  â€” change password with current password verification
 app.put("/users/:id/password", (req, res) => {
   const { id } = req.params;
   const { current_password, new_password } = req.body;
@@ -960,7 +960,7 @@ app.delete("/companies/:id", (req, res) => {
     res.send("Company Deleted");
   });
 });
-// GET /messages — general or DM
+// GET /messages â€” general or DM
 app.get("/messages", (req, res) => {
   const { channel } = req.query;
   const me   = parseInt(req.query.me   || 0);
@@ -1001,7 +1001,7 @@ app.get("/messages", (req, res) => {
   }
 });
  
-// POST /messages — send a message
+// POST /messages â€” send a message
 app.post("/messages", (req, res) => {
   const { sender_id, sender_name, channel, receiver_id, message } = req.body;
  
@@ -1018,7 +1018,7 @@ app.post("/messages", (req, res) => {
   );
 });
  
-// DELETE /messages/:id — admin or own message
+// DELETE /messages/:id â€” admin or own message
 app.delete("/messages/:id", (req, res) => {
   db.query("DELETE FROM messages WHERE id=?", [req.params.id], (err) => {
     if (err) return res.status(500).send(err);
@@ -1029,7 +1029,7 @@ app.delete("/messages/:id", (req, res) => {
    Add these 2 routes to server.js BEFORE app.listen
    ============================================================ */
 
-// GET /messages/unread — returns total unread and breakdown by sender/channel
+// GET /messages/unread â€” returns total unread and breakdown by sender/channel
 app.get("/messages/unread", (req, res) => {
   const userId = parseInt(req.query.userId || 0);
   if (!userId) return res.json({ total: 0, senders: [] });
@@ -1055,7 +1055,7 @@ app.get("/messages/unread", (req, res) => {
   );
 });
 
-// POST /messages/read — mark messages in a conversation as read for a user
+// POST /messages/read â€” mark messages in a conversation as read for a user
 app.post("/messages/read", (req, res) => {
   const { userId, channel, withUser } = req.body;
   if (!userId || !channel) return res.status(400).json({ error: "Missing parameters" });
@@ -1106,9 +1106,9 @@ app.get("/activities", (req, res) => {
     res.json(result);
   });
 });
-// ── ADD THIS ROUTE TO server.js (paste before app.listen) ────────────────────
+// â”€â”€ ADD THIS ROUTE TO server.js (paste before app.listen) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// PUT /users/:id/password  — change password with current password verification
+// PUT /users/:id/password  â€” change password with current password verification
 app.put("/users/:id/password", (req, res) => {
   const { id } = req.params;
   const { current_password, new_password } = req.body;
@@ -1146,7 +1146,7 @@ app.delete("/companies/:id", (req, res) => {
     res.send("Company Deleted");
   });
 });
-// GET /messages — general or DM
+// GET /messages â€” general or DM
 app.get("/messages", (req, res) => {
   const { channel } = req.query;
   const me   = parseInt(req.query.me   || 0);
@@ -1187,7 +1187,7 @@ app.get("/messages", (req, res) => {
   }
 });
  
-// POST /messages — send a message
+// POST /messages â€” send a message
 app.post("/messages", (req, res) => {
   const { sender_id, sender_name, channel, receiver_id, message } = req.body;
  
@@ -1204,7 +1204,7 @@ app.post("/messages", (req, res) => {
   );
 });
  
-// DELETE /messages/:id — admin or own message
+// DELETE /messages/:id â€” admin or own message
 app.delete("/messages/:id", (req, res) => {
   db.query("DELETE FROM messages WHERE id=?", [req.params.id], (err) => {
     if (err) return res.status(500).send(err);
@@ -1215,7 +1215,7 @@ app.delete("/messages/:id", (req, res) => {
    Add these 2 routes to server.js BEFORE app.listen
    ============================================================ */
 
-// GET /messages/unread — count of new messages since lastReadId for this user
+// GET /messages/unread â€” count of new messages since lastReadId for this user
 // Counts: general messages NOT sent by me + DMs sent TO me
 app.get("/messages/unread", (req, res) => {
   const userId     = parseInt(req.query.userId     || 0);
@@ -1239,7 +1239,7 @@ app.get("/messages/unread", (req, res) => {
   );
 });
 
-// GET /messages/latest-id — get the highest message id visible to this user
+// GET /messages/latest-id â€” get the highest message id visible to this user
 // Used to mark all as read when user opens Messages page
 app.get("/messages/latest-id", (req, res) => {
   const userId = parseInt(req.query.userId || 0);
@@ -1273,7 +1273,7 @@ app.get("/seller-inquiries", (req, res) => {
   });
 });
 
-// POST — add new seller inquiry
+// POST â€” add new seller inquiry
 app.post("/seller-inquiries", (req, res) => {
   const {
     inquiry_date, inquiry_source, seller_name, product_name,
@@ -1310,7 +1310,7 @@ app.post("/seller-inquiries", (req, res) => {
   );
 });
 
-// PUT — update seller inquiry
+// PUT â€” update seller inquiry
 app.put("/seller-inquiries/:id", (req, res) => {
   const {
     inquiry_date, inquiry_source, seller_name, product_name,
@@ -1341,7 +1341,7 @@ app.put("/seller-inquiries/:id", (req, res) => {
   );
 });
 
-// DELETE — seller inquiry (Soft Delete)
+// DELETE â€” seller inquiry (Soft Delete)
 app.delete("/seller-inquiries/:id", (req, res) => {
   const deletedBy = req.headers["x-user-name"] || "Unknown";
   db.query("UPDATE seller_inquiries SET is_deleted = TRUE, deleted_at = NOW(), deleted_by = ? WHERE id = ?", [deletedBy, req.params.id], (err) => {
@@ -1461,11 +1461,14 @@ app.use("/settings", settingsRouter);
 db.query("ALTER TABLE doc_templates ADD COLUMN engine_type VARCHAR(50) DEFAULT 'legacy_pdf'", (err) => {
   // If error is ER_DUP_FIELDNAME (1060), the column already exists, so we ignore it.
   if (!err) {
-    console.log("✅ Auto-migrated doc_templates: added engine_type column");
+    console.log("âœ… Auto-migrated doc_templates: added engine_type column");
   }
 });
 
+db.query("ALTER TABLE doc_template_versions ADD COLUMN placeholder_schema LONGTEXT", (err) => { if (!err) console.log("Added placeholder_schema"); });
+
 app.listen(5000, () => {
-  console.log('🚀 Server running on port 5000');
+  console.log('ðŸš€ Server running on port 5000');
   require('./notification_cron').initCron();
 });
+

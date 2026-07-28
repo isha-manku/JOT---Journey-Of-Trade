@@ -54,18 +54,28 @@ export function useDashboardData() {
   const prevMonth = thisMonth === 0 ? 11 : thisMonth - 1;
   const prevYear  = thisMonth === 0 ? thisYear - 1 : thisYear;
 
-  const buyerChange   = computeChange(filterByMonth(buyers,    "created_at",   thisYear, thisMonth).length, filterByMonth(buyers,    "created_at",   prevYear, prevMonth).length);
-  const sellerChange  = computeChange(filterByMonth(sellers,   "created_at",   thisYear, thisMonth).length, filterByMonth(sellers,   "created_at",   prevYear, prevMonth).length);
-  const inquiryChange = computeChange(filterByMonth(inquiries, "inquiry_date", thisYear, thisMonth).length, filterByMonth(inquiries, "inquiry_date", prevYear, prevMonth).length);
+  const safeFilter = (arr, dateField, year, month) => {
+    if (!Array.isArray(arr)) return [];
+    return arr.filter((item) => {
+      const d = new Date(item[dateField]);
+      return d.getFullYear() === year && d.getMonth() === month;
+    });
+  };
+
+  const buyerChange   = computeChange(safeFilter(buyers,    "created_at",   thisYear, thisMonth).length, safeFilter(buyers,    "created_at",   prevYear, prevMonth).length);
+  const sellerChange  = computeChange(safeFilter(sellers,   "created_at",   thisYear, thisMonth).length, safeFilter(sellers,   "created_at",   prevYear, prevMonth).length);
+  const inquiryChange = computeChange(safeFilter(inquiries, "inquiry_date", thisYear, thisMonth).length, safeFilter(inquiries, "inquiry_date", prevYear, prevMonth).length);
+
+  const safeInquiries = Array.isArray(inquiries) ? inquiries : [];
 
   const genuineNames = new Set(
-    inquiries.filter(i => (i.buyer_quality_rating || "").toLowerCase() === "genuine buyer")
+    safeInquiries.filter(i => (i.buyer_quality_rating || "").toLowerCase() === "genuine buyer")
       .map(i => (i.buyer_name || "").toLowerCase().trim()).filter(Boolean)
   );
   
   const bonafideChange = computeChange(
-    inquiries.filter(i => { const d = new Date(i.inquiry_date); return (i.buyer_quality_rating||"").toLowerCase()==="genuine buyer" && d.getFullYear()===thisYear && d.getMonth()===thisMonth; }).length,
-    inquiries.filter(i => { const d = new Date(i.inquiry_date); return (i.buyer_quality_rating||"").toLowerCase()==="genuine buyer" && d.getFullYear()===prevYear && d.getMonth()===prevMonth; }).length
+    safeInquiries.filter(i => { const d = new Date(i.inquiry_date); return (i.buyer_quality_rating||"").toLowerCase()==="genuine buyer" && d.getFullYear()===thisYear && d.getMonth()===thisMonth; }).length,
+    safeInquiries.filter(i => { const d = new Date(i.inquiry_date); return (i.buyer_quality_rating||"").toLowerCase()==="genuine buyer" && d.getFullYear()===prevYear && d.getMonth()===prevMonth; }).length
   );
 
   return {

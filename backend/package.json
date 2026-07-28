@@ -20,9 +20,13 @@
     "fs": "^0.0.1-security",
     "multer": "^2.2.0",
     "mysql2": "^3.22.2",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.13",
     "nunjucks": "^3.2.4",
     "path": "^0.12.7",
     "pdf-parse": "^2.4.5",
-    "pizzip": "^3.2.0"
+    "pizzip": "^3.2.0",
+    "qrcode": "^1.5.3",
+    "speakeasy": "^2.0.0"
   }
 }

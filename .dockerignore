@@ -1,0 +1,19 @@
+# Ignore node_modules to avoid massive context uploads and native build mismatches
+node_modules/
+backend/node_modules/
+docplatform-frontend/node_modules/
+backend/crm-jot-frontend/node_modules/
+
+# Ignore local config files
+.env
+.env.*
+
+# Ignore logs and git
+.git/
+*.log
+npm-debug.log*
+
+# Ignore generated output
+backend/uploads/
+docplatform-frontend/dist/
+backend/crm-jot-frontend/build/
