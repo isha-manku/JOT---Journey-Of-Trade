@@ -1,197 +1,145 @@
-# 🌾 WESTERN AGRO CRM
+# CRM JOT — Enterprise CRM System
 
-A full-stack **Commodity Trading CRM** built for import/export, logistics, and brokerage businesses.  
-Features a **Business Intelligence Dashboard**, financial ledger, commission tracking, buyer/seller management, and route analytics.
-
----
-
-## 📋 Table of Contents
-
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-  - [1. Clone the Repository](#1-clone-the-repository)
-  - [2. Set Up MySQL Database](#2-set-up-mysql-database)
-  - [3. Configure Backend Environment](#3-configure-backend-environment)
-  - [4. Run the Backend](#4-run-the-backend)
-  - [5. Run the Frontend](#5-run-the-frontend)
-- [Project Structure](#project-structure)
-- [Features](#features)
-- [Default Login](#default-login)
+A full-featured CRM application with buyer/seller management, inquiry tracking, document generation, accounts ledger, BI dashboards, and more. Deployable with a single click using Docker.
 
 ---
 
-## 🛠 Tech Stack
+## 🚀 Quick Start (Recommended — Docker)
 
-| Layer | Technology |
+**The only thing you need is Docker Desktop. No Node.js, MySQL, or any other software required.**
+
+### Step 1 — Install Docker Desktop
+Download and install from: https://www.docker.com/products/docker-desktop  
+Restart your computer after installation.
+
+### Step 2 — Clone or Download the Repository
+```bash
+git clone https://github.com/ujjwal200629/C_R_M.git
+cd C_R_M
+```
+Or download the ZIP from GitHub and extract it.
+
+### Step 3 — Run the Application
+**Windows:** Double-click `start.bat`
+
+**Mac / Linux:** Open terminal and run:
+```bash
+bash start.sh
+```
+
+### Step 4 — Open the App
+The browser will open automatically at:
+> **http://localhost:5000**
+
+**Default Login:**
+| Field | Value |
 |---|---|
-| **Frontend** | React.js (Create React App) |
-| **Backend** | Node.js + Express.js |
-| **Database** | MySQL |
-| **Charts** | Recharts |
-| **Icons** | React Icons (Feather) |
-| **Docs** | docxtemplater + pizzip |
+| Username | `admin` |
+| Password | `12345` |
+
+> ⏳ **First run takes 10–15 minutes** — Docker downloads and builds everything automatically. Subsequent starts take under 30 seconds.
 
 ---
 
-## ✅ Prerequisites
-
-Make sure the following are installed on the target system:
-
-| Tool | Version | Download |
-|---|---|---|
-| **Node.js** | v18 or higher | https://nodejs.org |
-| **MySQL** | v8.0 or higher | https://dev.mysql.com/downloads/ |
-| **Git** | Any recent | https://git-scm.com |
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the Repository
+## 🛑 Stopping the Application
 
 ```bash
-git clone https://github.com/ujjwal200629/WESTERN-AGRO-CRM.git
-cd WESTERN-AGRO-CRM
+docker compose down
 ```
+
+Or open Docker Desktop → find the `c_r_m` stack → click the Stop button.
 
 ---
 
-### 2. Set Up MySQL Database
+## 🔄 Resetting the Database
 
-Open your MySQL client (MySQL Workbench, terminal, etc.) and run:
+To wipe all data and start fresh from a clean database:
 
-```sql
-CREATE DATABASE crm_jot;
-```
+**Windows:** Double-click `reset-db.bat`  
+**Mac/Linux:** `bash reset-db.sh`
 
-> The backend will automatically create all tables on first run — no SQL schema file needed.
-
----
-
-### 3. Configure Backend Environment
-
-```bash
-cd backend
-cp .env.example .env
-```
-
-Now open `backend/.env` and fill in your MySQL credentials:
-
-```env
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_mysql_password_here
-DB_NAME=crm_jot
-PORT=5000
-```
-
-> ⚠️ Replace `your_mysql_password_here` with your actual MySQL root password.
+Then run `start.bat` again.
 
 ---
 
-### 4. Run the Backend
+## ⚙️ System Requirements
 
-```bash
-# Inside the /backend folder
-npm install
-node server.js
-```
-
-You should see:
-```
-🚀 Server running on port 5000
-MySQL Connected
-✅ Users table ready
-✅ ...all tables ready
-```
-
-> The backend runs on **http://localhost:5000**
+| Requirement | Minimum |
+|---|---|
+| OS | Windows 10/11, macOS 11+, Ubuntu 20.04+ |
+| RAM | 8 GB (4 GB allocated to Docker) |
+| Disk Space | 10 GB free |
+| Internet | Required for first build only |
 
 ---
 
-### 5. Run the Frontend
+## 🔧 Port Conflict Fix
 
-Open a **new terminal window**:
+If port 5000 is already in use on your machine:
 
-```bash
-cd backend/crm-jot-frontend
-npm install
-npm start
-```
-
-The browser will automatically open at **http://localhost:3000**
-
-> ⏳ First `npm install` may take 1–2 minutes to download all dependencies.
+1. Create a file named `.env` in the project root folder.
+2. Add this line:
+   ```
+   HOST_BACKEND_PORT=5001
+   ```
+3. Run `start.bat` again and open **http://localhost:5001**.
 
 ---
 
-## 📁 Project Structure
+## 🗂️ Project Structure
 
 ```
-WESTERN-AGRO-CRM/
+C_R_M/
+├── start.bat                  # One-click Windows startup
+├── start.sh                   # One-click Mac/Linux startup
+├── reset-db.bat               # Windows database reset
+├── reset-db.sh                # Mac/Linux database reset
+├── docker-compose.yml         # Docker service definitions
+├── Dockerfile                 # Multi-stage build (frontend + backend)
+├── schema.sql                 # Database schema (auto-imported on first run)
+├── .env.example               # Environment variable template
 ├── backend/
-│   ├── server.js              # Express server + all API routes
+│   ├── server.js              # Express API server
 │   ├── accounts_router.js     # Accounts & BI dashboard API
-│   ├── db.js                  # MySQL connection
-│   ├── setup_accounts.js      # Database table initializer
-│   ├── .env.example           # Environment variable template
-│   ├── package.json
-│   ├── templates/             # Word document templates
-│   ├── uploads/               # Uploaded files (auto-created)
-│   └── crm-jot-frontend/      # React frontend
-│       ├── src/
-│       │   ├── App.js
-│       │   ├── pages/
-│       │   │   ├── Accounts.js
-│       │   │   ├── AccountsDashboard.js   # BI Dashboard
-│       │   │   ├── BuyerDashboard.js
-│       │   │   ├── SellerDashboard.js
-│       │   │   ├── ProductDashboard.js
-│       │   │   ├── CompanyDashboard.js
-│       │   │   ├── PortDashboard.js
-│       │   │   ├── Buyers.js
-│       │   │   ├── Sellers.js
-│       │   │   ├── Companies.js
-│       │   │   ├── Inquiries.js
-│       │   │   ├── Dashboard.js
-│       │   │   └── ...
-│       │   └── index.js
-│       └── package.json
+│   ├── settings_router.js     # Settings & document template API
+│   ├── documentHydrator.service.js  # DOCX generation engine
+│   ├── entrypoint.sh          # Container startup script
+│   ├── crm-jot-frontend/      # React CRM frontend
+│   └── uploads/               # Uploaded files (persisted via Docker volume)
+└── docplatform-frontend/      # Document platform frontend (Vite/React)
 ```
 
 ---
 
 ## ✨ Features
 
-### 👥 CRM Core
-- **Tagless Document Engine**: Upload standard unedited `.docx` files and map document text natively using occurrence-based XML hydration. No more ugly `{{tags}}`. PDF conversion handled directly in Node.js via LibreOffice.
-- Buyer & Seller management with documents
-- Company management
-- Inquiry & follow-up tracking
-- Calendar & task scheduling
-- Messaging system
+### CRM Core
+- **Buyer & Seller Management** — full profiles, documents, history
+- **Company & Product Management**
+- **Inquiry & Follow-up Tracking** — with status pipeline
+- **Calendar & Task Scheduling**
+- **Messaging System** — internal notifications
+- **Document Engine** — upload `.docx` templates, map fields, generate filled documents
 
-### 💰 Accounts Module
+### Accounts Module
 - Financial transaction ledger
-- Admin/Manager role-based access
 - Cost price, selling price, margin, net profit tracking
 - Commission mandate management (IMPFA)
 - Transaction lock on completion
-- Soft-delete / cancel with audit trail
+- Soft-delete / cancel with full audit trail
+- Admin/Manager role-based access control
 
-### 📊 BI Dashboard (Admin Only)
-- **Executive KPI cards** — Revenue, Profit, Margin, Commission
-- **Monthly trends** — Area charts with Recharts
-- **Client Intelligence** — Buyer & Seller drilldowns
-- **Product Intelligence** — Top products by profit & tonnage
-- **Route Analytics** — Most profitable trade routes
-- **Supplier × Product Matrix** — Company performance
-- **Port Intelligence** — Loading & destination port rankings
-- **Global filters** — Date range, buyer, seller, product, port, payment mode
-- **CSV Export** & **PDF Print** with filter metadata
+### BI Dashboard (Admin Only)
+- Executive KPI cards — Revenue, Profit, Margin, Commission
+- Monthly trend charts (area charts)
+- Buyer & Seller intelligence drilldowns
+- Product intelligence — top products by profit & tonnage
+- Route analytics — most profitable trade routes
+- Port intelligence — loading & destination port rankings
+- Global filters — date range, buyer, seller, product, port, payment mode
+- CSV Export & PDF Print
 
-### 🔐 Role-Based Access
+### Role-Based Access
 | Feature | Admin | Manager |
 |---|---|---|
 | View Accounts Ledger | ✅ | ❌ |
@@ -202,55 +150,57 @@ WESTERN-AGRO-CRM/
 
 ---
 
-## 🔑 Default Login
+## 🐳 Docker Architecture
 
-| Role | Username | Password |
+The application runs as two Docker containers managed by Docker Compose:
+
+| Container | Role | Port |
 |---|---|---|
-| **Admin** | `admin` | *(set during first run or via Settings)* |
-| **Manager** | `manager` | *(set during first run or via Settings)* |
+| `db` | MySQL 8.0 database | 3306 (internal) |
+| `backend` | Node.js API + React frontend + LibreOffice | 5000 |
 
-> User accounts are managed in the **Settings** page by Admin.
+Everything is served through a **single port (5000)**:
+- `http://localhost:5000` → CRM Frontend (React)
+- `http://localhost:5000/docplatform` → Document Platform Frontend
+- `http://localhost:5000/api/...` → REST API
 
 ---
 
-## 🌐 Ports
+## 🔑 Environment Variables
 
-| Service | URL |
+Copy `.env.example` to `.env` in the project root to customize:
+
+```env
+# Database credentials
+DB_PASSWORD=root
+DB_NAME=crm_jot
+
+# Change these if you have port conflicts
+HOST_DB_PORT=3306
+HOST_BACKEND_PORT=5000
+```
+
+---
+
+## 🛠️ Troubleshooting
+
+| Problem | Solution |
 |---|---|
-| Backend API | http://localhost:5000 |
-| Frontend App | http://localhost:3000 |
+| "Docker is not installed" | Install Docker Desktop from https://www.docker.com/products/docker-desktop |
+| First build fails | Check internet connection. Run `start.bat` again — it resumes from cache |
+| Browser shows "Cannot GET /" | Wait 30 seconds and refresh — server is still warming up |
+| "Port already in use" | See Port Conflict Fix section above |
+| App is very slow | Open Docker Desktop → Settings → Resources → set Memory to at least 4 GB |
+| Login not working | Use `admin` / `12345` (default credentials) |
+| Database has no data | Run `reset-db.bat` then `start.bat` again to re-import the schema |
+| Container keeps restarting | Run `docker compose logs backend` in terminal to see the error |
 
 ---
 
-## 📝 Notes
+## 📞 Support
 
-- **MySQL must be running** before starting the backend.
-- The backend **auto-creates all database tables** on first start — no manual SQL import needed.
-- The `uploads/` and `node_modules/` folders are excluded from the repository.
-- Never commit your `.env` file — it contains your database password.
-
-
-## ?? Railway Deployment Guide
-
-Yes, this system is 100% capable of being hosted on Railway (railway.app)!
-
-Since the Document Generation Engine requires LibreOffice for PDF conversions, the deployment uses Nixpacks (Railway's default build system) to automatically install the libreoffice system dependency alongside Node.js.
-
-### Deployment Steps:
-
-1. **Push to GitHub**: Push this repository to a GitHub repository.
-2. **Create Railway Project**: Go to [Railway.app](https://railway.app) and click *New Project* -> *Deploy from GitHub repo*.
-3. **Select Repository**: Select the CRM_JOT repository.
-4. **Database Provisioning**: In your Railway Project, click *New* -> *Database* -> *MySQL*. Wait for it to provision.
-5. **Environment Variables**: Go to your Node.js application settings on Railway. Under *Variables*, add:
-   - DB_HOST: (Your Railway MySQL Host)
-   - DB_USER: (Your Railway MySQL User)
-   - DB_PASS: (Your Railway MySQL Password)
-   - DB_NAME: (Your Railway MySQL Database Name)
-   - DB_PORT: (Your Railway MySQL Port)
-   - PORT: (Set to 5000 or any available port)
-6. **Build Settings**: The provided 
-ixpacks.toml in the ackend folder will automatically instruct Railway to install LibreOffice. Railway will auto-detect the Node.js environment.
-7. **Start Command**: Railway will use 
-pm start by default. Ensure your root package.json has a start script that boots both the frontend and backend, or run them as separate services on Railway.
-
+For deployment issues, check the container logs:
+```bash
+docker compose logs backend
+docker compose logs db
+```
