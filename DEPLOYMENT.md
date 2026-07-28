@@ -261,3 +261,138 @@ docker compose down
 # Stop everything and DELETE all data (full reset)
 docker compose down -v
 ```
+
+---
+
+## Option 4: Railway (Cloud Hosting)
+
+[Railway](https://railway.app) is a cloud platform that can host this CRM publicly on the internet. The app is deployed as a single Docker container with a Railway-managed MySQL database.
+
+> ⚠️ **Important:** The backend container includes **LibreOffice** for document generation (~600 MB). Railway's free tier (512 MB RAM) is **not sufficient**. You need at least the **Hobby plan ($5/month)** with 1 GB+ RAM allocated to the service.
+
+---
+
+### Step 1 — Push Code to GitHub
+
+Make sure your code is pushed to a GitHub repository (already done if you're using the `C_R_M` repo).
+
+---
+
+### Step 2 — Create a Railway Account
+
+Go to [railway.app](https://railway.app) and sign up (you can use your GitHub account).
+
+---
+
+### Step 3 — Create a New Project
+
+1. Click **"New Project"**
+2. Select **"Deploy from GitHub repo"**
+3. Connect your GitHub account if not already connected
+4. Select the **`C_R_M`** repository
+5. Railway will detect the `Dockerfile` at the root automatically
+
+---
+
+### Step 4 — Add a MySQL Database
+
+Inside your Railway project:
+
+1. Click **"New"** → **"Database"** → **"MySQL"**
+2. Wait for the database to provision (takes ~30 seconds)
+3. Click on the MySQL service → go to the **"Variables"** tab
+4. Note down these values (you'll need them in the next step):
+   - `MYSQLHOST`
+   - `MYSQLUSER`
+   - `MYSQLPASSWORD`
+   - `MYSQLDATABASE`
+   - `MYSQLPORT`
+
+---
+
+### Step 5 — Configure Environment Variables
+
+Click on your **backend service** (the one built from your repo) → go to **"Variables"** tab → add the following:
+
+| Variable | Value |
+|---|---|
+| `DB_HOST` | Copy from `MYSQLHOST` in your Railway MySQL service |
+| `DB_USER` | Copy from `MYSQLUSER` |
+| `DB_PASSWORD` | Copy from `MYSQLPASSWORD` |
+| `DB_NAME` | Copy from `MYSQLDATABASE` |
+| `DB_PORT` | Copy from `MYSQLPORT` (usually `3306`) |
+| `PORT` | `5000` |
+| `JWT_SECRET` | Any long random string, e.g. `crm_secret_key_xyz_2024` |
+
+> 💡 **Tip:** Railway also lets you click "Add Reference" to directly link variables between services instead of copying them manually.
+
+---
+
+### Step 6 — Import the Database Schema
+
+After the service is deployed, you need to import `schema.sql` into the Railway MySQL database.
+
+**Option A — Using Railway's MySQL shell:**
+1. Go to your MySQL service in Railway
+2. Click **"Connect"** → **"MySQL CLI"**
+3. In the shell, run:
+   ```sql
+   source /path/to/schema.sql
+   ```
+
+**Option B — Using a local MySQL client (TablePlus, DBeaver, MySQL Workbench):**
+1. Get connection details from the Railway MySQL service → **"Connect"** tab
+2. Connect using those credentials
+3. Run/import the `schema.sql` file
+
+> ✅ After this, your backend service will auto-migrate any missing columns on startup — you only need to import `schema.sql` once.
+
+---
+
+### Step 7 — Set the Start Command (if needed)
+
+Railway should auto-detect the `Dockerfile`. If it asks for a start command, leave it blank — the `Dockerfile`'s `ENTRYPOINT` handles it.
+
+If Railway shows a build error, go to your service **Settings** → **Build** → set:
+- **Builder:** Dockerfile
+- **Dockerfile Path:** `./Dockerfile`
+
+---
+
+### Step 8 — Get Your Public URL
+
+Once deployed, Railway gives you a public URL like:
+```
+https://c-r-m-production.up.railway.app
+```
+
+Go to your service → **"Settings"** → **"Networking"** → **"Generate Domain"** if no URL is shown yet.
+
+Open that URL in your browser — the CRM login page will appear.
+
+**Login:** `admin` / `12345`
+
+---
+
+### Railway Deployment Checklist
+
+- [ ] Code pushed to GitHub
+- [ ] Railway project created from GitHub repo
+- [ ] MySQL database service added to the project
+- [ ] All 6 environment variables configured on the backend service
+- [ ] `schema.sql` imported into the Railway MySQL database
+- [ ] Service deployed successfully (green status)
+- [ ] Public domain generated
+- [ ] Login tested with `admin` / `12345`
+
+---
+
+### Railway Cost Estimate
+
+| Plan | RAM | Cost | Suitable? |
+|---|---|---|---|
+| Free | 512 MB | $0 | ❌ Too low for LibreOffice |
+| Hobby | 1 GB | ~$5/month | ✅ Minimum recommended |
+| Pro | 2 GB+ | ~$10–20/month | ✅ Ideal for production |
+
+> The MySQL database on Railway costs ~$1–5/month additionally depending on storage usage.
