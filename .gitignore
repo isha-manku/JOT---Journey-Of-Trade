@@ -50,9 +50,11 @@ fix.js
 fix_*.js
 check.js
 
-# SQL backups (too large, sensitive)
-*.sql
+# SQL backups (too large, sensitive) - but NOT schema.sql
 crm_jot_backup.sql
+crm_jot_backup_utf8.sql
+*_backup.sql
+*_backup_utf8.sql
 
 # PDFs and raw text
 *.pdf

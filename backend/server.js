@@ -1467,6 +1467,24 @@ db.query("ALTER TABLE doc_templates ADD COLUMN engine_type VARCHAR(50) DEFAULT '
 
 db.query("ALTER TABLE doc_template_versions ADD COLUMN placeholder_schema LONGTEXT", (err) => { if (!err) console.log("Added placeholder_schema"); });
 
+
+// Serve CRM Frontend static files
+app.use(express.static(path.join(__dirname, 'public/crm')));
+
+// Catch-all for CRM frontend React Router (must be last)
+app.use((req, res, next) => {
+  const skip = ['/api', '/docplatform', '/doc-api', '/uploads', '/settings',
+    '/buyers', '/sellers', '/inquiries', '/companies', '/products',
+    '/ports', '/notifications', '/dashboard', '/auth', '/analytics'];
+  if (skip.some(p => req.url.startsWith(p))) return next();
+  const indexPath = path.join(__dirname, 'public/crm/index.html');
+  if (require('fs').existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(503).send('CRM is still starting up. Please refresh in 30 seconds.');
+  }
+});
+
 app.listen(5000, () => {
   console.log('ðŸš€ Server running on port 5000');
   require('./notification_cron').initCron();
