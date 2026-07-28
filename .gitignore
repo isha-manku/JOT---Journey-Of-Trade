@@ -7,11 +7,12 @@ node_modules/
 build/
 dist/
 
-# Environment variable
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Environment variables - NEVER commit these
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
 
 # Logs
 npm-debug.log*
@@ -40,13 +41,24 @@ Thumbs.db
 # Testing
 coverage/
 
-# Extra ignores
-*.sql
-*.pdf
-*.txt
+# Backend dependencies
 backend/node_modules/
 backend/scratch/
-test*
-backend/test*
-.env
 
+# Dev/fix scripts (not needed by client)
+fix.js
+fix_*.js
+check.js
+
+# SQL backups (too large, sensitive)
+*.sql
+crm_jot_backup.sql
+
+# PDFs and raw text
+*.pdf
+*.txt
+
+# Root package files (not part of the app)
+package.json
+package-lock.json
+scripts/
