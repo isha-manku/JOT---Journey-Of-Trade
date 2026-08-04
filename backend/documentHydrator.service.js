@@ -133,9 +133,9 @@ class DocumentHydratorService {
             args = ['-f', 'pdf', '-o', outputPdfPath, inputDocxPath];
         } else {
             const profileDir = path.join(jobDir, 'lo_profile').replace(/\\/g, '/');
-            cmd = '"D:\\Downloads\\program\\soffice.com"';
+            cmd = '"C:\\Program Files\\LibreOffice\\program\\soffice.exe"';
             args = [`-env:UserInstallation=file:///${profileDir}`, '--headless', '--invisible', '--nologo', '--nodefault', '--norestore', '--convert-to', 'pdf', '--outdir', `"${jobDir}"`, `"${inputDocxPath}"`];
-            cmd = `${cmd.replace(/"/g, '')} ${args.join(' ')}`;
+            cmd = `"${cmd.replace(/"/g, '')}" ${args.join(' ')}`;
             args = []; // spawn shell mode requires command string
         }
         

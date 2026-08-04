@@ -675,7 +675,57 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
     }
 
     const documentHydrator = require("./documentHydrator.service");
-    const pdfBytes = await documentHydrator.hydrateAndRenderPDF(templateBinary, formValues, schemaMappings);
+    let pdfBytes = await documentHydrator.hydrateAndRenderPDF(templateBinary, formValues, schemaMappings);
+
+    // Apply custom annotations if they exist and raw is not requested
+    if (req.query.raw !== 'true' && docVersion.custom_annotations) {
+      const { PDFDocument, rgb } = require('pdf-lib');
+      const fontkit = require('@pdf-lib/fontkit');
+      const fs = require('fs');
+
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      pdfDoc.registerFontkit(fontkit);
+
+      let cambriaFont;
+      try {
+        const fontPath = path.join(__dirname, 'public/fonts/cambria.ttc');
+        if (fs.existsSync(fontPath)) {
+          const fontBytes = fs.readFileSync(fontPath);
+          cambriaFont = await pdfDoc.embedFont(fontBytes, { customName: 'Cambria' });
+        }
+      } catch (e) {
+        console.error("Failed to load Cambria font on backend", e);
+      }
+
+      const annotations = typeof docVersion.custom_annotations === 'string' 
+        ? JSON.parse(docVersion.custom_annotations) 
+        : docVersion.custom_annotations;
+
+      const pages = pdfDoc.getPages();
+      for (const ann of annotations) {
+        if (ann.pageNumber >= 1 && ann.pageNumber <= pages.length) {
+          const page = pages[ann.pageNumber - 1];
+          const { height } = page.getSize();
+          
+          let hex = ann.color.replace('#', '');
+          let r = parseInt(hex.substring(0,2), 16) / 255;
+          let g = parseInt(hex.substring(2,4), 16) / 255;
+          let b = parseInt(hex.substring(4,6), 16) / 255;
+
+          const drawOpts = {
+            x: ann.x,
+            y: height - ann.y - (ann.size || 16),
+            size: ann.size || 16,
+            color: rgb(r, g, b),
+          };
+          if (ann.font === 'Cambria' && cambriaFont) {
+            drawOpts.font = cambriaFont;
+          }
+          page.drawText(ann.text || '', drawOpts);
+        }
+      }
+      pdfBytes = await pdfDoc.save();
+    }
 
     // Audit view/download
     const action = download ? "download" : "view";
@@ -689,7 +739,45 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `${disposition}; filename="${filename}"`);
-    res.send(pdfBytes);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /documents/:id/versions/:version/annotations
+router.get("/documents/:id/versions/:version/annotations", authenticateCRMUser, async (req, res) => {
+  try {
+    const { id, version } = req.params;
+    const versions = await query("SELECT custom_annotations FROM doc_generated_document_versions WHERE document_id = ? AND version = ?", [id, parseInt(version)]);
+    if (versions.length === 0) return res.status(404).json({ error: "Version not found." });
+    
+    let ann = versions[0].custom_annotations;
+    if (typeof ann === 'string') ann = JSON.parse(ann);
+    res.json({ annotations: ann || [] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /documents/:id/versions/:version/annotations
+router.post("/documents/:id/versions/:version/annotations", authenticateCRMUser, async (req, res) => {
+  try {
+    const { id, version } = req.params;
+    const { annotations } = req.body;
+    
+    const versions = await query("SELECT edited_count FROM doc_generated_document_versions WHERE document_id = ? AND version = ?", [id, parseInt(version)]);
+    if (versions.length === 0) return res.status(404).json({ error: "Version not found." });
+    
+    const editedCount = versions[0].edited_count || 0;
+    if (req.user.role === 'member' && editedCount >= 1) {
+      return res.status(403).json({ error: "Members can only edit this document once." });
+    }
+    
+    await query("UPDATE doc_generated_document_versions SET custom_annotations = ?, edited_count = edited_count + 1 WHERE document_id = ? AND version = ?", 
+      [JSON.stringify(annotations), id, parseInt(version)]);
+      
+    res.json({ success: true, message: "Annotations saved successfully." });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

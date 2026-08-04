@@ -1,4 +1,4 @@
-﻿-- MySQL dump 10.13  Distrib 8.0.36, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.36, for Linux (x86_64)
 --
 -- Host: localhost    Database: crm_jot
 -- ------------------------------------------------------
@@ -31,7 +31,7 @@ CREATE TABLE `account_transactions` (
   `status` enum('Draft','Pending Financial Review','Completed','Cancelled') NOT NULL DEFAULT 'Pending Financial Review',
   `buyer_id` int DEFAULT NULL,
   `seller_id` int DEFAULT NULL,
-  `product_id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `product_id` char(32) DEFAULT NULL,
   `supplier_company_id` int DEFAULT NULL,
   `loading_port` varchar(255) NOT NULL,
   `destination_port` varchar(255) NOT NULL,

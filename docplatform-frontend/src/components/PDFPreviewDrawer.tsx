@@ -3,6 +3,7 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import DownloadIcon from "@mui/icons-material/Download";
 import CloseIcon from "@mui/icons-material/Close";
 import { docApi } from "../api";
+import PDFEditor from "./PDFEditor";
 
 export type PreviewDoc = {
   id: string;
@@ -64,11 +65,15 @@ export default function PDFPreviewDrawer({ previewDoc, onClose }: PDFPreviewDraw
             </Stack>
           </Box>
           <Box sx={{ flexGrow: 1, bgcolor: '#e5e5e5' }}>
-            <iframe 
-              src={previewDoc.is_manual ? `http://localhost:5000/uploads/buyer_documents/${previewDoc.file_path?.split(/[\\\\/]/).pop()}` : docApi.pdfUrl(previewDoc.id, previewDoc.version, false, previewDoc.language)}
-              style={{ width: '100%', height: '100%', border: 'none' }}
-              title="PDF Preview"
-            />
+            {previewDoc.is_manual ? (
+              <iframe 
+                src={`http://localhost:5000/uploads/buyer_documents/${previewDoc.file_path?.split(/[\\\\/]/).pop()}`}
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title="PDF Preview"
+              />
+            ) : (
+              <PDFEditor doc={previewDoc} />
+            )}
           </Box>
         </Box>
       )}

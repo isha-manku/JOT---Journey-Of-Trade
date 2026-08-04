@@ -11,6 +11,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "docx": "^9.7.1",
@@ -24,6 +25,7 @@
     "nodemailer": "^6.9.13",
     "nunjucks": "^3.2.4",
     "path": "^0.12.7",
+    "pdf-lib": "^1.17.1",
     "pdf-parse": "^2.4.5",
     "pizzip": "^3.2.0",
     "qrcode": "^1.5.3",

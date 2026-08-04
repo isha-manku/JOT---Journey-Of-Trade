@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const cors = require("cors");
 const db = require("./db");
 const { signToken } = require("./docplatform_auth");
@@ -64,6 +64,7 @@ const buyerUpload = multer({
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/fonts", express.static(path.join(__dirname, "public/fonts")));
 app.use("/uploads", (req, res) => {
   res.status(404).send(`
     <html style="background:#f8f9fa;">
