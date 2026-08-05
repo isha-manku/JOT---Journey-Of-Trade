@@ -25,6 +25,8 @@ RUN apt-get update && apt-get install -y \
     fonts-liberation \
     fonts-dejavu \
     fonts-croscore \
+    fonts-wqy-zenhei \
+    fonts-noto-cjk \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
