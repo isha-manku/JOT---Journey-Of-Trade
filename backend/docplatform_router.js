@@ -675,7 +675,7 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
     }
 
     const documentHydrator = require("./documentHydrator.service");
-    let pdfBytes = await documentHydrator.hydrateAndRenderPDF(templateBinary, formValues, schemaMappings);
+    let pdfBytes = await documentHydrator.hydrateAndRenderPDF(templateBinary, formValues, schemaMappings, req.query.language);
 
     // Apply custom annotations if they exist and raw is not requested
     if (req.query.raw !== 'true' && docVersion.custom_annotations) {

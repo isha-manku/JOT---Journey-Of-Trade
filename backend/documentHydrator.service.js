@@ -62,7 +62,7 @@ class DocumentHydratorService {
    * Hydrates a DOCX template with JSON data, converts it to PDF using LibreOffice,
    * returns the PDF buffer, and strictly cleans up temp files in a finally block.
    */
-  async hydrateAndRenderPDF(templateBuffer, formValues, schemaMappings = []) {
+  async hydrateAndRenderPDF(templateBuffer, formValues, schemaMappings = [], language = 'en') {
     const jobId = crypto.randomUUID();
     
     // RAM Disk Optimization for Linux/Docker, fallback to normal temp on Windows
@@ -119,7 +119,58 @@ class DocumentHydratorService {
         });
       });
 
-      // 3. Save modified XML back into archive
+      // 3.5 Optional: Dynamic Translation for Bilingual View
+      if (language === 'zh') {
+        try {
+          process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // Bypass local cert issues for translation API
+          const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
+          const translate = require('google-translate-api-x');
+          const doc = new DOMParser().parseFromString(xml, 'text/xml');
+          const paragraphs = doc.getElementsByTagName('w:p');
+
+          for (let i = 0; i < paragraphs.length; i++) {
+            const p = paragraphs[i];
+            const textNodes = p.getElementsByTagName('w:t');
+            let engText = '';
+            for (let j = 0; j < textNodes.length; j++) {
+              if (textNodes[j].textContent) {
+                engText += textNodes[j].textContent;
+              }
+            }
+
+            engText = engText.trim();
+            if (engText.length > 0) {
+              try {
+                const res = await translate(engText, { to: 'zh-CN' });
+                
+                const newRun = doc.createElement('w:r');
+                const rPr = doc.createElement('w:rPr');
+                const rFonts = doc.createElement('w:rFonts');
+                rFonts.setAttribute('w:eastAsia', 'Microsoft YaHei');
+                rPr.appendChild(rFonts);
+                newRun.appendChild(rPr);
+                
+                const newText = doc.createElement('w:t');
+                newText.setAttribute('xml:space', 'preserve');
+                newText.textContent = ' / ' + res.text;
+                
+                newRun.appendChild(newText);
+                p.appendChild(newRun);
+                
+                // Slight delay to avoid rate limits on many paragraphs
+                await new Promise(r => setTimeout(r, 100));
+              } catch (err) {
+                console.error("Translation failed for paragraph:", engText.substring(0,30), err);
+              }
+            }
+          }
+          xml = new XMLSerializer().serializeToString(doc);
+        } catch (err) {
+          console.error("Failed to parse/translate XML", err);
+        }
+      }
+
+      // 4. Save modified XML back into archive
       zip.file("word/document.xml", xml);
       const hydratedDocxBuffer = zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' });
       fs.writeFileSync(inputDocxPath, hydratedDocxBuffer);
