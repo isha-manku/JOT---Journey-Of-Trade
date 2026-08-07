@@ -675,7 +675,7 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
     }
 
     const documentHydrator = require("./documentHydrator.service");
-    let pdfBytes = await documentHydrator.hydrateAndRenderPDF(templateBinary, formValues, schemaMappings, req.query.language);
+    let pdfBytes = await documentHydrator.hydrateAndRenderPDF(templateBinary, formValues, schemaMappings, req.query.language, docVersion.edited_html);
 
     // Apply custom annotations if they exist and raw is not requested
     if (req.query.raw !== 'true' && docVersion.custom_annotations) {
@@ -714,14 +714,24 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
 
           const drawOpts = {
             x: ann.x,
-            y: height - ann.y - (ann.size || 16),
-            size: ann.size || 16,
+            y: height - ann.y - (ann.fontSize || 16),
+            size: ann.fontSize || 16,
             color: rgb(r, g, b),
           };
-          if (ann.font === 'Cambria' && cambriaFont) {
+          if (ann.fontFamily === 'Cambria' && cambriaFont) {
             drawOpts.font = cambriaFont;
           }
-          page.drawText(ann.text || '', drawOpts);
+          if (ann.type === 'whiteout') {
+            page.drawRectangle({
+              x: ann.x,
+              y: height - ann.y - (ann.height || 20),
+              width: ann.width || 100,
+              height: ann.height || 20,
+              color: rgb(1, 1, 1),
+            });
+          } else {
+            page.drawText(ann.text || '', drawOpts);
+          }
         }
       }
       pdfBytes = await pdfDoc.save();
@@ -740,6 +750,57 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `${disposition}; filename="${filename}"`);
     res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /documents/:id/versions/:version/html
+router.get("/documents/:id/versions/:version/html", authenticateCRMUser, async (req, res) => {
+  try {
+    const { id, version } = req.params;
+    const versions = await query("SELECT edited_html, form_values, template_version_id FROM doc_generated_document_versions WHERE document_id = ? AND version = ?", [id, parseInt(version)]);
+    if (versions.length === 0) return res.status(404).json({ error: "Version not found." });
+    
+    // If they already have custom HTML, return it
+    if (versions[0].edited_html) {
+      return res.json({ html: versions[0].edited_html });
+    }
+
+    // Otherwise, generate HTML from the hydrated DOCX
+    const docVersion = versions[0];
+    const formValues = typeof docVersion.form_values === "string" ? JSON.parse(docVersion.form_values) : docVersion.form_values;
+    const tplVersions = await query("SELECT template_binary, placeholder_schema FROM doc_template_versions WHERE id = ?", [docVersion.template_version_id]);
+    const templateBinary = tplVersions[0].template_binary;
+    let schemaMappings = [];
+    if (tplVersions[0].placeholder_schema) {
+      schemaMappings = typeof tplVersions[0].placeholder_schema === 'string' 
+        ? JSON.parse(tplVersions[0].placeholder_schema) 
+        : tplVersions[0].placeholder_schema;
+      if (schemaMappings.fields) {
+        schemaMappings = schemaMappings.fields;
+      }
+    }
+
+    const documentHydrator = require("./documentHydrator.service");
+    const html = await documentHydrator.hydrateToHTML(templateBinary, formValues, schemaMappings, req.query.language);
+
+    res.json({ html });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /documents/:id/versions/:version/html
+router.post("/documents/:id/versions/:version/html", authenticateCRMUser, async (req, res) => {
+  try {
+    const { id, version } = req.params;
+    const { html } = req.body;
+    
+    await query("UPDATE doc_generated_document_versions SET edited_html = ?, edited_count = edited_count + 1 WHERE document_id = ? AND version = ?", 
+      [html, id, parseInt(version)]);
+      
+    res.json({ success: true, message: "HTML saved successfully." });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

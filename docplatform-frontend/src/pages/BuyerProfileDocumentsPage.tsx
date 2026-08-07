@@ -301,38 +301,40 @@ export default function BuyerProfileDocumentsPage() {
             </Typography>
           </Grid>
           
-          {/* Middle Column */}
-          <Grid item xs={12} md={4} sx={{ borderRight: { md: '1px solid #E9ECEF' }, pl: { md: 4 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 600, mb: 1 }}>
-              Buyer Details
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 600, mb: 1 }}>
-              Contact Number
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-              E-mail: @{buyer.company_name || 'Ronsons Trading'}
-            </Typography>
+          {/* Labels Column */}
+          <Grid item xs={12} sm={4} md={4} sx={{ borderRight: { md: '1px solid #E9ECEF' }, pl: { md: 4 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Stack spacing={2}>
+              <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 600, display: 'flex', alignItems: 'center', height: '24px' }}>
+                Email
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 600, display: 'flex', alignItems: 'center', height: '24px' }}>
+                Contact Number
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 600, display: 'flex', alignItems: 'center', height: '24px' }}>
+                Address
+              </Typography>
+            </Stack>
           </Grid>
           
-          {/* Right Column */}
-          <Grid item xs={12} md={4} sx={{ pl: { md: 4 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Stack spacing={1.5}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <PhoneIcon sx={{ fontSize: 18, color: '#0e2318' }} />
-                <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  {buyer.phone || '+91 123 45 7890'}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {/* Values Column */}
+          <Grid item xs={12} sm={4} md={4} sx={{ pl: { md: 4, sm: 2 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Stack spacing={2}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, height: '24px' }}>
                 <MailOutlineIcon sx={{ fontSize: 18, color: '#0e2318' }} />
                 <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
                   {buyer.email || 'tejpreet@gmail.com'}
                 </Typography>
               </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, height: '24px' }}>
+                <PhoneIcon sx={{ fontSize: 18, color: '#0e2318' }} />
+                <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                  {buyer.phone || '+91 123 45 7890'}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, height: '24px' }}>
                 <LocationOnIcon sx={{ fontSize: 18, color: '#0e2318' }} />
                 <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  {buyer.country || 'www.ronsonstrading.com'}
+                  {buyer.country || 'USA'}
                 </Typography>
               </Box>
             </Stack>

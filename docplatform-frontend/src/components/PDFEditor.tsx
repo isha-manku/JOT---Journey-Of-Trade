@@ -3,6 +3,7 @@ import { Box, Button, Select, MenuItem, IconButton, TextField, CircularProgress 
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Document, Page, pdfjs } from 'react-pdf';
 import Draggable from 'react-draggable';
+import { Rnd } from 'react-rnd';
 import { PreviewDoc } from './PDFPreviewDrawer';
 import { docApi } from '../api';
 
@@ -13,12 +14,15 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 
 interface Annotation {
   id: string;
+  type: 'text' | 'whiteout';
   x: number;
   y: number;
-  text: string;
-  fontSize: number;
-  color: string;
-  fontFamily: string;
+  width?: number;
+  height?: number;
+  text?: string;
+  fontSize?: number;
+  color?: string;
+  fontFamily?: string;
   pageNumber: number;
 }
 
@@ -51,8 +55,6 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
         })
         .catch(err => console.error("Failed to fetch annotations", err));
         
-      // We load the raw PDF to allow editing on top of it.
-      // If we loaded the baked PDF, the previous text would be non-editable!
       setPdfUrl(docApi.pdfUrl(doc.id, doc.version, false, doc.language) + '&raw=true');
     }
   }, [doc]);
@@ -62,6 +64,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
       ...annotations,
       {
         id: Math.random().toString(36).substr(2, 9),
+        type: 'text',
         x: 50,
         y: 50,
         text: 'Type here...',
@@ -73,10 +76,23 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
     ]);
   };
 
+  const handleAddEraser = () => {
+    setAnnotations([
+      ...annotations,
+      {
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'whiteout',
+        x: 50,
+        y: 80,
+        width: 100,
+        height: 20,
+        pageNumber: targetPage,
+      }
+    ]);
+  };
+
   const handlePageClick = (e: React.MouseEvent, pageIndex: number) => {
-    // Only trigger if they clicked directly on the page background (canvas or page container), 
-    // not on an existing text box
-    if ((e.target as HTMLElement).tagName.toLowerCase() === 'input' || (e.target as HTMLElement).tagName.toLowerCase() === 'svg') {
+    if ((e.target as HTMLElement).tagName.toLowerCase() === 'input' || (e.target as HTMLElement).tagName.toLowerCase() === 'svg' || (e.target as HTMLElement).className.includes('whiteout-box')) {
       return;
     }
     
@@ -88,6 +104,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
       ...annotations,
       {
         id: Math.random().toString(36).substr(2, 9),
+        type: 'text',
         x,
         y,
         text: '', // Start empty
@@ -119,15 +136,11 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
     try {
       const res = await fetch(`/doc-api/documents/${doc.id}/versions/${doc.version}/annotations`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ annotations })
       });
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to save annotations');
-      }
+      if (!res.ok) throw new Error(data.error || 'Failed to save annotations');
       alert('Annotations saved successfully! You can download the baked PDF from the main view.');
     } catch (err: any) {
       console.error(err);
@@ -172,6 +185,9 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
         <Button variant="contained" onClick={handleAddText} sx={{ bgcolor: '#0e2318' }}>
           Add Text
         </Button>
+        <Button variant="contained" onClick={handleAddEraser} sx={{ bgcolor: '#d32f2f', '&:hover': { bgcolor: '#9a0007' } }}>
+          Eraser (Whiteout)
+        </Button>
 
         <Box sx={{ flexGrow: 1 }} />
 
@@ -191,7 +207,11 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
       {/* Scrollable Document Area */}
       <Box sx={{ flexGrow: 1, bgcolor: '#e5e5e5', overflow: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', p: 4, gap: 4 }}>
         <Document
-          file={pdfUrl}
+          file={{
+            url: pdfUrl,
+            withCredentials: true,
+            httpHeaders: { Authorization: `Bearer ${localStorage.getItem('crm_token') || ''}` }
+          }}
           onLoadSuccess={({ numPages }) => setNumPages(numPages)}
           loading={<CircularProgress />}
         >
@@ -201,23 +221,72 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
             
             return (
               <Box 
-                key={`page_${pageIndex}`} 
-                sx={{ position: 'relative', boxShadow: '0 4px 8px rgba(0,0,0,0.2)', mb: 4, cursor: 'text' }}
-                onClick={(e) => handlePageClick(e, pageIndex)}
+                key={index} 
+                className="page-container" 
+                onClick={(e: any) => handlePageClick(e, pageIndex)}
+                sx={{ 
+                  mb: 4, 
+                  position: 'relative', 
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  '&:hover .page-overlay': { opacity: 1 },
+                  '& .whiteout-box': { border: '1px solid transparent !important' },
+                  '& .whiteout-box:hover': { border: '1px dashed #ccc !important' }
+                }}
               >
-                <Page pageNumber={pageIndex} scale={1.0} renderTextLayer={false} renderAnnotationLayer={false} />
+                <Page 
+                  pageNumber={pageIndex} 
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  width={800} 
+                />
                 
-                {/* Annotations Overlay for this specific page */}
-                {pageAnnotations.map(ann => (
-                  <Draggable
-                    key={ann.id}
-                    position={{ x: ann.x, y: ann.y }}
-                    onStop={(e, data) => updateAnnotation(ann.id, { x: data.x, y: data.y })}
-                    bounds="parent"
-                    cancel=".no-drag"
-                  >
+                {pageAnnotations.map(ann => {
+                  if (ann.type === 'whiteout') {
+                    return (
+                      <Rnd
+                        key={ann.id}
+                        className="whiteout-box"
+                        size={{ width: ann.width || 100, height: ann.height || 20 }}
+                        position={{ x: ann.x, y: ann.y }}
+                        onDragStop={(e, d) => updateAnnotation(ann.id, { x: d.x, y: d.y })}
+                        onResizeStop={(e, direction, ref, delta, position) => {
+                          updateAnnotation(ann.id, {
+                            width: parseFloat(ref.style.width),
+                            height: parseFloat(ref.style.height),
+                            ...position,
+                          });
+                        }}
+                        bounds="parent"
+                        style={{
+                          backgroundColor: 'white',
+                          zIndex: 10,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <IconButton 
+                          size="small" 
+                          onClick={(e) => { e.stopPropagation(); deleteAnnotation(ann.id); }} 
+                          sx={{ opacity: 0, '&:hover': { opacity: 1 }, bgcolor: 'rgba(255,255,255,0.9)' }}
+                        >
+                          <DeleteIcon fontSize="small" color="error" />
+                        </IconButton>
+                      </Rnd>
+                    );
+                  }
+
+                  return (
+                    <Draggable
+                      key={ann.id}
+                      position={{ x: ann.x, y: ann.y }}
+                      onStop={(e, data) => updateAnnotation(ann.id, { x: data.x, y: data.y })}
+                      bounds="parent"
+                      cancel=".no-drag"
+                    >
                     <Box sx={{ 
                       position: 'absolute', top: 0, left: 0, cursor: 'move', display: 'flex', alignItems: 'center',
+                      zIndex: 20,
                       '& .action-btns': { display: 'none' },
                       '&:hover': {
                          '& .action-btns': { display: 'block' },
@@ -253,7 +322,8 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                       </Box>
                     </Box>
                   </Draggable>
-                ))}
+                  );
+                })}
               </Box>
             );
           })}

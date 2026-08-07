@@ -62,7 +62,8 @@ const buyerUpload = multer({
 });
 
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/fonts", express.static(path.join(__dirname, "public/fonts")));
 app.use("/uploads", (req, res) => {
@@ -1451,6 +1452,69 @@ app.get("/buyers/:id/profile", (req, res) => {
         },
         companies: companiesList
       });
+    });
+  });
+});
+
+// =============================================================================
+// CUSTOMER LOGS
+// =============================================================================
+
+// GET all buyers who have logs (for "Select Buyer")
+app.get("/customer-logs/buyers", (req, res) => {
+  const sql = `
+    SELECT DISTINCT b.id, b.buyer_name, b.company_name
+    FROM buyers b
+    JOIN customer_logs cl ON b.id = cl.buyer_id
+    WHERE b.is_deleted = 0 OR b.is_deleted IS NULL
+    ORDER BY b.buyer_name ASC
+  `;
+  db.query(sql, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(result);
+  });
+});
+
+// GET logs for a specific buyer
+app.get("/customer-logs/:buyerId", (req, res) => {
+  const sql = `
+    SELECT * FROM customer_logs 
+    WHERE buyer_id = ? 
+    ORDER BY created_at DESC
+  `;
+  db.query(sql, [req.params.buyerId], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(result);
+  });
+});
+
+// POST new log for a buyer
+app.post("/customer-logs", (req, res) => {
+  const { buyer_id, notes } = req.body;
+  if (!buyer_id || !notes) return res.status(400).json({ error: "Buyer ID and notes are required" });
+  
+  const sql = "INSERT INTO customer_logs (buyer_id, notes) VALUES (?, ?)";
+  db.query(sql, [buyer_id, notes], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    // Also fetch the newly created row to get timestamps
+    db.query("SELECT * FROM customer_logs WHERE id = ?", [result.insertId], (err2, result2) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+      res.json(result2[0]);
+    });
+  });
+});
+
+// PUT update an existing log
+app.put("/customer-logs/:id", (req, res) => {
+  const { notes } = req.body;
+  if (!notes) return res.status(400).json({ error: "Notes are required" });
+  
+  const sql = "UPDATE customer_logs SET notes = ? WHERE id = ?";
+  db.query(sql, [notes, req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    db.query("SELECT * FROM customer_logs WHERE id = ?", [req.params.id], (err2, result2) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+      res.json(result2[0]);
     });
   });
 });

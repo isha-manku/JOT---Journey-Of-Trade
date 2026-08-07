@@ -623,7 +623,8 @@ router.post("/templates", async (req, res) => {
     let comp = await q("SELECT id FROM doc_companies WHERE name=?", [company_name]);
     if(comp.length===0) {
        const cid = crypto.randomUUID().replace(/-/g, "");
-       await q("INSERT INTO doc_companies (id, name, code, branding, is_active) VALUES (?, ?, ?, '{}', 1)", [cid, company_name, company_name.substring(0,4).toUpperCase()]);
+       const ccode = company_name.substring(0,4).toUpperCase() + Math.floor(Math.random()*10000).toString();
+       await q("INSERT INTO doc_companies (id, name, code, branding, is_active) VALUES (?, ?, ?, '{}', 1)", [cid, company_name, ccode.substring(0,10)]);
        comp = [{id: cid}];
     }
     

@@ -27,6 +27,7 @@ import Analytics      from "./pages/Analytics";
 import ProductAnalytics from "./pages/ProductAnalytics";
 import Settings       from "./pages/Settings";
 import Messages       from "./pages/Messages";
+import CustomerLogs   from "./pages/CustomerLogs";
 
 import SellerInquiries from "./pages/SellerInquiries";
 import SellerInquiriesRecycleBin from "./pages/SellerInquiriesRecycleBin";
@@ -47,6 +48,7 @@ const NAV_ITEMS = [
   { to: "/analytics", label: "Analytics", icon: FiBarChart2,    roles: ["admin","manager","member"] },
   { to: "/product-analytics", label: "Products", icon: FiPackage, roles: ["admin","manager","member"] },
   { to: "/messages",  label: "Messages",  icon: FiMessageCircle,roles: ["admin","manager","member"] },
+  { to: "/customer-logs", label: "Customer Logs", icon: FiMessageSquare, roles: ["admin", "manager", "member"] },
   { to: "/settings",  label: "Settings",  icon: FiSettings,     roles: ["admin", "manager", "member"] },
 ];
 
@@ -195,6 +197,7 @@ function Layout() {
           <Route path="/product-analytics" element={<ProtectedRoute><ProductAnalytics /></ProtectedRoute>} />
           <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/messages"   element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+          <Route path="/customer-logs" element={<ProtectedRoute><CustomerLogs /></ProtectedRoute>} />
         </Routes>
       </div>
 
