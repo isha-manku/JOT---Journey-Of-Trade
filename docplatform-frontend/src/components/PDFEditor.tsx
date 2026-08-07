@@ -150,7 +150,16 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
     setIsProcessing(false);
   };
 
-  if (!pdfUrl) return <Box sx={{ p: 4, textAlign: 'center' }}>Loading PDF Editor...</Box>;
+  const fileOptions = React.useMemo(() => {
+    if (!pdfUrl) return null;
+    return {
+      url: pdfUrl,
+      withCredentials: true,
+      httpHeaders: { Authorization: `Bearer ${localStorage.getItem('crm_token') || ''}` }
+    };
+  }, [pdfUrl]);
+
+  if (!pdfUrl || !fileOptions) return <Box sx={{ p: 4, textAlign: 'center' }}>Loading PDF Editor...</Box>;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -207,11 +216,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
       {/* Scrollable Document Area */}
       <Box sx={{ flexGrow: 1, bgcolor: '#e5e5e5', overflow: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', p: 4, gap: 4 }}>
         <Document
-          file={{
-            url: pdfUrl,
-            withCredentials: true,
-            httpHeaders: { Authorization: `Bearer ${localStorage.getItem('crm_token') || ''}` }
-          }}
+          file={fileOptions}
           onLoadSuccess={({ numPages }) => setNumPages(numPages)}
           loading={<CircularProgress />}
         >

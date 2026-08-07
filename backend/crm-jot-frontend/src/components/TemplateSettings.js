@@ -58,7 +58,8 @@ export default function TemplateSettings({ onToast }) {
       const res = await fetch(`${API}/settings/templates`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(addForm)
+        body: JSON.stringify(addForm),
+        credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
@@ -75,7 +76,8 @@ export default function TemplateSettings({ onToast }) {
         
         const uploadRes = await fetch(`${API}/settings/templates/${newTemplateId}/upload-docx`, {
           method: "POST",
-          body: formData
+          body: formData,
+          credentials: 'include'
         });
         
         if (uploadRes.ok) {
@@ -106,7 +108,9 @@ export default function TemplateSettings({ onToast }) {
     onToast("Uploading DOCX...");
     try {
       const res = await fetch(`${API}/settings/templates/${id}/upload-docx`, {
-        method: "POST", body: formData
+        method: "POST", 
+        body: formData,
+        credentials: 'include'
       });
       if (res.ok) {
         onToast("DOCX uploaded successfully!");
@@ -124,7 +128,10 @@ export default function TemplateSettings({ onToast }) {
   const handleDeleteTemplate = async (id) => {
     if(!window.confirm("Are you sure you want to delete this template?")) return;
     try {
-      const res = await fetch(`${API}/settings/templates/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API}/settings/templates/${id}`, { 
+        method: 'DELETE',
+        credentials: 'include'
+      });
       if (res.ok) {
         onToast("Template deleted successfully!");
         fetchTemplates();
@@ -138,7 +145,7 @@ export default function TemplateSettings({ onToast }) {
   };
 
   const fetchTemplates = useCallback(() => {
-    fetch(`${API}/settings/templates`)
+    fetch(`${API}/settings/templates`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => {
         if (Array.isArray(d)) setTemplates(d);

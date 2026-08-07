@@ -107,18 +107,20 @@ class DocumentHydratorService {
         mappings.forEach((mapping) => {
           const userValue = formValues[mapping.field_key] || '';
           if (userValue) {
-            const sanitizedUserValue = String(userValue)
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/\n/g, '<w:br/>');
-
             let matchCount = 0;
             xml = xml.replace(xmlRegex, (match) => {
               console.log(`[Hydrator] Match found! match length:`, match.length);
               if (mapping.occurrence_index === undefined || matchCount === mapping.occurrence_index) {
                 matchCount++;
-                return sanitizedUserValue;
+                const xmlTagsInMatch = match.match(/<[^>]+>/g) || [];
+                // Fix: newlines must close and reopen <w:t> because <w:br/> inside <w:t> is invalid in DOCX
+                const validSanitizedUserValue = String(userValue)
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/\n/g, '</w:t><w:br/><w:t>');
+                  
+                return validSanitizedUserValue + xmlTagsInMatch.join('');
               }
               matchCount++;
               return match;

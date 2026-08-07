@@ -600,6 +600,35 @@ router.post("/templates/preview", async (req, res) => {
 
   router.delete("/templates/:id", async (req, res) => {
     try {
+      const cookieHeader = req.headers.cookie;
+      let role = null;
+      if (cookieHeader) {
+        const cookies = {};
+        cookieHeader.split(";").forEach(cookie => {
+          const parts = cookie.split("=");
+          cookies[parts.shift().trim()] = decodeURI(parts.join("="));
+        });
+        
+        if (cookies["crm_session"]) {
+          const { verifyToken } = require("./docplatform_auth");
+          const user = verifyToken(cookies["crm_session"]);
+          if (user) role = user.role;
+        }
+      }
+
+      const isAdminOrManager = role === 'admin' || role === 'manager';
+
+      if (isAdminOrManager) {
+        // Cascade delete all document versions that reference the generated documents of this template
+        await q("DELETE FROM doc_generated_document_versions WHERE document_id IN (SELECT id FROM doc_generated_documents WHERE template_id = ?)", [req.params.id]);
+        
+        // Also cascade delete any versions that might just reference the schema directly (just in case)
+        await q("DELETE FROM doc_generated_document_versions WHERE schema_id IN (SELECT id FROM doc_document_schemas WHERE template_id = ?)", [req.params.id]);
+
+        await q("DELETE FROM doc_generated_documents WHERE template_id = ?", [req.params.id]);
+      }
+
+      await q("DELETE FROM doc_schema_fields WHERE schema_id IN (SELECT id FROM doc_document_schemas WHERE template_id = ?)", [req.params.id]);
       await q("DELETE FROM doc_document_schemas WHERE template_id = ?", [req.params.id]);
       await q("DELETE FROM doc_template_versions WHERE template_id = ?", [req.params.id]);
       await q("DELETE FROM doc_templates WHERE id = ?", [req.params.id]);

@@ -1460,43 +1460,56 @@ app.get("/buyers/:id/profile", (req, res) => {
 // CUSTOMER LOGS
 // =============================================================================
 
-// GET all buyers who have logs (for "Select Buyer")
-app.get("/customer-logs/buyers", (req, res) => {
-  const sql = `
-    SELECT DISTINCT b.id, b.buyer_name, b.company_name
+// GET all contacts (buyers & sellers) who have logs
+app.get("/customer-logs/contacts", (req, res) => {
+  const buyersSql = `
+    SELECT DISTINCT b.id, b.buyer_name as name, b.company_name, 'buyer' as type
     FROM buyers b
     JOIN customer_logs cl ON b.id = cl.buyer_id
     WHERE b.is_deleted = 0 OR b.is_deleted IS NULL
     ORDER BY b.buyer_name ASC
   `;
-  db.query(sql, (err, result) => {
+  const sellersSql = `
+    SELECT DISTINCT s.id, s.name as name, s.country as company_name, 'seller' as type
+    FROM sellers s
+    JOIN customer_logs cl ON s.id = cl.seller_id
+    WHERE s.is_deleted = 0 OR s.is_deleted IS NULL
+    ORDER BY s.name ASC
+  `;
+  
+  db.query(buyersSql, (err, buyers) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(result);
+    db.query(sellersSql, (err2, sellers) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+      res.json({ buyers, sellers });
+    });
   });
 });
 
-// GET logs for a specific buyer
-app.get("/customer-logs/:buyerId", (req, res) => {
+// GET logs for a specific contact (type=buyer|seller)
+app.get("/customer-logs/:type/:id", (req, res) => {
+  const isBuyer = req.params.type === 'buyer';
   const sql = `
     SELECT * FROM customer_logs 
-    WHERE buyer_id = ? 
+    WHERE ${isBuyer ? 'buyer_id' : 'seller_id'} = ? 
     ORDER BY created_at DESC
   `;
-  db.query(sql, [req.params.buyerId], (err, result) => {
+  db.query(sql, [req.params.id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(result);
   });
 });
 
-// POST new log for a buyer
+// POST new log for a buyer or seller
 app.post("/customer-logs", (req, res) => {
-  const { buyer_id, notes } = req.body;
-  if (!buyer_id || !notes) return res.status(400).json({ error: "Buyer ID and notes are required" });
+  const { type, contact_id, notes, author_name } = req.body;
+  if (!contact_id || !notes || !type) return res.status(400).json({ error: "Type, ID and notes are required" });
   
-  const sql = "INSERT INTO customer_logs (buyer_id, notes) VALUES (?, ?)";
-  db.query(sql, [buyer_id, notes], (err, result) => {
+  const isBuyer = type === 'buyer';
+  const sql = `INSERT INTO customer_logs (${isBuyer ? 'buyer_id' : 'seller_id'}, notes, author_name) VALUES (?, ?, ?)`;
+  
+  db.query(sql, [contact_id, notes, author_name || null], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
-    // Also fetch the newly created row to get timestamps
     db.query("SELECT * FROM customer_logs WHERE id = ?", [result.insertId], (err2, result2) => {
       if (err2) return res.status(500).json({ error: err2.message });
       res.json(result2[0]);
@@ -1506,16 +1519,25 @@ app.post("/customer-logs", (req, res) => {
 
 // PUT update an existing log
 app.put("/customer-logs/:id", (req, res) => {
-  const { notes } = req.body;
+  const { notes, editor_name } = req.body;
   if (!notes) return res.status(400).json({ error: "Notes are required" });
   
-  const sql = "UPDATE customer_logs SET notes = ? WHERE id = ?";
-  db.query(sql, [notes, req.params.id], (err, result) => {
+  const sql = "UPDATE customer_logs SET notes = ?, editor_name = ? WHERE id = ?";
+  db.query(sql, [notes, editor_name || null, req.params.id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     db.query("SELECT * FROM customer_logs WHERE id = ?", [req.params.id], (err2, result2) => {
       if (err2) return res.status(500).json({ error: err2.message });
       res.json(result2[0]);
     });
+  });
+});
+
+// DELETE a customer log
+app.delete("/customer-logs/:id", (req, res) => {
+  const sql = "DELETE FROM customer_logs WHERE id = ?";
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: "Log deleted successfully" });
   });
 });
 
