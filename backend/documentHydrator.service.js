@@ -265,6 +265,7 @@ class DocumentHydratorService {
     fs.mkdirSync(jobDir, { recursive: true });
 
     let inputFilePath;
+    let extractedWatermark = null;
     
     try {
       if (editedHtml) {
@@ -451,6 +452,44 @@ class DocumentHydratorService {
           }
         }
         
+        // --- Watermark Fix for LibreOffice ---
+        try {
+          const zip3 = new PizZip(buf);
+          const headerRegex = /word\/(header|document)\d*\.xml/;
+          for (const filename of Object.keys(zip3.files)) {
+            if (headerRegex.test(filename)) {
+              let xml = zip3.file(filename).asText();
+              const pictMatches = xml.match(/<w:pict>.*?<\/w:pict>/gs) || [];
+              for (const pict of pictMatches) {
+                if (pict.includes('WordPictureWatermark')) {
+                  const rIdMatch = pict.match(/<v:imagedata[^>]*r:id="([^"]+)"/);
+                  if (rIdMatch && rIdMatch[1] && !extractedWatermark) {
+                    const rId = rIdMatch[1];
+                    const relsFilename = `word/_rels/${filename.split('/').pop()}.rels`;
+                    if (zip3.files[relsFilename]) {
+                      const relsXml = zip3.file(relsFilename).asText();
+                      const relMatch = new RegExp(`<Relationship[^>]*Id="${rId}"[^>]*Target="([^"]+)"`).exec(relsXml);
+                      if (relMatch && relMatch[1]) {
+                        const imagePath = `word/${relMatch[1]}`;
+                        if (zip3.files[imagePath]) {
+                          extractedWatermark = {
+                            buffer: zip3.file(imagePath).asNodeBuffer(),
+                            ext: imagePath.toLowerCase().split('.').pop()
+                          };
+                        }
+                      }
+                    }
+                  }
+                  xml = xml.replace(pict, '');
+                }
+              }
+              zip3.file(filename, xml);
+            }
+          }
+          buf = zip3.generate({ type: 'nodebuffer', compression: 'DEFLATE' });
+        } catch(e) { console.error("Watermark strip failed:", e); }
+        // ------------------------------------
+
         fs.writeFileSync(inputFilePath, buf);
       }
 
@@ -495,7 +534,41 @@ class DocumentHydratorService {
         throw new Error('PDF conversion succeeded but output file is missing.');
       }
 
-      const pdfBuffer = fs.readFileSync(generatedPdfPath);
+      let pdfBuffer = fs.readFileSync(generatedPdfPath);
+      
+      // --- Re-apply Watermark via pdf-lib ---
+      if (extractedWatermark && extractedWatermark.buffer) {
+        try {
+          const { PDFDocument } = require('pdf-lib');
+          const pdfDoc = await PDFDocument.load(pdfBuffer);
+          let watermarkImage = null;
+          if (extractedWatermark.ext === 'png') {
+            watermarkImage = await pdfDoc.embedPng(extractedWatermark.buffer);
+          } else if (['jpg', 'jpeg'].includes(extractedWatermark.ext)) {
+            watermarkImage = await pdfDoc.embedJpg(extractedWatermark.buffer);
+          }
+          
+          if (watermarkImage) {
+            const pages = pdfDoc.getPages();
+            for (const page of pages) {
+              const { width, height } = page.getSize();
+              const imgWidth = width * 0.7; // Scale to 70% of page width
+              const imgHeight = (watermarkImage.height / watermarkImage.width) * imgWidth;
+              page.drawImage(watermarkImage, {
+                x: width / 2 - imgWidth / 2,
+                y: height / 2 - imgHeight / 2,
+                width: imgWidth,
+                height: imgHeight,
+                opacity: 0.15, // Perfect watermark opacity
+              });
+            }
+            pdfBuffer = Buffer.from(await pdfDoc.save());
+          }
+        } catch(e) {
+          console.error("Failed to re-apply watermark:", e);
+        }
+      }
+      
       return pdfBuffer;
 
     } catch (error) {
