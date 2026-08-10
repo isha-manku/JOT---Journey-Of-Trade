@@ -419,25 +419,8 @@ class DocumentHydratorService {
                   
                   for (let j = 0; j < chunk.length; j++) {
                     const translatedText = tLines[j] ? tLines[j].trim() : chunk[j].text;
-                    const targetNode = chunk[j].node;
-                    const newText = xmlDoc.createElement('w:t');
-                    newText.setAttribute('xml:space', 'preserve');
-                    newText.textContent = ' / ' + translatedText;
-                    targetNode.parentNode.insertBefore(newText, targetNode.nextSibling);
-                    let rNode = targetNode.parentNode;
-                    while (rNode && rNode.nodeName !== 'w:r') rNode = rNode.parentNode;
-                    if (rNode) {
-                      let rPr = null;
-                      for (let k = 0; k < rNode.childNodes.length; k++) {
-                        if (rNode.childNodes[k].nodeName === 'w:rPr') { rPr = rNode.childNodes[k]; break; }
-                      }
-                      if (!rPr) { rPr = xmlDoc.createElement('w:rPr'); rNode.insertBefore(rPr, rNode.firstChild); }
-                      let rFonts = null;
-                      for (let k = 0; k < rPr.childNodes.length; k++) {
-                        if (rPr.childNodes[k].nodeName === 'w:rFonts') { rFonts = rPr.childNodes[k]; break; }
-                      }
-                      if (!rFonts) { rFonts = xmlDoc.createElement('w:rFonts'); rPr.appendChild(rFonts); }
-                      rFonts.setAttribute('w:eastAsia', 'Microsoft YaHei');
+                    if (translatedText) {
+                      chunk[j].node.textContent = chunk[j].node.textContent + ' / ' + translatedText;
                     }
                   }
                 } catch (err) { console.error("Batch translate failed:", err); }
