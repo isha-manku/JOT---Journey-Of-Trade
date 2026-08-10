@@ -273,6 +273,7 @@ class DocumentHydratorService {
           try {
             process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
             const cheerio = require('cheerio');
+            const translateText = require('./translateHelper');
             
             const $ = cheerio.load(editedHtml);
             const textNodes = [];
@@ -316,14 +317,7 @@ class DocumentHydratorService {
               for (let chunk of chunks) {
                 const combined = chunk.map(t => t.text).join('\n');
                 try {
-                  const response = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `q=${encodeURIComponent(combined)}`
-                  });
-                  if (!response.ok) throw new Error(`Translate API error: ${response.status}`);
-                  const data = await response.json();
-                  const translatedCombined = data[0].map(item => item[0]).join('');
+                  const translatedCombined = await translateText(combined);
                   const tLines = translatedCombined.split('\n');
                   
                   for (let j = 0; j < chunk.length; j++) {
@@ -371,6 +365,7 @@ class DocumentHydratorService {
           try {
             process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // Bypass local cert issues for translation API
             const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
+            const translateText = require('./translateHelper');
             const xmlDoc = new DOMParser().parseFromString(xml, 'text/xml');
             const paragraphs = xmlDoc.getElementsByTagName('w:p');
 
@@ -419,14 +414,7 @@ class DocumentHydratorService {
               for (let chunk of chunks) {
                 const combined = chunk.map(t => t.text).join('\n');
                 try {
-                  const response = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `q=${encodeURIComponent(combined)}`
-                  });
-                  if (!response.ok) throw new Error(`Translate API error: ${response.status}`);
-                  const data = await response.json();
-                  const translatedCombined = data[0].map(item => item[0]).join('');
+                  const translatedCombined = await translateText(combined);
                   const tLines = translatedCombined.split('\n');
                   
                   for (let j = 0; j < chunk.length; j++) {
