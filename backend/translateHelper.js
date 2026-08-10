@@ -2,19 +2,10 @@ const https = require('https');
 
 function translateText(text) {
   return new Promise((resolve, reject) => {
-    const data = `q=${encodeURIComponent(text)}`;
-    const options = {
-      hostname: 'translate.googleapis.com',
-      path: '/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(data),
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      }
-    };
+    const email = 'ishamanku62@gmail.com'; 
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh-CN&de=${email}`;
 
-    const req = https.request(options, (res) => {
+    const req = https.get(url, (res) => {
       let body = '';
       res.on('data', chunk => body += chunk);
       res.on('end', () => {
@@ -23,8 +14,10 @@ function translateText(text) {
         }
         try {
           const parsed = JSON.parse(body);
-          const translated = parsed[0].map(item => item[0]).join('');
-          resolve(translated);
+          if (parsed.responseStatus !== 200) {
+            return reject(new Error(`MyMemory Error: ${parsed.responseDetails}`));
+          }
+          resolve(parsed.responseData.translatedText);
         } catch (e) {
           reject(e);
         }
@@ -32,9 +25,20 @@ function translateText(text) {
     });
 
     req.on('error', reject);
-    req.write(data);
     req.end();
   });
 }
 
-module.exports = translateText;
+module.exports = async function(combined) {
+  const lines = combined.split('\n');
+  const results = [];
+  for (let line of lines) {
+    if (!line.trim()) {
+      results.push('');
+      continue;
+    }
+    const res = await translateText(line);
+    results.push(res);
+  }
+  return results.join('\n');
+};
