@@ -144,7 +144,7 @@ export default function BuyerProfileDocumentsPage() {
     });
 
     try {
-      const response = await fetch("http://localhost:5000/buyer-documents/upload", {
+      const response = await fetch("/buyer-documents/upload", {
         method: "POST",
         body: formData
       });
@@ -630,7 +630,7 @@ export default function BuyerProfileDocumentsPage() {
                                     size="small"
                                     onClick={(e) => {
                                       if (doc.is_manual) {
-                                        window.location.href = `http://localhost:5000/buyer-documents/download/${doc.file_path?.split(/[\\\\/]/).pop()}`;
+                                        window.location.href = `/buyer-documents/download/${doc.file_path?.split(/[\\\\/]/).pop()}`;
                                       } else {
                                         handleDownloadMenuOpen(e, doc);
                                       }

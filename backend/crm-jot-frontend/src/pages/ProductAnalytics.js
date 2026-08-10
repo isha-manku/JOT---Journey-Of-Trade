@@ -140,8 +140,8 @@ export default function ProductAnalytics() {
 
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:5000/inquiries").then(r => r.json()).catch(() => []),
-      fetch("http://localhost:5000/buyers").then(r => r.json()).catch(() => []),
+      fetch("/inquiries").then(r => r.json()).catch(() => []),
+      fetch("/buyers").then(r => r.json()).catch(() => []),
     ]).then(([inq, buy]) => {
       setInquiries(Array.isArray(inq) ? inq : []);
       // parse products JSON from buyers

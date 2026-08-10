@@ -91,7 +91,7 @@ function Layout() {
   const checkUnread = () => {
     if (!myId) return;
 
-    fetch(`http://localhost:5000/messages/unread?userId=${myId}`)
+    fetch(`/messages/unread?userId=${myId}`)
       .then(r => r.json())
       .then(data => {
         setUnread(data.total || 0);

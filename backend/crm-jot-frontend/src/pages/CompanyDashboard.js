@@ -14,7 +14,7 @@ export default function CompanyDashboard({ companyId, onBack, onDrilldown }) {
   const fetchCompanyData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/accounts/analytics/company/${companyId}`, {
+      const res = await fetch(`/accounts/analytics/company/${companyId}`, {
         headers: { "x-user-role": "admin" }
       });
       const json = await res.json();

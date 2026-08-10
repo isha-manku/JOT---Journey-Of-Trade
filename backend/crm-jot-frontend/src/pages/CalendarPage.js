@@ -280,7 +280,7 @@ function CalendarPage() {
 
   // ── Load events ───────────────────────────────────────────────────────────
   useEffect(() => {
-    fetch("http://localhost:5000/events")
+    fetch("/events")
       .then(r => r.json())
       .then(data => {
         const normalized = data.map(e => ({
@@ -317,7 +317,7 @@ function CalendarPage() {
   const handleSave = useCallback(async (form) => {
     if (form.id) {
       try {
-        await fetch(`http://localhost:5000/events/${form.id}`, {
+        await fetch(`/events/${form.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
@@ -327,7 +327,7 @@ function CalendarPage() {
     } else {
       const newEv = { ...form, id: Date.now() };
       try {
-        const res = await fetch("http://localhost:5000/events", {
+        const res = await fetch("/events", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEv),
@@ -345,7 +345,7 @@ function CalendarPage() {
   const handleDelete = useCallback(async (id) => {
     if (!window.confirm("Delete this event?")) return;
     try {
-      await fetch(`http://localhost:5000/events/${id}`, { method: "DELETE" });
+      await fetch(`/events/${id}`, { method: "DELETE" });
     } catch {}
     setEvents(prev => prev.filter(e => e.id !== id));
   }, []);

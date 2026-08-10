@@ -165,7 +165,7 @@ export default function AccountsDashboard({ onDrilldown, username, onBack }) {
   // Fetch reference lists for filters
   const fetchFilterReferences = async () => {
     try {
-      const resT = await fetch("http://localhost:5000/accounts", { headers: { "x-user-role": "admin" } })
+      const resT = await fetch("/accounts", { headers: { "x-user-role": "admin" } })
         .then(r => r.json())
         .catch(() => []);
 
@@ -198,7 +198,7 @@ export default function AccountsDashboard({ onDrilldown, username, onBack }) {
         }
       });
 
-      const res = await fetch(`http://localhost:5000/accounts/analytics?${params.toString()}`, {
+      const res = await fetch(`/accounts/analytics?${params.toString()}`, {
         headers: { "x-user-role": "admin" }
       });
       const data = await res.json();

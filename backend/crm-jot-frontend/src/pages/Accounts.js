@@ -99,12 +99,12 @@ export default function Accounts() {
   const fetchReferenceData = async () => {
     try {
       const [resBuyers, resSellers, resCompanies, resProducts, resCurrencies, resPaymentModes] = await Promise.all([
-        fetch("http://localhost:5000/buyers").then(r => r.json()).catch(() => []),
-        fetch("http://localhost:5000/sellers").then(r => r.json()).catch(() => []),
-        fetch("http://localhost:5000/companies").then(r => r.json()).catch(() => []),
-        fetch("http://localhost:5000/products").then(r => r.json()).catch(() => []),
-        fetch("http://localhost:5000/currencies").then(r => r.json()).catch(() => []),
-        fetch("http://localhost:5000/payment-modes").then(r => r.json()).catch(() => [])
+        fetch("/buyers").then(r => r.json()).catch(() => []),
+        fetch("/sellers").then(r => r.json()).catch(() => []),
+        fetch("/companies").then(r => r.json()).catch(() => []),
+        fetch("/products").then(r => r.json()).catch(() => []),
+        fetch("/currencies").then(r => r.json()).catch(() => []),
+        fetch("/payment-modes").then(r => r.json()).catch(() => [])
       ]);
 
       setBuyers(Array.isArray(resBuyers) ? resBuyers : []);
@@ -126,7 +126,7 @@ export default function Accounts() {
     if (role !== "admin") return;
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/accounts", {
+      const res = await fetch("/accounts", {
         headers: { "x-user-role": "admin" }
       });
       const data = await res.json();
@@ -203,7 +203,7 @@ export default function Accounts() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/currencies", {
+      const res = await fetch("/currencies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newCurrency)
@@ -229,7 +229,7 @@ export default function Accounts() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/payment-modes", {
+      const res = await fetch("/payment-modes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newPaymentMode })
@@ -282,8 +282,8 @@ export default function Accounts() {
     };
 
     const url = editingTxId 
-      ? `http://localhost:5000/accounts/${editingTxId}` 
-      : "http://localhost:5000/accounts";
+      ? `/accounts/${editingTxId}` 
+      : "/accounts";
     const method = editingTxId ? "PUT" : "POST";
 
     try {
@@ -363,7 +363,7 @@ export default function Accounts() {
   const handleDeleteClick = async (txId) => {
     if (!window.confirm("Are you sure you want to permanently delete this financial transaction? This action cannot be undone.")) return;
     try {
-      const res = await fetch(`http://localhost:5000/accounts/${txId}`, {
+      const res = await fetch(`/accounts/${txId}`, {
         method: "DELETE",
         headers: { "x-user-role": "admin" }
       });
@@ -381,7 +381,7 @@ export default function Accounts() {
   const handleReopen = async () => {
     if (!window.confirm("Are you sure you want to reopen this Completed transaction? This will unlock the transaction and reset its status to Pending Financial Review.")) return;
     try {
-      const res = await fetch(`http://localhost:5000/accounts/${editingTxId}/reopen`, {
+      const res = await fetch(`/accounts/${editingTxId}/reopen`, {
         method: "POST",
         headers: { 
           "x-user-role": role,

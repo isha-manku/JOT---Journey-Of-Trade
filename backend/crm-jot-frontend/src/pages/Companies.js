@@ -23,7 +23,7 @@ function Companies() {
 useEffect(() => { fetchCompanies(); }, []);
 
   const fetchCompanies = () => {
-    fetch("http://localhost:5000/companies")
+    fetch("/companies")
       .then(r => r.json())
       .then(data => {
         setCompanies(data);
@@ -59,13 +59,13 @@ useEffect(() => { fetchCompanies(); }, []);
       alert("Name and Address are required"); return;
     }
     if (editId) {
-      await fetch(`http://localhost:5000/companies/${editId}`, {
+      await fetch(`/companies/${editId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
     } else {
-      await fetch("http://localhost:5000/companies", {
+      await fetch("/companies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -77,7 +77,7 @@ useEffect(() => { fetchCompanies(); }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this company?")) return;
-    await fetch(`http://localhost:5000/companies/${id}`, { method: "DELETE" })
+    await fetch(`/companies/${id}`, { method: "DELETE" })
       .catch(() => {});
     setSelected(null);
     fetchCompanies();

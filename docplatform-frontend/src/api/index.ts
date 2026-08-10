@@ -108,11 +108,11 @@ export const docApi = {
     api.post<{ success: boolean }>(`/documents/generated/${document_id}/delete`).then(r => r.data),
 
   deleteBuyerDocument: (document_id: string | number) => {
-    let crmBaseUrl = "http://localhost:5000";
+    let crmBaseUrl = "";
     if (api.defaults.baseURL && api.defaults.baseURL.startsWith("http")) {
       crmBaseUrl = api.defaults.baseURL.replace(/\/doc-api\/?$/, "");
     } else if (window.location.origin.includes("localhost:3000")) {
-      crmBaseUrl = "http://localhost:5000";
+      crmBaseUrl = "";
     } else {
       crmBaseUrl = window.location.origin;
     }
@@ -127,8 +127,8 @@ export const sellerApi = {
   profile: (sellerId: string | number) =>
     axios.get<SellerProfile>(`/sellers/${sellerId}/profile`).then(r => r.data),
   
-  downloadUrl: (filename: string) => `http://localhost:5000/seller-documents/download/${filename}`,
+  downloadUrl: (filename: string) => `/seller-documents/download/${filename}`,
   
-  previewUrl: (filename: string) => `http://localhost:5000/uploads/seller_documents/${filename}`
+  previewUrl: (filename: string) => `/uploads/seller_documents/${filename}`
 };
 

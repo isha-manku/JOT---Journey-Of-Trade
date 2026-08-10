@@ -34,9 +34,9 @@ export function useDashboardData() {
   const fetchData = async () => {
     try {
       const [br, sr, ir] = await Promise.all([
-        fetch("http://localhost:5000/buyers"),
-        fetch("http://localhost:5000/sellers"),
-        fetch("http://localhost:5000/inquiries"),
+        fetch("/buyers"),
+        fetch("/sellers"),
+        fetch("/inquiries"),
       ]);
       setBuyers(await br.json());
       setSellers(await sr.json());

@@ -12,7 +12,7 @@ function BuyersRecycleBin() {
   }, []);
 
   const fetchDeletedBuyers = () => {
-    fetch("http://localhost:5000/buyers/recycle-bin")
+    fetch("/buyers/recycle-bin")
       .then(res => res.json())
       .then(data => setDeletedBuyers(data))
       .catch(() => setDeletedBuyers([]));
@@ -20,7 +20,7 @@ function BuyersRecycleBin() {
 
   const handleRestore = (e, id) => {
     e.stopPropagation();
-    fetch(`http://localhost:5000/buyers/${id}/restore`, {
+    fetch(`/buyers/${id}/restore`, {
       method: "POST"
     })
       .then(res => res.json())

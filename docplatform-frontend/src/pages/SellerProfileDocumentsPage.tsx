@@ -35,7 +35,7 @@ export default function SellerProfileDocumentsPage() {
   const handleDeleteDocument = async (doc: any) => {
     if (!window.confirm("Are you sure you want to delete this document? This action cannot be undone.")) return;
     try {
-      const res = await fetch(`http://localhost:5000/seller-documents/${doc.id}/delete`, { 
+      const res = await fetch(`/seller-documents/${doc.id}/delete`, { 
         method: "POST", 
         headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` } 
       });

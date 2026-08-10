@@ -14,7 +14,7 @@ export default function ProductDashboard({ productId, onBack, onDrilldown }) {
   const fetchProductData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/accounts/analytics/product/${productId}`, {
+      const res = await fetch(`/accounts/analytics/product/${productId}`, {
         headers: { "x-user-role": "admin" }
       });
       const json = await res.json();

@@ -18,7 +18,7 @@ function SellerInquiriesRecycleBin() {
 
   const fetchDeletedInquiries = () => {
     // Requires credentials so authenticateCRMUser middleware can read crm_session cookie
-    fetch("http://localhost:5000/seller-inquiries/recycle-bin", { credentials: "include" })
+    fetch("/seller-inquiries/recycle-bin", { credentials: "include" })
       .then(res => {
         if (!res.ok) throw new Error("Access denied");
         return res.json();
@@ -29,7 +29,7 @@ function SellerInquiriesRecycleBin() {
 
   const handleRestore = (e, id) => {
     e.stopPropagation();
-    fetch(`http://localhost:5000/seller-inquiries/${id}/restore`, { 
+    fetch(`/seller-inquiries/${id}/restore`, { 
       method: "POST",
       credentials: "include"
     })
@@ -45,7 +45,7 @@ function SellerInquiriesRecycleBin() {
   };
 
   const confirmPermanentDelete = () => {
-    fetch(`http://localhost:5000/seller-inquiries/${modalInquiry.id}/permanent`, { 
+    fetch(`/seller-inquiries/${modalInquiry.id}/permanent`, { 
       method: "DELETE",
       credentials: "include"
     })

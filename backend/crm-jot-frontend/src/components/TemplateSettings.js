@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FiFileText, FiPlus, FiRefreshCw, FiEye, FiEdit2, FiLock, FiTrash2 } from 'react-icons/fi';
 import SchemaEditorModal from './SchemaEditorModal';
 
-const API = "http://localhost:5000";
+const API = "";
 const uid    = () => localStorage.getItem("userId");
 const getRole = () => localStorage.getItem("role");
 const isAdmin = () => getRole() === "admin";

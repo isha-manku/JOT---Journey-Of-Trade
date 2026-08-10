@@ -47,7 +47,7 @@ export default function PDFPreviewDrawer({ previewDoc, onClose }: PDFPreviewDraw
                 size="small" 
                 variant="outlined" 
                 startIcon={<DownloadIcon />}
-                href={previewDoc.is_manual ? `http://localhost:5000/buyer-documents/download/${previewDoc.file_path?.split(/[\\\\/]/).pop()}` : docApi.pdfUrl(previewDoc.id, previewDoc.version, true, previewDoc.language)}
+                href={previewDoc.is_manual ? `/buyer-documents/download/${previewDoc.file_path?.split(/[\\\\/]/).pop()}` : docApi.pdfUrl(previewDoc.id, previewDoc.version, true, previewDoc.language)}
                 sx={{ color: '#0e2318', borderColor: '#0e2318', '&:hover': { bgcolor: '#0e2318', color: '#ffffff' } }}
               >
                 Download
@@ -55,7 +55,7 @@ export default function PDFPreviewDrawer({ previewDoc, onClose }: PDFPreviewDraw
               <Button 
                 size="small" 
                 variant="outlined" 
-                href={previewDoc.is_manual ? `http://localhost:5000/uploads/buyer_documents/${previewDoc.file_path?.split(/[\\\\/]/).pop()}` : docApi.pdfUrl(previewDoc.id, previewDoc.version, false, previewDoc.language)} 
+                href={previewDoc.is_manual ? `/uploads/buyer_documents/${previewDoc.file_path?.split(/[\\\\/]/).pop()}` : docApi.pdfUrl(previewDoc.id, previewDoc.version, false, previewDoc.language)} 
                 target="_blank"
                 sx={{ color: '#c9a96e', borderColor: '#c9a96e', '&:hover': { bgcolor: '#c9a96e', color: '#ffffff' } }}
               >
@@ -67,7 +67,7 @@ export default function PDFPreviewDrawer({ previewDoc, onClose }: PDFPreviewDraw
           <Box sx={{ flexGrow: 1, bgcolor: '#e5e5e5' }}>
             {previewDoc.is_manual ? (
               <iframe 
-                src={`http://localhost:5000/uploads/buyer_documents/${previewDoc.file_path?.split(/[\\\\/]/).pop()}`}
+                src={`/uploads/buyer_documents/${previewDoc.file_path?.split(/[\\\\/]/).pop()}`}
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 title="PDF Preview"
               />

@@ -32,7 +32,10 @@ if %errorlevel% neq 0 (
         set "DOCKER_EXE=C:\Program Files\Docker\Docker\Docker Desktop.exe"
     ) else if exist "%LOCALAPPDATA%\Docker\Docker Desktop.exe" (
         set "DOCKER_EXE=%LOCALAPPDATA%\Docker\Docker Desktop.exe"
+    ) else if exist "%LOCALAPPDATA%\Programs\DockerDesktop\Docker Desktop.exe" (
+        set "DOCKER_EXE=%LOCALAPPDATA%\Programs\DockerDesktop\Docker Desktop.exe"
     )
+
 
     if defined DOCKER_EXE (
         start "" "!DOCKER_EXE!"

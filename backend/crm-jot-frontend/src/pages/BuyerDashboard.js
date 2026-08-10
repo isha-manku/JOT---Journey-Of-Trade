@@ -16,7 +16,7 @@ export default function BuyerDashboard({ buyerId, onBack, onDrilldown }) {
   const fetchBuyerData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/accounts/analytics/buyer/${buyerId}`, {
+      const res = await fetch(`/accounts/analytics/buyer/${buyerId}`, {
         headers: { "x-user-role": "admin" }
       });
       const json = await res.json();

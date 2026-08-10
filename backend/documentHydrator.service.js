@@ -269,6 +269,80 @@ class DocumentHydratorService {
     
     try {
       if (editedHtml) {
+        if (language === 'zh') {
+          try {
+            process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+            const { translate } = require('bing-translate-api');
+            const cheerio = require('cheerio');
+            
+            const $ = cheerio.load(editedHtml);
+            const textNodes = [];
+            
+            function walk(node) {
+              node.contents().each((i, el) => {
+                if (el.type === 'text') {
+                  const text = $(el).text().trim();
+                  // Skip empty text or just non-breaking spaces
+                  if (text && text.replace(/&nbsp;/g, '').trim().length > 0) {
+                    textNodes.push({ el, text });
+                  }
+                } else if (el.type === 'tag') {
+                  // Don't translate script/style tags
+                  if (el.name !== 'script' && el.name !== 'style') {
+                    walk($(el));
+                  }
+                }
+              });
+            }
+            
+            walk($('body'));
+            
+            console.log(`Found ${textNodes.length} text nodes for HTML translation`);
+            
+            if (textNodes.length > 0) {
+              let chunks = [];
+              let currentChunk = [];
+              let currentLen = 0;
+              for (let t of textNodes) {
+                if (currentLen + t.text.length + 1 > 900 && currentChunk.length > 0) {
+                  chunks.push(currentChunk);
+                  currentChunk = [];
+                  currentLen = 0;
+                }
+                currentChunk.push(t);
+                currentLen += t.text.length + 1;
+              }
+              if (currentChunk.length > 0) chunks.push(currentChunk);
+              
+              for (let chunk of chunks) {
+                const combined = chunk.map(t => t.text).join('\n');
+                try {
+                  const res = await translate(combined, null, 'zh-Hans');
+                  const tLines = res.translation.split('\n');
+                  for (let j = 0; j < chunk.length; j++) {
+                    const originalText = chunk[j].text;
+                    const translatedText = tLines[j] ? tLines[j].trim() : originalText;
+                    
+                    $(chunk[j].el).replaceWith(`<span>${originalText} / <span style="font-family: 'Microsoft YaHei', sans-serif;">${translatedText}</span></span>`);
+                  }
+                } catch (err) {
+                  console.error("HTML Batch translate failed:", err);
+                }
+              }
+            }
+            if ($('head').length === 0) {
+              $('html').prepend('<head><meta charset="utf-8"></head>');
+            } else if ($('head meta[charset]').length === 0) {
+              $('head').prepend('<meta charset="utf-8">');
+            }
+            editedHtml = $.html();
+            console.log("HTML successfully updated with bilingual text");
+          } catch(e) {
+            console.error("Failed to translate HTML", e);
+          }
+        }
+        
+        console.log("Writing editedHtml to input.html");
         // Bypass DOCX generation, use HTML directly
         inputFilePath = path.join(jobDir, 'input.html');
         fs.writeFileSync(inputFilePath, editedHtml);
@@ -398,6 +472,7 @@ class DocumentHydratorService {
           args = ['-f', 'pdf', '-o', outputPdfPath, inputFilePath];
         }
         
+        console.log("Spawning LibreOffice:", cmd, args);
         const child = spawn(cmd, args, { shell: useShell, timeout: 30000, stdio: 'ignore' });
         
         child.on('error', (err) => {

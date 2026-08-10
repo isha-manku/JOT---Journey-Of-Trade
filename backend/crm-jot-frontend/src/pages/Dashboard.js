@@ -19,7 +19,7 @@ function BuyerFormModal({ onClose, onSaved }) {
     if (!form.name.trim() || !form.country.trim() || !form.email.trim()) {
       alert("Please fill all fields"); return;
     }
-    await fetch("http://localhost:5000/buyers", {
+    await fetch("/buyers", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
@@ -50,7 +50,7 @@ function SellerFormModal({ onClose, onSaved }) {
     if (!form.name.trim() || !form.country.trim() || !form.email.trim() || !form.phone.trim() || !form.product.trim()) {
       alert("Please fill all fields"); return;
     }
-    await fetch("http://localhost:5000/sellers", {
+    await fetch("/sellers", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
@@ -84,7 +84,7 @@ function InquiryFormModal({ onClose, onSaved }) {
   });
   const handleSubmit = async () => {
     if (Object.values(form).some(v => !v)) { alert("Please fill all fields"); return; }
-    await fetch("http://localhost:5000/inquiries", {
+    await fetch("/inquiries", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
@@ -164,7 +164,7 @@ function Dashboard() {
     const myId = parseInt(localStorage.getItem("userId") || "0");
     if (!myId) return;
     const fetchUnread = () => {
-      fetch(`http://localhost:5000/messages/unread?userId=${myId}`)
+      fetch(`/messages/unread?userId=${myId}`)
         .then(r => r.json())
         .then(data => setUnreadData(data))
         .catch(() => {});
@@ -181,7 +181,7 @@ function Dashboard() {
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
-    fetch("http://localhost:5000/events")
+    fetch("/events")
       .then(r => r.json())
       .then(data => {
         const filtered = data

@@ -58,7 +58,7 @@ function Buyers() {
   }, [location.state, navigate, location.pathname]);
 
   const fetchBuyers = () => {
-    fetch("http://localhost:5000/buyers")
+    fetch("/buyers")
       .then(res => res.json())
       .then(data => {
         // Parse products JSON string if needed
@@ -110,13 +110,13 @@ function Buyers() {
     const payload = { ...form, products: JSON.stringify(form.products) };
 
     if (editId) {
-      await fetch(`http://localhost:5000/buyers/${editId}`, {
+      await fetch(`/buyers/${editId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
     } else {
-      await fetch("http://localhost:5000/buyers", {
+      await fetch("/buyers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -134,7 +134,7 @@ function Buyers() {
   const handleDelete = async (id, e) => {
     e.stopPropagation();
     if (!window.confirm("Move this buyer to the recycle bin?")) return;
-    await fetch(`http://localhost:5000/buyers/${id}/delete`, { method: "POST" });
+    await fetch(`/buyers/${id}/delete`, { method: "POST" });
     if (expandedId === id) setExpandedId(null);
     fetchBuyers();
   };

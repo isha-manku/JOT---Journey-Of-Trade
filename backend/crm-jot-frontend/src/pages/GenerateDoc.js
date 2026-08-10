@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function GenerateDoc() {
-  const docAppUrl = "http://localhost:5000/docplatform";  
+  const docAppUrl = "/docplatform";  
   const username = localStorage.getItem("username") || "";
   const navigate = useNavigate();
 

@@ -17,7 +17,7 @@ function SellerRecycleBin() {
   }, []);
 
   const fetchDeletedSellers = () => {
-    fetch("http://localhost:5000/sellers/recycle-bin")
+    fetch("/sellers/recycle-bin")
       .then(res => res.json())
       .then(data => setDeletedSellers(data))
       .catch(() => setDeletedSellers([]));
@@ -25,7 +25,7 @@ function SellerRecycleBin() {
 
   const handleRestore = (e, id) => {
     e.stopPropagation();
-    fetch(`http://localhost:5000/sellers/${id}/restore`, { method: "POST" })
+    fetch(`/sellers/${id}/restore`, { method: "POST" })
       .then(res => res.text())
       .then(() => fetchDeletedSellers())
       .catch(err => console.error(err));
@@ -38,7 +38,7 @@ function SellerRecycleBin() {
   };
 
   const confirmPermanentDelete = () => {
-    fetch(`http://localhost:5000/sellers/${modalSeller.id}/permanent`, { method: "DELETE" })
+    fetch(`/sellers/${modalSeller.id}/permanent`, { method: "DELETE" })
       .then(async (res) => {
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));

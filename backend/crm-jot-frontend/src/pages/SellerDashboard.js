@@ -14,7 +14,7 @@ export default function SellerDashboard({ sellerId, onBack, onDrilldown }) {
   const fetchSellerData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/accounts/analytics/seller/${sellerId}`, {
+      const res = await fetch(`/accounts/analytics/seller/${sellerId}`, {
         headers: { "x-user-role": "admin" }
       });
       const json = await res.json();

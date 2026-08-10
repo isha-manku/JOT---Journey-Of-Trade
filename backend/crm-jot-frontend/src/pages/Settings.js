@@ -9,7 +9,7 @@ import {
 
 import TemplateSettings from '../components/TemplateSettings';
 
-const API = "http://localhost:5000";
+const API = "";
 const uid    = () => localStorage.getItem("userId");
 const getRole = () => localStorage.getItem("role");
 const isAdmin = () => getRole() === "admin";

@@ -80,7 +80,7 @@ function SellerInquiries() {
   useEffect(() => { fetchInquiries(); }, []);
 
   const fetchInquiries = () => {
-    fetch("http://localhost:5000/seller-inquiries")
+    fetch("/seller-inquiries")
       .then(r => r.json())
       .then(data => setInquiries(Array.isArray(data) ? data : []))
       .catch(() => setInquiries([]));
@@ -96,8 +96,8 @@ function SellerInquiries() {
     if (required.some(k => !form[k])) { alert("Please fill all required fields"); return; }
 
     const url    = editId
-      ? `http://localhost:5000/seller-inquiries/${editId}`
-      : "http://localhost:5000/seller-inquiries";
+      ? `/seller-inquiries/${editId}`
+      : "/seller-inquiries";
     const method = editId ? "PUT" : "POST";
 
     await fetch(url, {
@@ -116,7 +116,7 @@ function SellerInquiries() {
   const handleDelete = async (id, e) => {
     e.stopPropagation();
     if (!window.confirm("Delete this seller inquiry?")) return;
-    await fetch(`http://localhost:5000/seller-inquiries/${id}`, { 
+    await fetch(`/seller-inquiries/${id}`, { 
       method: "DELETE",
       headers: { "x-user-name": localStorage.getItem("username") || "Unknown" }
     });
@@ -128,7 +128,7 @@ function SellerInquiries() {
   const updateField = async (inq, key, val) => {
     const updated = { ...inq, [key]: val };
     setInquiries(prev => prev.map(item => item.id === inq.id ? updated : item));
-    await fetch(`http://localhost:5000/seller-inquiries/${inq.id}`, {
+    await fetch(`/seller-inquiries/${inq.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated)

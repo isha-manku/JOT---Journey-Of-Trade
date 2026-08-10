@@ -6,8 +6,8 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/reference": "http://localhost:8000",
-      "/documents": "http://localhost:8000",
+      "/reference": "http://localhost:5000",
+      "/documents": "http://localhost:5000",
     },
   },
 });

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import mammoth from 'mammoth';
 import './SchemaEditorModal.css';
 
-const API = "http://localhost:5000";
+const API = "";
 
 export default function SchemaEditorModal({ templateId, onClose, onToast }) {
   const [htmlContent, setHtmlContent] = useState('');

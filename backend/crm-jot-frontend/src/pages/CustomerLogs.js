@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./CustomerLogs.css";
 import { FiPlus, FiClock, FiEdit2, FiSave, FiX } from "react-icons/fi";
 
-const API_BASE = "http://localhost:5000"; // Assuming backend is on 5000
+const API_BASE = ""; // Assuming backend is on 5000
 
 export default function CustomerLogs() {
   const [allBuyers, setAllBuyers] = useState([]);

@@ -38,14 +38,14 @@ function Sellers() {
   }, [location.state, navigate, location.pathname]);
 
   const fetchRecycleCount = () => {
-    fetch("http://localhost:5000/sellers/recycle-bin")
+    fetch("/sellers/recycle-bin")
       .then(res => res.json())
       .then(data => setRecycleCount(data.length))
       .catch(() => setRecycleCount(0));
   };
 
   const fetchSellers = () => {
-    fetch("http://localhost:5000/sellers")
+    fetch("/sellers")
       .then(res => res.json())
       .then(data => setSellers(data));
   };
@@ -79,13 +79,13 @@ function Sellers() {
     let sellerId = editId;
 
     if (editId) {
-      await fetch(`http://localhost:5000/sellers/${editId}`, {
+      await fetch(`/sellers/${editId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)
       });
     } else {
-      const response = await fetch("http://localhost:5000/sellers", {
+      const response = await fetch("/sellers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)
@@ -102,7 +102,7 @@ function Sellers() {
         formData.append("documents", file);
       });
 
-      await fetch(`http://localhost:5000/sellers/${sellerId}/documents`, {
+      await fetch(`/sellers/${sellerId}/documents`, {
         method: "POST",
         body: formData
       });
@@ -117,7 +117,7 @@ function Sellers() {
 
   // DELETE
   const handleDelete = async (id) => {
-    await fetch(`http://localhost:5000/sellers/${id}/delete`, { method: "POST" });
+    await fetch(`/sellers/${id}/delete`, { method: "POST" });
     fetchSellers();
     fetchRecycleCount();
   };

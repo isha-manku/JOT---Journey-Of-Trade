@@ -52,7 +52,7 @@ function Messages() {
   const [unreadData,   setUnreadData]   = useState({ total: 0, senders: [] });
 
   const fetchUnread = () => {
-    fetch(`http://localhost:5000/messages/unread?userId=${myId()}`)
+    fetch(`/messages/unread?userId=${myId()}`)
       .then(r => r.json())
       .then(data => {
         setUnreadData(data);
@@ -81,7 +81,7 @@ function Messages() {
 
   // ── Load users ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    fetch("http://localhost:5000/users")
+    fetch("/users")
       .then(r => r.json())
       .then(setUsers)
       .catch(() => {});
@@ -97,8 +97,8 @@ function Messages() {
 
   const loadMessages = () => {
     const url = channel === "general"
-      ? "http://localhost:5000/messages?channel=general"
-      : `http://localhost:5000/messages?channel=dm&with=${channel}&me=${myId()}`;
+      ? "/messages?channel=general"
+      : `/messages?channel=dm&with=${channel}&me=${myId()}`;
     fetch(url)
       .then(r => r.json())
       .then(data => {
@@ -123,7 +123,7 @@ function Messages() {
       receiver_id: channel === "general" ? null : channel,
       message:     trimmed,
     };
-    await fetch("http://localhost:5000/messages", {
+    await fetch("/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -138,7 +138,7 @@ function Messages() {
 
   // ── Delete message (admin only) ─────────────────────────────────────────────
   const handleDelete = async (id) => {
-    await fetch(`http://localhost:5000/messages/${id}`, { method: "DELETE" }).catch(() => {});
+    await fetch(`/messages/${id}`, { method: "DELETE" }).catch(() => {});
     loadMessages();
   };
 
@@ -148,7 +148,7 @@ function Messages() {
     setChannelLabel(label);
     setMessages([]);
 
-    await fetch(`http://localhost:5000/messages/read`, {
+    await fetch(`/messages/read`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

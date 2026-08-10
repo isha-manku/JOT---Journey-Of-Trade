@@ -14,7 +14,7 @@ export default function PortDashboard({ portName, onBack, onDrilldown }) {
   const fetchPortData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/accounts/analytics/port?portName=${encodeURIComponent(portName)}`, {
+      const res = await fetch(`/accounts/analytics/port?portName=${encodeURIComponent(portName)}`, {
         headers: { "x-user-role": "admin" }
       });
       const json = await res.json();
