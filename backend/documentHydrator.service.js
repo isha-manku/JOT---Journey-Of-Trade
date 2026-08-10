@@ -199,22 +199,21 @@ class DocumentHydratorService {
 
       // 4. Convert to PDF
       await new Promise((resolve, reject) => {
-        let cmd, args;
+        let useShell = false;
+        const profileDir = path.join(jobDir, 'lo_profile').replace(/\\/g, '/');
         
-        if (process.platform === 'linux') {
-            cmd = 'unoconv';
-            args = ['-f', 'pdf', '-o', outputPdfPath, inputDocxPath];
-        } else {
-            const profileDir = path.join(jobDir, 'lo_profile').replace(/\\/g, '/');
+        if (process.platform === 'win32') {
             cmd = '"C:\\Program Files\\LibreOffice\\program\\soffice.exe"';
             args = [`-env:UserInstallation=file:///${profileDir}`, '--headless', '--invisible', '--nologo', '--nodefault', '--norestore', '--convert-to', 'pdf', '--outdir', `"${jobDir}"`, `"${inputDocxPath}"`];
             cmd = `"${cmd.replace(/"/g, '')}" ${args.join(' ')}`;
             args = []; // spawn shell mode requires command string
+            useShell = true;
+        } else {
+            cmd = 'soffice';
+            args = [`-env:UserInstallation=file:///${profileDir}`, '--headless', '--invisible', '--nologo', '--nodefault', '--norestore', '--convert-to', 'pdf', '--outdir', jobDir, inputDocxPath];
         }
         
-        const child = process.platform === 'linux' 
-          ? spawn(cmd, args, { timeout: 10000 })
-          : spawn(cmd, { shell: true, timeout: 30000 });
+        const child = spawn(cmd, args, { shell: useShell, timeout: 30000, stdio: 'ignore' });
         
         child.on('error', (err) => {
           reject(new Error(`Failed to execute converter: ${err.message}`));
@@ -461,15 +460,15 @@ class DocumentHydratorService {
       await new Promise((resolve, reject) => {
         let cmd, args;
         let useShell = false;
+        const profileDir = path.join(jobDir, 'lo_profile').replace(/\\/g, '/');
         
         if (process.platform === 'win32') {
-          const profileDir = path.join(jobDir, 'lo_profile').replace(/\\/g, '/');
           cmd = 'C:\\Program Files\\LibreOffice\\program\\soffice.exe';
           args = [`-env:UserInstallation=file:///${profileDir}`, '--headless', '--invisible', '--nologo', 
 '--nodefault', '--norestore', '--convert-to', 'pdf', '--outdir', jobDir, inputFilePath];
         } else {
-          cmd = 'unoconv';
-          args = ['-f', 'pdf', '-o', outputPdfPath, inputFilePath];
+          cmd = 'soffice';
+          args = [`-env:UserInstallation=file:///${profileDir}`, '--headless', '--invisible', '--nologo', '--nodefault', '--norestore', '--convert-to', 'pdf', '--outdir', jobDir, inputFilePath];
         }
         
         console.log("Spawning LibreOffice:", cmd, args);
