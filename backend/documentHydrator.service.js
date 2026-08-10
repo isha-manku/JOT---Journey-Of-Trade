@@ -272,7 +272,7 @@ class DocumentHydratorService {
         if (language === 'zh') {
           try {
             process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-            const { translate } = require('bing-translate-api');
+            const translate = require('google-translate-api-x');
             const cheerio = require('cheerio');
             
             const $ = cheerio.load(editedHtml);
@@ -317,8 +317,8 @@ class DocumentHydratorService {
               for (let chunk of chunks) {
                 const combined = chunk.map(t => t.text).join('\n');
                 try {
-                  const res = await translate(combined, null, 'zh-Hans');
-                  const tLines = res.translation.split('\n');
+                  const res = await translate(combined, { to: 'zh-CN' });
+                  const tLines = res.text.split('\n');
                   for (let j = 0; j < chunk.length; j++) {
                     const originalText = chunk[j].text;
                     const translatedText = tLines[j] ? tLines[j].trim() : originalText;
@@ -364,7 +364,7 @@ class DocumentHydratorService {
           try {
             process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // Bypass local cert issues for translation API
             const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
-            const { translate } = require('bing-translate-api');
+            const translate = require('google-translate-api-x');
             const xmlDoc = new DOMParser().parseFromString(xml, 'text/xml');
             const paragraphs = xmlDoc.getElementsByTagName('w:p');
 
@@ -413,8 +413,8 @@ class DocumentHydratorService {
               for (let chunk of chunks) {
                 const combined = chunk.map(t => t.text).join('\n');
                 try {
-                  const res = await translate(combined, null, 'zh-Hans');
-                  const tLines = res.translation.split('\n');
+                  const res = await translate(combined, { to: 'zh-CN' });
+                  const tLines = res.text.split('\n');
                   for (let j = 0; j < chunk.length; j++) {
                     const translatedText = tLines[j] ? tLines[j].trim() : chunk[j].text;
                     const targetNode = chunk[j].node;
