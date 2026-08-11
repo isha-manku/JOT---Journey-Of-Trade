@@ -748,6 +748,9 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
     const filename = `${doc.document_number}_v${docVersion.version}.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.setHeader("Content-Disposition", `${disposition}; filename="${filename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (err) {
