@@ -1553,9 +1553,31 @@ db.query("ALTER TABLE doc_templates ADD COLUMN engine_type VARCHAR(50) DEFAULT '
 });
 
 db.query("ALTER TABLE doc_template_versions ADD COLUMN placeholder_schema LONGTEXT", (err) => { if (!err) console.log("Added placeholder_schema"); });
-db.query("ALTER TABLE customer_logs ADD COLUMN author_name VARCHAR(255) DEFAULT NULL", (err) => { if (!err) console.log("Added author_name to customer_logs"); });
-db.query("ALTER TABLE customer_logs ADD COLUMN editor_name VARCHAR(255) DEFAULT NULL", (err) => { if (!err) console.log("Added editor_name to customer_logs"); });
 
+const createCustomerLogsTable = `
+  CREATE TABLE IF NOT EXISTS customer_logs (
+    id INT NOT NULL AUTO_INCREMENT,
+    buyer_id INT DEFAULT NULL,
+    seller_id INT DEFAULT NULL,
+    notes TEXT,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    author_name VARCHAR(255) DEFAULT NULL,
+    editor_name VARCHAR(255) DEFAULT NULL,
+    PRIMARY KEY (id),
+    KEY buyer_id (buyer_id),
+    KEY fk_seller_logs_seller_id (seller_id),
+    CONSTRAINT customer_logs_ibfk_1 FOREIGN KEY (buyer_id) REFERENCES buyers (id) ON DELETE CASCADE,
+    CONSTRAINT fk_seller_logs_seller_id FOREIGN KEY (seller_id) REFERENCES sellers (id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+`;
+db.query(createCustomerLogsTable, (err) => {
+  if (err) console.error("Error creating customer_logs table:", err.message);
+  else {
+    db.query("ALTER TABLE customer_logs ADD COLUMN author_name VARCHAR(255) DEFAULT NULL", (err) => { if (!err) console.log("Added author_name to customer_logs"); });
+    db.query("ALTER TABLE customer_logs ADD COLUMN editor_name VARCHAR(255) DEFAULT NULL", (err) => { if (!err) console.log("Added editor_name to customer_logs"); });
+  }
+});
 
 // Serve CRM Frontend static files
 app.use(express.static(path.join(__dirname, 'public/crm')));
