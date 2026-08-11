@@ -1553,6 +1553,8 @@ db.query("ALTER TABLE doc_templates ADD COLUMN engine_type VARCHAR(50) DEFAULT '
 });
 
 db.query("ALTER TABLE doc_template_versions ADD COLUMN placeholder_schema LONGTEXT", (err) => { if (!err) console.log("Added placeholder_schema"); });
+db.query("ALTER TABLE customer_logs ADD COLUMN author_name VARCHAR(255) DEFAULT NULL", (err) => { if (!err) console.log("Added author_name to customer_logs"); });
+db.query("ALTER TABLE customer_logs ADD COLUMN editor_name VARCHAR(255) DEFAULT NULL", (err) => { if (!err) console.log("Added editor_name to customer_logs"); });
 
 
 // Serve CRM Frontend static files

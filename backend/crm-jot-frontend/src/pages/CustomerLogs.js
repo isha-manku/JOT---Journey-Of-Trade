@@ -32,6 +32,9 @@ export default function CustomerLogs() {
         headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
       });
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to fetch logged contacts");
+      }
       setLoggedBuyers(Array.isArray(data.buyers) ? data.buyers : []);
       setLoggedSellers(Array.isArray(data.sellers) ? data.sellers : []);
     } catch (err) {
@@ -45,6 +48,9 @@ export default function CustomerLogs() {
         fetch(`${API_BASE}/buyers`, { headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` } }),
         fetch(`${API_BASE}/sellers`, { headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` } })
       ]);
+      if (!resB.ok || !resS.ok) {
+        throw new Error("Failed to fetch all contacts");
+      }
       const buyers = await resB.json();
       const sellers = await resS.json();
       setAllBuyers(Array.isArray(buyers) ? buyers : []);
@@ -60,6 +66,9 @@ export default function CustomerLogs() {
         headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
       });
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to fetch logs");
+      }
       setLogs(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
@@ -88,6 +97,10 @@ export default function CustomerLogs() {
         })
       });
       const newLog = await res.json();
+      if (!res.ok) {
+        alert("Error adding log: " + (newLog.error || "Unknown error"));
+        return;
+      }
       setLogs([newLog, ...logs]);
       setNewLogNotes("");
       
@@ -95,6 +108,7 @@ export default function CustomerLogs() {
       fetchLoggedContacts();
     } catch (err) {
       console.error(err);
+      alert("Network error while adding log.");
     }
   };
 
@@ -110,10 +124,15 @@ export default function CustomerLogs() {
         body: JSON.stringify({ notes: editNotes, editor_name: localStorage.getItem("username") })
       });
       const updatedLog = await res.json();
+      if (!res.ok) {
+        alert("Error updating log: " + (updatedLog.error || "Unknown error"));
+        return;
+      }
       setLogs(logs.map(log => log.id === logId ? updatedLog : log));
       setEditingLogId(null);
     } catch (err) {
       console.error(err);
+      alert("Network error while updating log.");
     }
   };
 
