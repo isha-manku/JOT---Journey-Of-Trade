@@ -5,8 +5,7 @@ const agent = new https.Agent({ keepAlive: true });
 function translateLine(text) {
   return new Promise((resolve, reject) => {
     if (!text.trim()) return resolve('');
-    const email = 'ishamanku62@gmail.com'; 
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh-CN&de=${email}`;
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${encodeURIComponent(text)}`;
 
     const req = https.get(url, { agent, timeout: 5000 }, (res) => {
       let body = '';
@@ -17,10 +16,17 @@ function translateLine(text) {
         }
         try {
           const parsed = JSON.parse(body);
-          if (parsed.responseStatus !== 200) {
-            return resolve(text); // Fallback
+          let translatedText = '';
+          if (parsed && parsed[0]) {
+            parsed[0].forEach(item => {
+              if (item[0]) translatedText += item[0];
+            });
           }
-          resolve(parsed.responseData.translatedText);
+          if (translatedText) {
+             resolve(translatedText);
+          } else {
+             resolve(text);
+          }
         } catch (e) {
           resolve(text); // Fallback
         }
@@ -44,8 +50,8 @@ module.exports = async function(combined) {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   const lines = combined.split('\n');
   
-  // Translate 10 lines at a time to avoid overwhelming MyMemory connections
   const results = [];
+  // Google Translate allows larger payloads, but we'll stick to batches of 10 to be safe and avoid timeouts
   for (let i = 0; i < lines.length; i += 10) {
     const batch = lines.slice(i, i + 10);
     const batchResults = await Promise.all(batch.map(line => translateLine(line)));
