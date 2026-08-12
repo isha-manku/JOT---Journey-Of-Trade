@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Select, MenuItem, IconButton, TextField, CircularProgress } from '@mui/material';
+import { Box, Button, Select, MenuItem, IconButton, TextField, CircularProgress, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FormatBoldIcon from '@mui/icons-material/FormatBold';
+import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import { Document, Page, pdfjs } from 'react-pdf';
 import Draggable from 'react-draggable';
 import { Rnd } from 'react-rnd';
@@ -23,6 +25,8 @@ interface Annotation {
   fontSize?: number;
   color?: string;
   fontFamily?: string;
+  isBold?: boolean;
+  isItalic?: boolean;
   pageNumber: number;
 }
 
@@ -38,10 +42,28 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
   const [selectedFont, setSelectedFont] = useState('Cambria');
   const [selectedColor, setSelectedColor] = useState('#000000');
   const [selectedSize, setSelectedSize] = useState(14);
+  const [selectedBold, setSelectedBold] = useState(false);
+  const [selectedItalic, setSelectedItalic] = useState(false);
+  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null);
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const [targetPage, setTargetPage] = useState(1);
+
+  const handleFormatChange = (field: string, value: any) => {
+    // Update default state for new annotations
+    if (field === 'fontSize') setSelectedSize(value);
+    else if (field === 'color') setSelectedColor(value);
+    else if (field === 'fontFamily') setSelectedFont(value);
+    else if (field === 'isBold') setSelectedBold(value);
+    else if (field === 'isItalic') setSelectedItalic(value);
+
+    // If an annotation is currently focused, update it directly
+    if (selectedAnnotationId) {
+      updateAnnotation(selectedAnnotationId, { [field]: value });
+    }
+  };
 
   useEffect(() => {
     if (!doc.is_manual) {
@@ -71,6 +93,8 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
         fontSize: selectedSize,
         color: selectedColor,
         fontFamily: selectedFont,
+        isBold: selectedBold,
+        isItalic: selectedItalic,
         pageNumber: targetPage,
       }
     ]);
@@ -165,23 +189,40 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Toolbar */}
       <Box sx={{ p: 1, bgcolor: '#ffffff', borderBottom: '1px solid #ccc', display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-        <Select size="small" value={selectedFont} onChange={(e: any) => setSelectedFont(e.target.value)}>
+        <Select size="small" value={selectedFont} onChange={(e: any) => handleFormatChange('fontFamily', e.target.value)}>
           <MenuItem value="Cambria">Cambria</MenuItem>
           <MenuItem value="Helvetica">Helvetica</MenuItem>
           <MenuItem value="Times Roman">Times Roman</MenuItem>
           <MenuItem value="Courier">Courier</MenuItem>
         </Select>
         
-        <Select size="small" value={selectedSize} onChange={(e: any) => setSelectedSize(Number(e.target.value))}>
+        <Select size="small" value={selectedSize} onChange={(e: any) => handleFormatChange('fontSize', Number(e.target.value))}>
           {[10, 12, 14, 16, 20, 24, 32].map(size => (
             <MenuItem key={size} value={size}>{size}px</MenuItem>
           ))}
         </Select>
 
+        <ToggleButtonGroup size="small">
+          <ToggleButton 
+            value="bold" 
+            selected={selectedBold} 
+            onChange={() => handleFormatChange('isBold', !selectedBold)}
+          >
+            <FormatBoldIcon fontSize="small" />
+          </ToggleButton>
+          <ToggleButton 
+            value="italic" 
+            selected={selectedItalic} 
+            onChange={() => handleFormatChange('isItalic', !selectedItalic)}
+          >
+            <FormatItalicIcon fontSize="small" />
+          </ToggleButton>
+        </ToggleButtonGroup>
+
         <input 
           type="color" 
           value={selectedColor} 
-          onChange={(e: any) => setSelectedColor(e.target.value)} 
+          onChange={(e: any) => handleFormatChange('color', e.target.value)} 
           style={{ width: '40px', height: '40px', padding: '0', border: 'none', cursor: 'pointer' }}
         />
         
@@ -303,7 +344,18 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                         variant="standard"
                         value={ann.text}
                         onChange={(e: any) => updateAnnotation(ann.id, { text: e.target.value })}
-                        onBlur={(e: any) => handleBlur(ann.id, e.target.value)}
+                        onFocus={() => {
+                          setSelectedAnnotationId(ann.id);
+                          setSelectedSize(ann.fontSize || 14);
+                          setSelectedBold(!!ann.isBold);
+                          setSelectedItalic(!!ann.isItalic);
+                          setSelectedFont(ann.fontFamily || 'Cambria');
+                          setSelectedColor(ann.color || '#000000');
+                        }}
+                        onBlur={(e: any) => {
+                          handleBlur(ann.id, e.target.value);
+                          setSelectedAnnotationId(null);
+                        }}
                         autoFocus={ann.text === ''}
                         placeholder="Type..."
                         InputProps={{
@@ -311,6 +363,8 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                           style: {
                             fontFamily: ann.fontFamily === 'Cambria' ? '"Cambria", serif' : ann.fontFamily,
                             fontSize: `${ann.fontSize}px`,
+                            fontWeight: ann.isBold ? 'bold' : 'normal',
+                            fontStyle: ann.isItalic ? 'italic' : 'normal',
                             color: ann.color,
                             padding: 0,
                             margin: 0,

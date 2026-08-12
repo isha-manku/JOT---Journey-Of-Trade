@@ -679,7 +679,7 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
 
     // Apply custom annotations if they exist and raw is not requested
     if (req.query.raw !== 'true' && docVersion.custom_annotations) {
-      const { PDFDocument, rgb } = require('pdf-lib');
+      const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
       const fontkit = require('@pdf-lib/fontkit');
       const fs = require('fs');
 
@@ -697,6 +697,28 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
         console.error("Failed to load Cambria font on backend", e);
       }
 
+      // Pre-embed standard fonts for bold/italic support
+      const standardFontsMap = {
+        Helvetica: {
+          normal: await pdfDoc.embedFont(StandardFonts.Helvetica),
+          bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
+          italic: await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
+          boldItalic: await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique)
+        },
+        'Times Roman': {
+          normal: await pdfDoc.embedFont(StandardFonts.TimesRoman),
+          bold: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
+          italic: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic),
+          boldItalic: await pdfDoc.embedFont(StandardFonts.TimesRomanBoldItalic)
+        },
+        Courier: {
+          normal: await pdfDoc.embedFont(StandardFonts.Courier),
+          bold: await pdfDoc.embedFont(StandardFonts.CourierBold),
+          italic: await pdfDoc.embedFont(StandardFonts.CourierOblique),
+          boldItalic: await pdfDoc.embedFont(StandardFonts.CourierBoldOblique)
+        }
+      };
+
       const annotations = typeof docVersion.custom_annotations === 'string' 
         ? JSON.parse(docVersion.custom_annotations) 
         : docVersion.custom_annotations;
@@ -707,7 +729,7 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
           const page = pages[ann.pageNumber - 1];
           const { height } = page.getSize();
           
-          let hex = ann.color.replace('#', '');
+          let hex = (ann.color || '#000000').replace('#', '');
           let r = parseInt(hex.substring(0,2), 16) / 255;
           let g = parseInt(hex.substring(2,4), 16) / 255;
           let b = parseInt(hex.substring(4,6), 16) / 255;
@@ -718,9 +740,17 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
             size: ann.fontSize || 16,
             color: rgb(r, g, b),
           };
+          
           if (ann.fontFamily === 'Cambria' && cambriaFont) {
             drawOpts.font = cambriaFont;
+          } else {
+            const family = standardFontsMap[ann.fontFamily] || standardFontsMap.Helvetica;
+            if (ann.isBold && ann.isItalic) drawOpts.font = family.boldItalic;
+            else if (ann.isBold) drawOpts.font = family.bold;
+            else if (ann.isItalic) drawOpts.font = family.italic;
+            else drawOpts.font = family.normal;
           }
+
           if (ann.type === 'whiteout') {
             page.drawRectangle({
               x: ann.x,
