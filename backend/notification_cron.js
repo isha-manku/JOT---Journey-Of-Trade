@@ -49,7 +49,8 @@ async function checkAndSendNotifications() {
         const diffMin = Math.floor((evDate - now) / 60000);
         
         let threshold = null;
-        if (diffMin <= 30 && diffMin > 0) threshold = '30m';
+        if (diffMin <= 15 && diffMin > 0) threshold = '15m';
+        else if (diffMin <= 30 && diffMin > 15) threshold = '30m';
         else if (diffMin <= 120 && diffMin > 90) threshold = '2h';
         else if (diffMin <= 1440 && diffMin > 1400) threshold = '24h';
 
