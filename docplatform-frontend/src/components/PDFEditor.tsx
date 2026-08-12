@@ -373,8 +373,8 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                             minWidth: '50px'
                           }
                         }}
-                        inputProps={{
-                          style: {
+                        sx={{
+                          '& .MuiInputBase-input': {
                             fontFamily: ann.fontFamily === 'Cambria' ? '"Cambria", serif' : ann.fontFamily,
                             fontSize: `${ann.fontSize}px`,
                             fontWeight: ann.isBold ? 'bold' : 'normal',
