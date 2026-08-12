@@ -169,6 +169,22 @@ class DocumentHydratorService {
                   const rFonts = doc.createElement('w:rFonts');
                   rFonts.setAttribute('w:eastAsia', 'Microsoft YaHei');
                   rPr.appendChild(rFonts);
+                  
+                  // Extract original size from runs in this paragraph and scale it down slightly
+                  const szNode = p.querySelector('w\\:sz') || p.querySelector('sz');
+                  if (szNode) {
+                    const originalSize = parseInt(szNode.getAttribute('w:val'), 10);
+                    if (!isNaN(originalSize)) {
+                      const scaledSize = Math.max(16, Math.round(originalSize * 0.8)); // Reduce by 20%, min 8pt (16)
+                      const rSz = doc.createElement('w:sz');
+                      rSz.setAttribute('w:val', scaledSize.toString());
+                      const rSzCs = doc.createElement('w:szCs');
+                      rSzCs.setAttribute('w:val', scaledSize.toString());
+                      rPr.appendChild(rSz);
+                      rPr.appendChild(rSzCs);
+                    }
+                  }
+                  
                   newRun.appendChild(rPr);
                   
                   const newText = doc.createElement('w:t');

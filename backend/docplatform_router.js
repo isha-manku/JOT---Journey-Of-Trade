@@ -692,6 +692,25 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
 
       // Embedded fonts cache
       const embeddedFonts = {};
+      let fallbackChineseFont;
+
+      if (req.query.language === 'zh') {
+        try {
+          const fontPaths = process.platform === 'win32' 
+            ? ['C:/Windows/Fonts/msyh.ttc', 'C:/Windows/Fonts/simsun.ttc', 'C:/Windows/Fonts/msyh.ttf']
+            : ['/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc', '/usr/share/fonts/truetype/wqy-zenhei.ttc', '/usr/share/fonts/wqy-zenhei/wqy-zenhei.ttc'];
+          let fontBytes;
+          for (const p of fontPaths) {
+            if (fs.existsSync(p)) {
+              fontBytes = fs.readFileSync(p);
+              break;
+            }
+          }
+          if (fontBytes) {
+            fallbackChineseFont = await pdfDoc.embedFont(fontBytes, { customName: 'ChineseFont' });
+          }
+        } catch(e) { console.error("Failed to load chinese font", e); }
+      }
 
       const getFont = async (fontFamily, isBold, isItalic) => {
         if (fontFamily === 'Cambria') {
@@ -754,9 +773,29 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
             let g = parseInt(hex.substring(2,4), 16) / 255;
             let b = parseInt(hex.substring(4,6), 16) / 255;
 
-            const font = await getFont(ann.fontFamily, ann.isBold, ann.isItalic);
+            let font = await getFont(ann.fontFamily, ann.isBold, ann.isItalic);
+            let finalText = ann.text || '';
+
+            if (req.query.language === 'zh' && finalText.trim().length > 0) {
+              try {
+                 const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${encodeURIComponent(finalText)}`;
+                 const response = await fetch(url);
+                 const data = await response.json();
+                 let translatedText = '';
+                 if (data && data[0]) {
+                   data[0].forEach(item => { if (item[0]) translatedText += item[0]; });
+                 }
+                 if (translatedText && translatedText !== finalText) {
+                   finalText = `${finalText} / ${translatedText}`;
+                 }
+              } catch(e) { console.error("Annotation translation failed", e); }
+              
+              if (fallbackChineseFont) {
+                font = fallbackChineseFont;
+              }
+            }
             
-            page.drawText(ann.text || '', {
+            page.drawText(finalText, {
               x: ann.x,
               y: height - ann.y - (ann.fontSize || 16),
               size: ann.fontSize || 16,
@@ -765,10 +804,10 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
             });
 
             if (ann.isUnderline) {
-              let textWidth = (ann.text || '').length * (ann.fontSize || 16) * 0.55; // rough estimate
+              let textWidth = finalText.length * (ann.fontSize || 16) * 0.55; // rough estimate
               if (font) {
                 try {
-                  textWidth = font.widthOfTextAtSize(ann.text || '', ann.fontSize || 16);
+                  textWidth = font.widthOfTextAtSize(finalText, ann.fontSize || 16);
                 } catch (e) { /* ignore */ }
               }
               page.drawLine({
