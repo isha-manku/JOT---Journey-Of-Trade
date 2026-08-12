@@ -10,6 +10,21 @@ const path = require("path");
 const multer = require("multer");
 const { router: settingsRouter } = require("./settings_router");
 
+// Ensure message_reads table exists
+db.query(
+  `CREATE TABLE IF NOT EXISTS message_reads (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message_id INT NOT NULL,
+    user_id INT NOT NULL,
+    read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_msg_user (message_id, user_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;`,
+  (err) => {
+    if (err) console.error("Error creating message_reads table:", err);
+    else console.log("Verified message_reads table exists.");
+  }
+);
+
 // â”€â”€ Multer Storage Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

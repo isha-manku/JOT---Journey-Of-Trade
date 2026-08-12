@@ -867,3 +867,19 @@ CREATE TABLE `users` (
 -- Dump completed on 2026-07-28  1:23:13
 INSERT INTO users (id, full_name, username, password, role) VALUES (1, 'Admin', 'admin', '12345', 'admin');
 INSERT INTO users (id, full_name, username, password, role) VALUES (1, 'Admin', 'admin', '12345', 'admin');
+
+ - - 
+ - -   T a b l e   s t r u c t u r e   f o r   t a b l e   ` m e s s a g e _ r e a d s ` 
+ - - 
+ 
+ D R O P   T A B L E   I F   E X I S T S   ` m e s s a g e _ r e a d s ` ; 
+ C R E A T E   T A B L E   ` m e s s a g e _ r e a d s `   ( 
+     ` i d `   I N T   N O T   N U L L   A U T O _ I N C R E M E N T , 
+     ` m e s s a g e _ i d `   I N T   N O T   N U L L , 
+     ` u s e r _ i d `   I N T   N O T   N U L L , 
+     ` r e a d _ a t `   T I M E S T A M P   D E F A U L T   C U R R E N T _ T I M E S T A M P , 
+     P R I M A R Y   K E Y   ( ` i d ` ) , 
+     U N I Q U E   K E Y   ` u q _ m s g _ u s e r `   ( ` m e s s a g e _ i d ` ,   ` u s e r _ i d ` ) 
+ )   E N G I N E = I n n o D B   D E F A U L T   C H A R S E T = u t f 8 m b 4   C O L L A T E = u t f 8 m b 4 _ 0 9 0 0 _ a i _ c i ; 
+  
+ 
