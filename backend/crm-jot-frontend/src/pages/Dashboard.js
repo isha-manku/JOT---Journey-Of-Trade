@@ -7,7 +7,7 @@ import {
 import {
   FiUsers, FiShoppingBag, FiMessageSquare, FiTrendingUp,
   FiUserPlus, FiUpload, FiEye, FiChevronRight,
-  FiArrowUpRight, FiArrowDownRight, FiCalendar, FiX,
+  FiArrowUpRight, FiArrowDownRight, FiCalendar, FiX, FiMessageCircle,
 } from "react-icons/fi";
 import { useDashboardData } from "../hooks/useDashboardData";
 import InsightLabel from "../components/InsightLabel";
@@ -296,6 +296,30 @@ function Dashboard() {
           <FiCalendar size={16} /><span>{formatDate(currentTime)}</span>
         </div>
       </div>
+
+      {unreadData.total > 0 && (
+        <div 
+          style={{
+            margin: "0 24px 20px",
+            padding: "12px 20px",
+            background: "#123524",
+            color: "#c9a96e",
+            borderRadius: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            cursor: "pointer",
+            fontWeight: "500"
+          }}
+          onClick={() => navigate("/messages")}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <FiMessageCircle size={18} />
+            <span>You have {unreadData.total} unread message{unreadData.total > 1 ? "s" : ""}!</span>
+          </div>
+          <span style={{ fontSize: "14px", textDecoration: "underline" }}>View</span>
+        </div>
+      )}
 
       <div className="jot-stats">
         <div

@@ -386,6 +386,11 @@ function Messages() {
                 <strong>{u.full_name}</strong>
                 <span>{u.role}</span>
               </div>
+              {unreadData.senders?.some(s => s.sender_id === u.id) && (
+                <span style={{ background: "#d9534f", color: "white", borderRadius: "10px", padding: "1px 6px", fontSize: "10px", marginLeft: "10px" }}>
+                  {unreadData.senders.find(s => s.sender_id === u.id).count}
+                </span>
+              )}
               <div className="msg-online-dot" style={{ marginLeft: "auto" }}></div>
             </div>
           ))}
