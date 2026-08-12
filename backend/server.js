@@ -1591,6 +1591,11 @@ db.query(createCustomerLogsTable, (err) => {
   else {
     db.query("ALTER TABLE customer_logs ADD COLUMN author_name VARCHAR(255) DEFAULT NULL", (err) => { if (!err) console.log("Added author_name to customer_logs"); });
     db.query("ALTER TABLE customer_logs ADD COLUMN editor_name VARCHAR(255) DEFAULT NULL", (err) => { if (!err) console.log("Added editor_name to customer_logs"); });
+    
+    // Auto-patch generated documents table
+    db.query("ALTER TABLE doc_generated_document_versions ADD COLUMN edited_html LONGTEXT", (err) => { if (!err) console.log("Added edited_html to doc_generated_document_versions"); });
+    db.query("ALTER TABLE doc_generated_document_versions ADD COLUMN custom_annotations JSON", (err) => { if (!err) console.log("Added custom_annotations to doc_generated_document_versions"); });
+    db.query("ALTER TABLE doc_generated_document_versions ADD COLUMN edited_count INT DEFAULT 0", (err) => { if (!err) console.log("Added edited_count to doc_generated_document_versions"); });
   }
 });
 
