@@ -207,19 +207,21 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
           ))}
         </Select>
 
-        <ToggleButtonGroup size="small">
-          <ToggleButton 
-            value="bold" 
-            selected={selectedBold} 
-            onChange={() => handleFormatChange('isBold', !selectedBold)}
-          >
+        <ToggleButtonGroup 
+          size="small"
+          value={[
+            ...(selectedBold ? ['bold'] : []),
+            ...(selectedItalic ? ['italic'] : [])
+          ]}
+          onChange={(e, newFormats) => {
+            handleFormatChange('isBold', newFormats.includes('bold'));
+            handleFormatChange('isItalic', newFormats.includes('italic'));
+          }}
+        >
+          <ToggleButton value="bold">
             <FormatBoldIcon fontSize="small" />
           </ToggleButton>
-          <ToggleButton 
-            value="italic" 
-            selected={selectedItalic} 
-            onChange={() => handleFormatChange('isItalic', !selectedItalic)}
-          >
+          <ToggleButton value="italic">
             <FormatItalicIcon fontSize="small" />
           </ToggleButton>
         </ToggleButtonGroup>
