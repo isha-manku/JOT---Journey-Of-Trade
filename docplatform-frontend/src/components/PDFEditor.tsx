@@ -82,6 +82,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
   }, [doc]);
 
   const handleAddText = () => {
+    setSelectedAnnotationId(null);
     setAnnotations([
       ...annotations,
       {
@@ -101,6 +102,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
   };
 
   const handleAddEraser = () => {
+    setSelectedAnnotationId(null);
     setAnnotations([
       ...annotations,
       {
@@ -120,6 +122,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
       return;
     }
     
+    setSelectedAnnotationId(null);
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -135,6 +138,8 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
         fontSize: selectedSize,
         color: selectedColor,
         fontFamily: selectedFont,
+        isBold: selectedBold,
+        isItalic: selectedItalic,
         pageNumber: pageIndex,
       }
     ]);
@@ -354,7 +359,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                         }}
                         onBlur={(e: any) => {
                           handleBlur(ann.id, e.target.value);
-                          setSelectedAnnotationId(null);
+                          // Do not clear selectedAnnotationId immediately so toolbar actions can access it
                         }}
                         autoFocus={ann.text === ''}
                         placeholder="Type..."
