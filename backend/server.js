@@ -280,16 +280,16 @@ app.post("/login", (req, res) => {
       if (err) return res.status(500).json({ error: "Server error" });
       if (result.length === 0) {
         // Record failed login
-        db.query("INSERT INTO login_history (username, ip_address, user_agent, event_type) VALUES (?,?,?,?)",
-          [username, ipAddr, ua, "login_failed"], () => {});
+        db.query("INSERT INTO login_history (username, ip_address, user_agent, status) VALUES (?,?,?,?)",
+          [username, ipAddr, ua, "failed"], () => {});
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
       const user = result[0];
 
       // Record successful login
-      db.query("INSERT INTO login_history (user_id, username, ip_address, user_agent, event_type) VALUES (?,?,?,?,?)",
-        [user.id, user.username, ipAddr, ua, "login_success"], () => {});
+      db.query("INSERT INTO login_history (user_id, username, ip_address, user_agent, status) VALUES (?,?,?,?,?)",
+        [user.id, user.username, ipAddr, ua, "success"], () => {});
 
       // Issue HttpOnly secure cookie for shared CRM/DocPlatform session
       const token = signToken({ id: user.id, username: user.username, role: user.role });
