@@ -763,6 +763,21 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
               color: rgb(r, g, b),
               font: font || undefined
             });
+
+            if (ann.isUnderline) {
+              let textWidth = (ann.text || '').length * (ann.fontSize || 16) * 0.55; // rough estimate
+              if (font) {
+                try {
+                  textWidth = font.widthOfTextAtSize(ann.text || '', ann.fontSize || 16);
+                } catch (e) { /* ignore */ }
+              }
+              page.drawLine({
+                start: { x: ann.x, y: height - ann.y - (ann.fontSize || 16) - 2 },
+                end: { x: ann.x + textWidth, y: height - ann.y - (ann.fontSize || 16) - 2 },
+                thickness: (ann.fontSize || 16) / 12, // scale thickness with font size
+                color: rgb(r, g, b)
+              });
+            }
           }
         }
       }

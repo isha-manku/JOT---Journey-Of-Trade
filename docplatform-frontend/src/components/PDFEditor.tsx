@@ -3,6 +3,7 @@ import { Box, Button, Select, MenuItem, IconButton, TextField, CircularProgress,
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
+import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import { Document, Page, pdfjs } from 'react-pdf';
 import Draggable from 'react-draggable';
 import { Rnd } from 'react-rnd';
@@ -27,6 +28,7 @@ interface Annotation {
   fontFamily?: string;
   isBold?: boolean;
   isItalic?: boolean;
+  isUnderline?: boolean;
   pageNumber: number;
 }
 
@@ -44,6 +46,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
   const [selectedSize, setSelectedSize] = useState(14);
   const [selectedBold, setSelectedBold] = useState(false);
   const [selectedItalic, setSelectedItalic] = useState(false);
+  const [selectedUnderline, setSelectedUnderline] = useState(false);
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null);
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -58,6 +61,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
     else if (field === 'fontFamily') setSelectedFont(value);
     else if (field === 'isBold') setSelectedBold(value);
     else if (field === 'isItalic') setSelectedItalic(value);
+    else if (field === 'isUnderline') setSelectedUnderline(value);
 
     // If an annotation is currently focused, update it directly
     if (selectedAnnotationId) {
@@ -96,6 +100,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
         fontFamily: selectedFont,
         isBold: selectedBold,
         isItalic: selectedItalic,
+        isUnderline: selectedUnderline,
         pageNumber: targetPage,
       }
     ]);
@@ -140,6 +145,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
         fontFamily: selectedFont,
         isBold: selectedBold,
         isItalic: selectedItalic,
+        isUnderline: selectedUnderline,
         pageNumber: pageIndex,
       }
     ]);
@@ -211,11 +217,13 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
           size="small"
           value={[
             ...(selectedBold ? ['bold'] : []),
-            ...(selectedItalic ? ['italic'] : [])
+            ...(selectedItalic ? ['italic'] : []),
+            ...(selectedUnderline ? ['underline'] : [])
           ]}
           onChange={(e, newFormats) => {
             handleFormatChange('isBold', newFormats.includes('bold'));
             handleFormatChange('isItalic', newFormats.includes('italic'));
+            handleFormatChange('isUnderline', newFormats.includes('underline'));
           }}
         >
           <ToggleButton value="bold">
@@ -223,6 +231,9 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
           </ToggleButton>
           <ToggleButton value="italic">
             <FormatItalicIcon fontSize="small" />
+          </ToggleButton>
+          <ToggleButton value="underline">
+            <FormatUnderlinedIcon fontSize="small" />
           </ToggleButton>
         </ToggleButtonGroup>
 
@@ -356,6 +367,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                           setSelectedSize(ann.fontSize || 14);
                           setSelectedBold(!!ann.isBold);
                           setSelectedItalic(!!ann.isItalic);
+                          setSelectedUnderline(!!ann.isUnderline);
                           setSelectedFont(ann.fontFamily || 'Cambria');
                           setSelectedColor(ann.color || '#000000');
                         }}
@@ -381,6 +393,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                             fontSize: `${ann.fontSize}px`,
                             fontWeight: ann.isBold ? 'bold' : 'normal',
                             fontStyle: ann.isItalic ? 'italic' : 'normal',
+                            textDecoration: ann.isUnderline ? 'underline' : 'none',
                             color: ann.color,
                             padding: 0,
                             margin: 0,
