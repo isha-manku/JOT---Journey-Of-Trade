@@ -678,7 +678,11 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
     let pdfBytes = await documentHydrator.hydrateAndRenderPDF(templateBinary, formValues, schemaMappings, req.query.language, docVersion.edited_html);
 
     // Apply custom annotations if they exist and raw is not requested
-    if (req.query.raw !== 'true' && docVersion.custom_annotations) {
+    const annotations = typeof docVersion.custom_annotations === 'string' 
+      ? JSON.parse(docVersion.custom_annotations) 
+      : docVersion.custom_annotations;
+
+    if (req.query.raw !== 'true' && annotations && annotations.length > 0) {
       const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
       const fontkit = require('@pdf-lib/fontkit');
       const fs = require('fs');
@@ -686,42 +690,49 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
       const pdfDoc = await PDFDocument.load(pdfBytes);
       pdfDoc.registerFontkit(fontkit);
 
-      let cambriaFont;
-      try {
-        const fontPath = path.join(__dirname, 'public/fonts/cambria.ttc');
-        if (fs.existsSync(fontPath)) {
-          const fontBytes = fs.readFileSync(fontPath);
-          cambriaFont = await pdfDoc.embedFont(fontBytes, { customName: 'Cambria' });
-        }
-      } catch (e) {
-        console.error("Failed to load Cambria font on backend", e);
-      }
+      // Embedded fonts cache
+      const embeddedFonts = {};
 
-      // Pre-embed standard fonts for bold/italic support
-      const standardFontsMap = {
-        Helvetica: {
-          normal: await pdfDoc.embedFont(StandardFonts.Helvetica),
-          bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
-          italic: await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
-          boldItalic: await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique)
-        },
-        'Times Roman': {
-          normal: await pdfDoc.embedFont(StandardFonts.TimesRoman),
-          bold: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
-          italic: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic),
-          boldItalic: await pdfDoc.embedFont(StandardFonts.TimesRomanBoldItalic)
-        },
-        Courier: {
-          normal: await pdfDoc.embedFont(StandardFonts.Courier),
-          bold: await pdfDoc.embedFont(StandardFonts.CourierBold),
-          italic: await pdfDoc.embedFont(StandardFonts.CourierOblique),
-          boldItalic: await pdfDoc.embedFont(StandardFonts.CourierBoldOblique)
+      const getFont = async (fontFamily, isBold, isItalic) => {
+        if (fontFamily === 'Cambria') {
+          if (!embeddedFonts['Cambria']) {
+            try {
+              const fontPath = path.join(__dirname, 'public/fonts/cambria.ttc');
+              if (fs.existsSync(fontPath)) {
+                const fontBytes = fs.readFileSync(fontPath);
+                embeddedFonts['Cambria'] = await pdfDoc.embedFont(fontBytes, { customName: 'Cambria' });
+              }
+            } catch (e) { console.error("Failed to load Cambria font", e); }
+          }
+          return embeddedFonts['Cambria'];
         }
+
+        const map = {
+          'Times Roman': {
+            normal: StandardFonts.TimesRoman, bold: StandardFonts.TimesRomanBold,
+            italic: StandardFonts.TimesRomanItalic, boldItalic: StandardFonts.TimesRomanBoldItalic
+          },
+          'Courier': {
+            normal: StandardFonts.Courier, bold: StandardFonts.CourierBold,
+            italic: StandardFonts.CourierOblique, boldItalic: StandardFonts.CourierBoldOblique
+          },
+          'Helvetica': {
+            normal: StandardFonts.Helvetica, bold: StandardFonts.HelveticaBold,
+            italic: StandardFonts.HelveticaOblique, boldItalic: StandardFonts.HelveticaBoldOblique
+          }
+        };
+
+        const familyMap = map[fontFamily] || map['Helvetica'];
+        let fontRef = familyMap.normal;
+        if (isBold && isItalic) fontRef = familyMap.boldItalic;
+        else if (isBold) fontRef = familyMap.bold;
+        else if (isItalic) fontRef = familyMap.italic;
+
+        if (!embeddedFonts[fontRef]) {
+          embeddedFonts[fontRef] = await pdfDoc.embedFont(fontRef);
+        }
+        return embeddedFonts[fontRef];
       };
-
-      const annotations = typeof docVersion.custom_annotations === 'string' 
-        ? JSON.parse(docVersion.custom_annotations) 
-        : docVersion.custom_annotations;
 
       const pages = pdfDoc.getPages();
       for (const ann of annotations) {
@@ -729,28 +740,6 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
           const page = pages[ann.pageNumber - 1];
           const { height } = page.getSize();
           
-          let hex = (ann.color || '#000000').replace('#', '');
-          let r = parseInt(hex.substring(0,2), 16) / 255;
-          let g = parseInt(hex.substring(2,4), 16) / 255;
-          let b = parseInt(hex.substring(4,6), 16) / 255;
-
-          const drawOpts = {
-            x: ann.x,
-            y: height - ann.y - (ann.fontSize || 16),
-            size: ann.fontSize || 16,
-            color: rgb(r, g, b),
-          };
-          
-          if (ann.fontFamily === 'Cambria' && cambriaFont) {
-            drawOpts.font = cambriaFont;
-          } else {
-            const family = standardFontsMap[ann.fontFamily] || standardFontsMap.Helvetica;
-            if (ann.isBold && ann.isItalic) drawOpts.font = family.boldItalic;
-            else if (ann.isBold) drawOpts.font = family.bold;
-            else if (ann.isItalic) drawOpts.font = family.italic;
-            else drawOpts.font = family.normal;
-          }
-
           if (ann.type === 'whiteout') {
             page.drawRectangle({
               x: ann.x,
@@ -760,7 +749,20 @@ router.get("/documents/:id/pdf", authenticateCRMUser, async (req, res) => {
               color: rgb(1, 1, 1),
             });
           } else {
-            page.drawText(ann.text || '', drawOpts);
+            let hex = (ann.color || '#000000').replace('#', '');
+            let r = parseInt(hex.substring(0,2), 16) / 255;
+            let g = parseInt(hex.substring(2,4), 16) / 255;
+            let b = parseInt(hex.substring(4,6), 16) / 255;
+
+            const font = await getFont(ann.fontFamily, ann.isBold, ann.isItalic);
+            
+            page.drawText(ann.text || '', {
+              x: ann.x,
+              y: height - ann.y - (ann.fontSize || 16),
+              size: ann.fontSize || 16,
+              color: rgb(r, g, b),
+              font: font || undefined
+            });
           }
         }
       }
