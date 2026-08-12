@@ -363,7 +363,11 @@ router.post("/notifications/test", async (req, res) => {
       port: cfg.smtp_port || 587,
       secure: !!cfg.smtp_secure,
       auth: { user: cfg.smtp_user, pass: cfg.smtp_pass },
-      tls: { rejectUnauthorized: false }
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+      family: 4 // Force IPv4 (fixes timeouts in some cloud environments)
     });
 
     await transporter.sendMail({
