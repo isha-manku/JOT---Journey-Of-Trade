@@ -477,7 +477,7 @@ router.get("/login-history", async (req, res) => {
 router.get("/sessions", async (req, res) => {
   try {
     const rows = await q(`
-      SELECT s.id, s.ip_address, s.user_agent, s.last_activity, s.created_at, u.username 
+      SELECT s.id, s.ip_address, s.user_agent, s.last_activity, u.username 
       FROM sessions s 
       JOIN users u ON s.user_id = u.id 
       WHERE s.revoked = 0 
