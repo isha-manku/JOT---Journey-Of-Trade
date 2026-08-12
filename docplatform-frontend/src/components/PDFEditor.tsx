@@ -361,6 +361,15 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                         InputProps={{
                           disableUnderline: true,
                           style: {
+                            padding: 0,
+                            margin: 0,
+                            background: 'transparent',
+                            border: '1px solid transparent',
+                            minWidth: '50px'
+                          }
+                        }}
+                        inputProps={{
+                          style: {
                             fontFamily: ann.fontFamily === 'Cambria' ? '"Cambria", serif' : ann.fontFamily,
                             fontSize: `${ann.fontSize}px`,
                             fontWeight: ann.isBold ? 'bold' : 'normal',
@@ -368,9 +377,6 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                             color: ann.color,
                             padding: 0,
                             margin: 0,
-                            background: 'transparent',
-                            border: '1px solid transparent',
-                            minWidth: '50px'
                           }
                         }}
                       />
