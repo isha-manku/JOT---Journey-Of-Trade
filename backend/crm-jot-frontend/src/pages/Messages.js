@@ -38,7 +38,7 @@ const fmtDate = (ts) => {
 const groupByDate = (msgs) => {
   const groups = {};
   msgs.forEach(m => {
-    const key = new Date(m.created_at).toDateString();
+    const key = new Date(m.timestamp).toDateString();
     if (!groups[key]) groups[key] = [];
     groups[key].push(m);
   });
@@ -290,7 +290,7 @@ function Messages() {
               <div key={dateKey}>
                 {/* Date divider */}
                 <div className="msg-date-divider">
-                  <span>{fmtDate(dayMsgs[0].created_at)}</span>
+                  <span>{fmtDate(dayMsgs[0].timestamp)}</span>
                 </div>
 
                 {dayMsgs.map((m, i) => {
@@ -319,13 +319,13 @@ function Messages() {
                         {showAvatar && !isMe && (
                           <div className="msg-sender-name">
                             {m.sender_name}
-                            <span className="msg-time">{fmtTime(m.created_at)}</span>
+                            <span className="msg-time">{fmtTime(m.timestamp)}</span>
                           </div>
                         )}
                         <div className={`msg-bubble ${isMe ? "msg-bubble-me" : "msg-bubble-them"}`}>
                           {m.message}
                           {isMe && (
-                            <span className="msg-bubble-time">{fmtTime(m.created_at)}</span>
+                            <span className="msg-bubble-time">{fmtTime(m.timestamp)}</span>
                           )}
                         </div>
                       </div>
