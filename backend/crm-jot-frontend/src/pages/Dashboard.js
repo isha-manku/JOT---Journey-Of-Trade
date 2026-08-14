@@ -245,7 +245,7 @@ function Dashboard() {
     const counts = {};
     inquiries.forEach(i => { const p = i.product_name?.trim() || "Others"; counts[p] = (counts[p] || 0) + 1; });
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6);
-    if (!sorted.length) return [{ name: "Wheat", value: 35 }, { name: "Sugar", value: 25 }, { name: "Rice", value: 15 }, { name: "Pulses", value: 10 }, { name: "Spices", value: 8 }, { name: "Others", value: 7 }];
+    if (!sorted.length) return [];
     return sorted.map(([name, value]) => ({ name, value }));
   })();
 
@@ -416,25 +416,31 @@ function Dashboard() {
 
             <div className="jot-card">
               <div className="jot-card-head"><h3>Top Commodities</h3></div>
-              <div className="jot-pie-wrap">
-                <ResponsiveContainer width="100%" height={160}>
-                  <PieChart>
-                    <Pie data={pieData} dataKey="value" outerRadius={70} innerRadius={42}>
-                      {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="jot-pie-legend">
-                  {pieData.map((item, i) => (
-                    <div className="jot-pie-leg-item" key={i}>
-                      <span className="jot-leg-dot" style={{ background: COLORS[i % COLORS.length] }}></span>
-                      <span className="jot-leg-name">{item.name}</span>
-                      <span className="jot-leg-val">{item.value}</span>
-                    </div>
-                  ))}
+              {pieData.length > 0 ? (
+                <div className="jot-pie-wrap">
+                  <ResponsiveContainer width="100%" height={160}>
+                    <PieChart>
+                      <Pie data={pieData} dataKey="value" outerRadius={70} innerRadius={42}>
+                        {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="jot-pie-legend">
+                    {pieData.map((item, i) => (
+                      <div className="jot-pie-leg-item" key={i}>
+                        <span className="jot-leg-dot" style={{ background: COLORS[i % COLORS.length] }}></span>
+                        <span className="jot-leg-name">{item.name}</span>
+                        <span className="jot-leg-val">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div style={{ padding: "20px", textAlign: "center", color: "#6c757d", fontSize: "14px", minHeight: "160px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  No commodities data available.
+                </div>
+              )}
             </div>
 
             <div className="jot-card">
