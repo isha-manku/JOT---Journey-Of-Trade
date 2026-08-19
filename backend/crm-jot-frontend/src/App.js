@@ -6,7 +6,7 @@ import {
   useLocation
 } from "react-router-dom";
 
-import { FiGrid, FiCalendar, FiMessageSquare, FiShoppingBag, FiUsers, FiDollarSign, FiBriefcase, FiFileText, FiBarChart2, FiPackage, FiMessageCircle, FiSettings, FiX, FiCheckCircle, FiLogOut } from "react-icons/fi";
+import { FiGrid, FiCalendar, FiMessageSquare, FiShoppingBag, FiUsers, FiDollarSign, FiBriefcase, FiFileText, FiBarChart2, FiPackage, FiMessageCircle, FiSettings, FiX, FiCheckCircle, FiLogOut, FiMenu } from "react-icons/fi";
 import { useEffect, useState, useRef } from "react";
 
 import Buyers         from "./pages/Buyers";
@@ -58,6 +58,7 @@ const LAST_READ_KEY = "msg_last_read_id";
 function Layout() {
   const location = useLocation();
   const hideSidebar = location.pathname === "/";
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const fullName = localStorage.getItem("username") || "User";
   const role     = localStorage.getItem("role")     || "member";
@@ -131,7 +132,7 @@ function Layout() {
     <div className="layout">
 
       {!hideSidebar && (
-        <div className="sidebar">
+        <div className={`sidebar ${isMobileMenuOpen ? "mobile-open" : ""}`}>
           <div className="logo-area">
             <img src="/jot copy.png" alt="JOT logo" className="sidebar-logo" />
           </div>
@@ -145,7 +146,12 @@ function Layout() {
               const isMessages = to === "/messages";
 
               return (
-                <Link key={to} to={to} className={isActive ? "active" : ""}>
+                <Link 
+                  key={to} 
+                  to={to} 
+                  className={isActive ? "active" : ""}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
                   <Icon size={18} />
                   <span>{label}</span>
                   {/* Unread badge — only on Messages nav item */}
@@ -173,6 +179,23 @@ function Layout() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Mobile Header Toggle */}
+      {!hideSidebar && (
+        <div className="mobile-header">
+          <div className="mobile-header-left">
+            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              {isMobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+            </button>
+            <img src="/jot copy.png" alt="JOT logo" className="mobile-header-logo" />
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div className="mobile-sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
 
       <div className="main">
