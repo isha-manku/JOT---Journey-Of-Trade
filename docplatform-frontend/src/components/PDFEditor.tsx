@@ -199,7 +199,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Toolbar */}
-      <Box sx={{ p: 1, bgcolor: '#ffffff', borderBottom: '1px solid #ccc', display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+      <Box sx={{ p: 1, bgcolor: '#ffffff', borderBottom: '1px solid #ccc', display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'nowrap', overflowX: 'auto', '&::-webkit-scrollbar': { height: '6px' }, '&::-webkit-scrollbar-thumb': { bgcolor: '#ccc', borderRadius: '3px' } }}>
         <Select size="small" value={selectedFont} onChange={(e: any) => handleFormatChange('fontFamily', e.target.value)}>
           <MenuItem value="Cambria">Cambria</MenuItem>
           <MenuItem value="Helvetica">Helvetica</MenuItem>
@@ -273,7 +273,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
       </Box>
 
       {/* Scrollable Document Area */}
-      <Box sx={{ flexGrow: 1, bgcolor: '#e5e5e5', overflow: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', p: 4, gap: 4 }}>
+      <Box sx={{ flexGrow: 1, bgcolor: '#e5e5e5', overflow: 'auto', WebkitOverflowScrolling: 'touch', display: 'flex', flexDirection: 'column', alignItems: 'center', p: { xs: 1, md: 4 }, gap: 4 }}>
         <Document
           file={fileOptions}
           onLoadSuccess={({ numPages }) => setNumPages(numPages)}
@@ -301,7 +301,7 @@ export default function PDFEditor({ doc }: PDFEditorProps) {
                   pageNumber={pageIndex} 
                   renderTextLayer={false}
                   renderAnnotationLayer={false}
-                  width={800} 
+                  width={window.innerWidth < 850 ? window.innerWidth - 40 : 800} 
                 />
                 
                 {pageAnnotations.map(ann => {
