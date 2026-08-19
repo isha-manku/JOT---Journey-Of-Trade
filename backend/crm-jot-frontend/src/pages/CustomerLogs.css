@@ -368,3 +368,37 @@
 .cl-select:focus {
   border-color: #c9a96e;
 }
+
+/* Mobile Responsiveness for Customer Logs */
+@media (max-width: 768px) {
+  .cl-page { padding: 16px; }
+  .cl-header { flex-direction: column; gap: 12px; align-items: stretch; padding: 16px; margin-bottom: 20px; }
+  .cl-title { font-size: 20px; }
+  .cl-add-btn { justify-content: center; width: 100%; }
+  
+  .cl-layout { 
+    flex-direction: column; 
+    height: auto; 
+    gap: 20px;
+  }
+  
+  .cl-sidebar { 
+    width: 100%; 
+    max-height: 250px; 
+    flex: none; 
+  }
+  
+  .cl-main { 
+    width: 100%; 
+    min-height: 500px; 
+    height: auto; 
+    overflow: visible;
+  }
+  
+  .cl-timeline-header { padding: 15px; }
+  .cl-editor-card { padding: 15px; }
+  .cl-timeline { padding: 15px; overflow-y: visible; }
+  .cl-log-card { padding: 15px; }
+  
+  .cl-modal { width: 95%; max-width: none; margin: 10px; padding: 20px; box-sizing: border-box; }
+}
