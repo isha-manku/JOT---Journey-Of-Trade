@@ -937,6 +937,39 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
 .set-form-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 8px; }
 .set-save-btn { background: #0e2318; color: #c9a96e; border: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; width: fit-content; }
 .set-save-btn:hover { background: #1d3b2f; }
+
+/* Mobile Menu Toggles for Settings */
+.set-tabs-header-mobile {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f0ede6;
+}
+.set-mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #0e2318;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+.set-mobile-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #0e2318;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile Menu Overrides for Settings */
+@media (max-width: 1100px) {
+  .set-tabs-header-mobile { display: flex; }
+}
 .set-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .set-cancel-btn { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 12px 24px; font-size: 14px; font-weight: 600; color: #555; cursor: pointer; transition: background 0.2s; }
 .set-cancel-btn:hover { background: #f5f2eb; }
@@ -1006,7 +1039,7 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
   align-items: center;
   justify-content: center;
 }
-@media (max-width: 900px) { .set-layout { grid-template-columns: 1fr; } .set-tabs { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; position: static; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; } .set-tabs::-webkit-scrollbar { display: none; } .set-tab { flex-shrink: 0; } .set-form-grid-3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 900px) { .set-layout { grid-template-columns: 1fr; } .set-form-grid-3 { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 600px) { .set-form-grid-2, .set-form-grid-3 { grid-template-columns: 1fr; } }
 
 
@@ -1157,12 +1190,23 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
 @media (max-width: 1100px) {
   .cal-layout  { grid-template-columns: 1fr; }
   .cal-right   { display: grid; grid-template-columns: 1fr 1fr; }
-  .comp-layout { grid-template-columns: 1fr; }
-  .comp-list   { max-height: 300px; }
-  .set-layout  { grid-template-columns: 1fr; }
-  .set-tabs    { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; position: static; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .set-tabs::-webkit-scrollbar { display: none; }
-  .set-tab     { flex-shrink: 0; }
+  .set-tabs { display: none; }
+  .set-tabs.mobile-open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    border-radius: 0;
+    padding: 20px;
+    background: white;
+    overflow-y: auto;
+  }
+  .set-mobile-menu-btn { display: flex; }
+  .set-mobile-close-btn { display: flex; }
 }
 @media (max-width: 1000px) {
   .jot-bottom-row { grid-template-columns: 1fr 1fr; }

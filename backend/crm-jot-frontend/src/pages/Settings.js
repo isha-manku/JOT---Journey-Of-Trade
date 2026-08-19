@@ -4,7 +4,7 @@ import {
   FiCheck, FiX, FiPlus, FiEye, FiEyeOff, FiShield,
   FiBriefcase, FiPackage, FiTruck, FiBell, FiSettings,
   FiChevronDown, FiChevronRight, FiMail, FiSend,
-  FiRefreshCw, FiKey, FiClock, FiFileText
+  FiRefreshCw, FiKey, FiClock, FiFileText, FiMenu
 } from "react-icons/fi";
 
 import TemplateSettings from '../components/TemplateSettings';
@@ -1198,6 +1198,12 @@ function Settings() {
   const [toast, setToast]       = useState(null);
   const visibleTabs = TABS.filter(t => t.roles.includes(userRole));
   const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id || "company");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleTabClick = (id) => {
+    setActiveTab(id);
+    setIsMobileMenuOpen(false);
+  };
 
   const showToast = (msg, type = "success") => setToast({ msg, type });
 
@@ -1218,23 +1224,35 @@ function Settings() {
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={()=>setToast(null)}/>}
 
       <div className="set-page-header">
-        <div>
-          <h1 className="jot-title">Settings</h1>
-          <p className="jot-subtitle">
-            Manage your CRM, team and preferences
-            {!isAdmin() && <span style={{marginLeft:10,fontSize:12,color:"#f59e0b",fontWeight:600}}>👁 View-only mode</span>}
-          </p>
+        <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
+          <button className="set-mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
+            <FiMenu size={22} />
+          </button>
+          <div>
+            <h1 className="jot-title">Settings</h1>
+            <p className="jot-subtitle">
+              Manage your CRM, team and preferences
+              {!isAdmin() && <span style={{marginLeft:10,fontSize:12,color:"#f59e0b",fontWeight:600}}>👁 View-only mode</span>}
+            </p>
+          </div>
         </div>
       </div>
 
       <div className="set-layout">
-        <div className="set-tabs">
+        <div className={`set-tabs ${isMobileMenuOpen ? "mobile-open" : ""}`}>
+          <div className="set-tabs-header-mobile">
+            <h2 style={{ fontSize: 18, color: "#0e2318", margin: 0 }}>Settings Menu</h2>
+            <button className="set-mobile-close-btn" onClick={() => setIsMobileMenuOpen(false)}>
+              <FiX size={22} />
+            </button>
+          </div>
+
           <div className="set-tabs-label">General</div>
           {visibleTabs.filter(t => ["company", "password", "team"].includes(t.id)).map(t => (
             <button
               key={t.id}
               className={`set-tab ${activeTab===t.id?"set-tab-active":""}`}
-              onClick={()=>setActiveTab(t.id)}
+              onClick={()=>handleTabClick(t.id)}
             >
               <t.icon size={15}/> {t.label}
             </button>
@@ -1246,7 +1264,7 @@ function Settings() {
             <button
               key={t.id}
               className={`set-tab ${activeTab===t.id?"set-tab-active":""}`}
-              onClick={()=>setActiveTab(t.id)}
+              onClick={()=>handleTabClick(t.id)}
             >
               <t.icon size={15}/> {t.label}
             </button>
@@ -1258,7 +1276,7 @@ function Settings() {
             <button
               key={t.id}
               className={`set-tab ${activeTab===t.id?"set-tab-active":""}`}
-              onClick={()=>setActiveTab(t.id)}
+              onClick={()=>handleTabClick(t.id)}
             >
               <t.icon size={15}/> {t.label}
             </button>
