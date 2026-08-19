@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import {
   FiSend, FiSearch, FiX, FiUsers, FiMessageCircle,
-  FiHash, FiTrash2
+  FiHash, FiTrash2, FiMenu
 } from "react-icons/fi";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -76,6 +76,7 @@ function Messages() {
   const [search,       setSearch]       = useState("");
   const [userSearch,   setUserSearch]   = useState("");
   const [showMembers,  setShowMembers]  = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const bottomRef  = useRef(null);
   const pollRef    = useRef(null);
 
@@ -147,6 +148,7 @@ function Messages() {
     setChannel(ch);
     setChannelLabel(label);
     setMessages([]);
+    setIsMobileSidebarOpen(false);
 
     await fetch(`/messages/read`, {
       method: "POST",
@@ -177,11 +179,13 @@ function Messages() {
     <div className="msg-page">
 
       {/* ── SIDEBAR ── */}
-      <div className="msg-sidebar">
+      <div className={`msg-sidebar ${isMobileSidebarOpen ? "mobile-open" : ""}`}>
 
         <div className="msg-sidebar-head">
           <h2>Messages</h2>
-          
+          <button className="msg-mobile-close-btn" onClick={() => setIsMobileSidebarOpen(false)}>
+            <FiX size={20} />
+          </button>
         </div>
 
         {/* Search users */}
@@ -244,6 +248,9 @@ function Messages() {
         {/* Chat Header */}
         <div className="msg-chat-header">
           <div className="msg-chat-title">
+            <button className="msg-mobile-menu-btn" onClick={() => setIsMobileSidebarOpen(true)}>
+              <FiMenu size={20} />
+            </button>
             {channel === "general"
               ? <><FiHash size={18} /><span>General</span></>
               : <>

@@ -982,6 +982,30 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
 .set-content { display: flex; flex-direction: column; gap: 20px; }
 .set-field textarea { padding: 10px 14px; border: 1px solid #e5e0d5; border-radius: 10px; font-size: 14px; color: #222; background: #faf9f6; outline: none; transition: border-color 0.2s; font-family: inherit; width: 100%; resize: vertical; }
 .set-field textarea:focus { border-color: #c9a96e; background: white; }
+.msg-chat-search { display: flex; align-items: center; gap: 8px; background: white; border: 1px solid #e5e0d5; border-radius: 10px; padding: 8px 12px; margin-left: 10px; color: #aaa; width: 200px; }
+.msg-chat-search input { border: none; background: transparent; outline: none; font-size: 13px; color: #333; flex: 1; width: 100%; }
+
+/* Mobile Message Sidebar Toggles */
+.msg-mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #0e2318;
+  cursor: pointer;
+  margin-right: 10px;
+  align-items: center;
+  justify-content: center;
+}
+.msg-mobile-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #0e2318;
+  cursor: pointer;
+  margin-left: auto;
+  align-items: center;
+  justify-content: center;
+}
 @media (max-width: 900px) { .set-layout { grid-template-columns: 1fr; } .set-tabs { flex-direction: row; flex-wrap: wrap; position: static; } .set-form-grid-3 { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 600px) { .set-form-grid-2, .set-form-grid-3 { grid-template-columns: 1fr; } }
 
@@ -1178,6 +1202,17 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
   .action-buttons { flex-direction: column; gap: 5px; }
   .action-buttons button { width: 100%; }
   .msg-sidebar { display: none; }
+  .msg-sidebar.mobile-open {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+  }
+  .msg-mobile-menu-btn { display: flex; }
+  .msg-mobile-close-btn { display: flex; }
   .msg-chat-search { display: none; }
   
   /* Table Responsiveness */
