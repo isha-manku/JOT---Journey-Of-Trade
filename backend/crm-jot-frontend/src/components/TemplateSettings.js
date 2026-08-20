@@ -196,7 +196,7 @@ export default function TemplateSettings({ onToast }) {
           </div>
         )}
 
-        <div style={{overflowX: 'auto'}}>
+        <div className="table-container" style={{overflowX: 'auto', maxWidth: '100%'}}>
           <table style={{width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px'}}>
             <thead>
               <tr style={{borderBottom: '1px solid #e5e7eb'}}>
