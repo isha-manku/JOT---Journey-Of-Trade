@@ -190,3 +190,28 @@
 .btn-secondary:hover { background: #f1f5f9; }
 .close-btn { background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; }
 .close-btn:hover { color: #0f172a; }
+
+@media (max-width: 900px) {
+  .schema-editor-modal {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+  .schema-editor-container {
+    flex-direction: column;
+  }
+  .preview-pane {
+    flex: 1;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem;
+  }
+  .config-pane {
+    flex: 1;
+    padding: 1rem;
+  }
+  .document-html-view {
+    padding: 1rem;
+    overflow-x: auto;
+  }
+}
