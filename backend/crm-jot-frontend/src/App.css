@@ -1039,9 +1039,18 @@ td input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; accent-c
   align-items: center;
   justify-content: center;
 }
-@media (max-width: 900px) { .set-layout { grid-template-columns: 1fr; } .set-form-grid-3 { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 600px) { .set-form-grid-2, .set-form-grid-3 { grid-template-columns: 1fr; } }
-
+@media (max-width: 900px) { 
+  .set-layout { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 16px; } 
+  .set-form-grid-3 { grid-template-columns: 1fr 1fr; }
+  .set-page { padding: 16px 16px 30px; gap: 16px; }
+  .set-card { padding: 16px; }
+}
+@media (max-width: 600px) { 
+  .set-form-grid-2, .set-form-grid-3 { grid-template-columns: minmax(0, 1fr); } 
+  .set-page { padding: 12px 12px 24px; gap: 12px; }
+  .set-card { padding: 16px 12px; }
+  .set-layout { padding: 12px 0; }
+}
 
 
 /* ══════════════════════════════════════════

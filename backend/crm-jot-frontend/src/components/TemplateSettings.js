@@ -7,19 +7,17 @@ const uid    = () => localStorage.getItem("userId");
 const getRole = () => localStorage.getItem("role");
 const isAdmin = () => getRole() === "admin";
 
-const SectionCard = ({ icon:Icon, title, subtitle, badge, children }) => (
-  <div style={{ background:"#fff", borderRadius:12, boxShadow:"0 2px 10px rgba(0,0,0,0.04)", border:"1px solid #f3f4f6", marginBottom:24, overflow:"hidden" }}>
-    <div style={{ padding:"20px 24px", borderBottom:"1px solid #f3f4f6", display:"flex", alignItems:"center", justifyContent:"space-between", background:"#fafafa" }}>
-      <div style={{display:"flex", alignItems:"center", gap:14}}>
-        <div style={{background:"#ecfdf5", padding:10, borderRadius:10, color:"#10b981", display:"flex"}}><Icon size={20}/></div>
-        <div>
-          <h3 style={{margin:0, fontSize:16, fontWeight:600, color:"#0e2318"}}>{title}</h3>
-          {subtitle && <p style={{margin:"4px 0 0", fontSize:13, color:"#6b7280"}}>{subtitle}</p>}
-        </div>
+const SectionCard = ({ icon: Icon, title, subtitle, children, noPad, badge }) => (
+  <div className="set-card">
+    <div className="set-card-head">
+      <div className="set-card-icon"><Icon size={18}/></div>
+      <div style={{flex:1}}>
+        <h3 className="set-card-title">{title}</h3>
+        {subtitle && <p className="set-card-sub">{subtitle}</p>}
       </div>
-      {badge && <span style={{background:"#f3f4f6", color:"#4b5563", padding:"4px 10px", borderRadius:20, fontSize:12, fontWeight:500}}>{badge}</span>}
+      {badge && <span className="set-read-only-badge">{badge}</span>}
     </div>
-    <div style={{padding:24}}>{children}</div>
+    <div className={noPad ? "" : "set-card-body"}>{children}</div>
   </div>
 );
 
