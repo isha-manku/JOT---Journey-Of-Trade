@@ -367,13 +367,70 @@ class DocumentHydratorService {
         // Standard DOCX Hydration
         inputFilePath = path.join(jobDir, 'input.docx');
         const zip = new PizZip(templateBuffer);
-        const doc = new Docxtemplater(zip, {
-          paragraphLoop: true,
-          linebreaks: true,
-        });
+        let xml = zip.file("word/document.xml").asText();
 
-        doc.render(data);
-        let buf = doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' });
+        if (schemaMappings && schemaMappings.length > 0) {
+          const groupedMappings = {};
+          schemaMappings.forEach(mapping => {
+            const target = mapping.target_placeholder_value;
+            if (target) {
+              if (!groupedMappings[target]) groupedMappings[target] = [];
+              groupedMappings[target].push(mapping);
+            }
+          });
+
+          Object.keys(groupedMappings).forEach((targetText) => {
+            const mappings = groupedMappings[targetText];
+            mappings.sort((a, b) => (b.occurrence_index || 0) - (a.occurrence_index || 0));
+
+            const tokens = targetText.split(/\s+/).filter(Boolean);
+            const xmlRegexStr = tokens.map(token => token.split('').map(char => char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('(?:<[^>]+>)*')).join('(?:\\s*<[^>]+>\\s*|\\s+)+');
+            const xmlRegex = new RegExp(xmlRegexStr, 'g');
+
+            mappings.forEach((mapping) => {
+              const userValue = data[mapping.field_key] || '';
+              if (userValue) {
+                let matchCount = 0;
+                xml = xml.replace(xmlRegex, (match) => {
+                  if (mapping.occurrence_index === undefined || matchCount === mapping.occurrence_index) {
+                    matchCount++;
+                    const xmlTagsInMatch = match.match(/<[^>]+>/g) || [];
+                    const validSanitizedUserValue = String(userValue)
+                      .replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/\n/g, '</w:t><w:br/><w:t>');
+                    return validSanitizedUserValue + xmlTagsInMatch.join('');
+                  }
+                  matchCount++;
+                  return match;
+                });
+              }
+            });
+          });
+        } else {
+          // Scratch Generate logic
+          Object.keys(data).forEach(tag => {
+            const userValue = data[tag] || '';
+            const tagText = `{{${tag}}}`;
+            const tokens = tagText.split('');
+            const xmlRegexStr = tokens.map(char => char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('(?:<[^>]+>)*');
+            const xmlRegex = new RegExp(xmlRegexStr, 'g');
+            
+            xml = xml.replace(xmlRegex, (match) => {
+              const xmlTagsInMatch = match.match(/<[^>]+>/g) || [];
+              const validSanitizedUserValue = String(userValue)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\n/g, '</w:t><w:br/><w:t>');
+              return validSanitizedUserValue + xmlTagsInMatch.join('');
+            });
+          });
+        }
+
+        zip.file("word/document.xml", xml);
+        let buf = zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' });
 
         if (language === 'zh') {
           const zip2 = new PizZip(buf);
