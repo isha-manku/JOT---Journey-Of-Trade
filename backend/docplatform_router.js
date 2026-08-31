@@ -1102,4 +1102,40 @@ router.post("/documents/generated/:id/delete", authenticateCRMUser, async (req, 
   }
 });
 
+// =============================================================================
+// SCRATCH DOCUMENTS
+// =============================================================================
+const multer = require("multer");
+const uploadMemory = multer({ storage: multer.memoryStorage() });
+const documentHydrator = require("./documentHydrator.service");
+
+// POST /documents/scratch/extract
+router.post("/documents/scratch/extract", authenticateCRMUser, uploadMemory.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    const schema = documentHydrator.extractPlaceholders(req.file.buffer);
+    res.json({ schema });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /documents/scratch/generate
+router.post("/documents/scratch/generate", authenticateCRMUser, uploadMemory.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    const formValues = req.body.form_values ? JSON.parse(req.body.form_values) : {};
+    
+    const pdfBytes = await documentHydrator.hydrateAndRenderPDF(req.file.buffer, formValues, [], 'en');
+    
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": 'attachment; filename="generated_document.pdf"',
+    });
+    res.send(pdfBytes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

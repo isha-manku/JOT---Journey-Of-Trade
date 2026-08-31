@@ -90,6 +90,19 @@ export const docApi = {
   versions: (document_id: string) =>
     api.get<DocumentVersion[]>(`/documents/${document_id}/versions`).then(r => r.data),
 
+  extractScratch: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post<{ schema: any[] }>("/documents/scratch/extract", formData).then(r => r.data);
+  },
+
+  generateScratch: (file: File, form_values: Record<string, unknown>) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("form_values", JSON.stringify(form_values));
+    return api.post<Blob>("/documents/scratch/generate", formData, { responseType: 'blob' }).then(r => r.data);
+  },
+
   pdfUrl: (document_id: string, version?: number, download = false, language = "en") => {
     const base = api.defaults.baseURL || "/doc-api";
     let url = `${base}/documents/${document_id}/pdf`;

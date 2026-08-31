@@ -107,7 +107,12 @@ export default function DocumentGenerationPage() {
           )}
         </Box>
       ) : (
-        <Typography variant="h5" gutterBottom sx={{ mb: 4 }}>Generate Document</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>Generate Document</Typography>
+          <Button variant="outlined" onClick={() => navigate('/generate-scratch')}>
+            Generate from Scratch
+          </Button>
+        </Box>
       )}
 
       {!isEditMode && (
