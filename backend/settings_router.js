@@ -677,8 +677,9 @@ router.post("/templates", async (req, res) => {
        dtype = [{id: did}];
     }
     
+    const isActive = req.body.is_active !== undefined ? (req.body.is_active ? 1 : 0) : 1;
     const tid = crypto.randomUUID().replace(/-/g, "");
-    await q("INSERT INTO doc_templates (id, company_id, product_id, document_type_id, name, is_active, engine_type) VALUES (?, ?, ?, ?, ?, 1, 'docx')", [tid, comp[0].id, prod[0].id, dtype[0].id, name]);
+    await q("INSERT INTO doc_templates (id, company_id, product_id, document_type_id, name, is_active, engine_type) VALUES (?, ?, ?, ?, ?, ?, 'docx')", [tid, comp[0].id, prod[0].id, dtype[0].id, name, isActive]);
     
     res.json({ success: true, id: tid });
   } catch (err) {

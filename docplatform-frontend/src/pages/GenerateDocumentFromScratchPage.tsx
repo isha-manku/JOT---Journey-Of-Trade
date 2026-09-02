@@ -24,6 +24,8 @@ export default function GenerateDocumentFromScratchPage() {
   const [saveTemplate, setSaveTemplate] = useState(false);
   const [saveForm, setSaveForm] = useState({ name: "", company_name: "", product_name: "", document_type_name: "" });
 
+  const [formValues, setFormValues] = useState<Record<string, unknown> | null>(null);
+
   const [buyers, setBuyers] = useState<any[]>([]);
   const [selectedBuyerForSave, setSelectedBuyerForSave] = useState<string>("");
   const [savingToBuyer, setSavingToBuyer] = useState(false);
@@ -132,6 +134,7 @@ export default function GenerateDocumentFromScratchPage() {
     if (!file) return;
     setLoading(true);
     setError("");
+    setFormValues(values);
     
     try {
       const blob = await docApi.generateScratch(file, values);
@@ -154,20 +157,45 @@ export default function GenerateDocumentFromScratchPage() {
     setError("");
     setSelectedBuyerForSave("");
     setSaveToBuyerSuccess("");
+    setFormValues(null);
   };
 
   const handleSaveToBuyer = async () => {
-    if (!selectedBuyerForSave || !pdfUrl) return;
+    if (!selectedBuyerForSave || !formValues || !file) return;
     setSavingToBuyer(true);
     setSaveToBuyerSuccess("");
     setError("");
 
     try {
-      const response = await fetch(pdfUrl);
-      const blob = await response.blob();
-      const fileToSave = new File([blob], "generated_document.pdf", { type: "application/pdf" });
+      let templateIdToUse = selectedTemplateId;
 
-      await docApi.uploadBuyerDocument(selectedBuyerForSave, fileToSave, "generated_document.pdf");
+      // If we didn't use an existing template, we must create a hidden one so the backend can generate the Chinese version later
+      if (!templateIdToUse) {
+        const res = await templateApi.create({
+          name: `Scratch - ${file.name.replace(".docx", "")} - ${new Date().toLocaleDateString()}`,
+          company_name: saveForm.company_name || 'Generated from Scratch',
+          product_name: saveForm.product_name || 'Generated from Scratch',
+          document_type_name: saveForm.document_type_name || 'Generated from Scratch',
+          is_active: saveTemplate ? true : false
+        });
+        
+        templateIdToUse = res.id || (res as any).template?.id;
+        if (templateIdToUse) {
+          await templateApi.uploadDocx(templateIdToUse, file);
+        }
+      }
+
+      if (!templateIdToUse) {
+        throw new Error("Failed to create or determine template ID.");
+      }
+
+      // Save as a generated document to enable bilingual translation
+      await docApi.generate({
+        template_id: templateIdToUse,
+        buyer_id: selectedBuyerForSave,
+        form_values: formValues
+      });
+
       setSaveToBuyerSuccess("Document successfully saved to buyer's profile!");
     } catch (err: any) {
       setError(err?.response?.data?.error || err.message || "Failed to save document to buyer.");
