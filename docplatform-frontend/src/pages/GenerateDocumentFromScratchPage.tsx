@@ -349,7 +349,7 @@ export default function GenerateDocumentFromScratchPage() {
               >
                 <MenuItem value=""><em>None</em></MenuItem>
                 {buyers.map(b => (
-                  <MenuItem key={b.id} value={b.id}>{b.buyer_name || b.name || "Unknown Buyer"}</MenuItem>
+                  <MenuItem key={b.id} value={b.id}>{b.display_name || "Unknown Buyer"}</MenuItem>
                 ))}
               </Select>
             </FormControl>
