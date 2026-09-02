@@ -134,6 +134,27 @@ export const docApi = {
       withCredentials: true
     }).then(r => r.data);
   },
+
+  uploadBuyerDocument: (buyer_id: string | number, file: File | Blob, filename: string) => {
+    let crmBaseUrl = "";
+    if (api.defaults.baseURL && api.defaults.baseURL.startsWith("http")) {
+      crmBaseUrl = api.defaults.baseURL.replace(/\/doc-api\/?$/, "");
+    } else if (window.location.origin.includes("localhost:3000")) {
+      crmBaseUrl = "";
+    } else {
+      crmBaseUrl = window.location.origin;
+    }
+    
+    const formData = new FormData();
+    formData.append("buyer_id", String(buyer_id));
+    formData.append("document_type", "Generated Document");
+    formData.append("files", file, filename);
+
+    return axios.post(`${crmBaseUrl}/buyer-documents/upload`, formData, {
+      headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` },
+      withCredentials: true
+    }).then(r => r.data);
+  },
 };
 
 export const templateApi = {

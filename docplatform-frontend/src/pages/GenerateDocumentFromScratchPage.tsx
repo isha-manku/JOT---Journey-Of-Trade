@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { CloudUpload as CloudUploadIcon } from "@mui/icons-material";
 import DynamicForm from "../components/DynamicForm";
-import { docApi, templateApi } from "../api";
+import { docApi, templateApi, refApi } from "../api";
 import { DocumentSchema } from "../types";
 
 const STEPS = ["Upload Template", "Fill Fields", "Download"];
@@ -24,10 +24,21 @@ export default function GenerateDocumentFromScratchPage() {
   const [saveTemplate, setSaveTemplate] = useState(false);
   const [saveForm, setSaveForm] = useState({ name: "", company_name: "", product_name: "", document_type_name: "" });
 
+  const [buyers, setBuyers] = useState<any[]>([]);
+  const [selectedBuyerForSave, setSelectedBuyerForSave] = useState<string>("");
+  const [savingToBuyer, setSavingToBuyer] = useState(false);
+  const [saveToBuyerSuccess, setSaveToBuyerSuccess] = useState("");
+
   useEffect(() => {
     templateApi.list().then(data => {
       if (Array.isArray(data)) {
         setTemplates(data.filter(t => t.is_active));
+      }
+    }).catch(console.error);
+
+    refApi.buyers().then(data => {
+      if (Array.isArray(data)) {
+        setBuyers(data);
       }
     }).catch(console.error);
   }, []);
@@ -141,6 +152,28 @@ export default function GenerateDocumentFromScratchPage() {
     if (pdfUrl) URL.revokeObjectURL(pdfUrl);
     setPdfUrl(null);
     setError("");
+    setSelectedBuyerForSave("");
+    setSaveToBuyerSuccess("");
+  };
+
+  const handleSaveToBuyer = async () => {
+    if (!selectedBuyerForSave || !pdfUrl) return;
+    setSavingToBuyer(true);
+    setSaveToBuyerSuccess("");
+    setError("");
+
+    try {
+      const response = await fetch(pdfUrl);
+      const blob = await response.blob();
+      const fileToSave = new File([blob], "generated_document.pdf", { type: "application/pdf" });
+
+      await docApi.uploadBuyerDocument(selectedBuyerForSave, fileToSave, "generated_document.pdf");
+      setSaveToBuyerSuccess("Document successfully saved to buyer's profile!");
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err.message || "Failed to save document to buyer.");
+    } finally {
+      setSavingToBuyer(false);
+    }
   };
 
   return (
@@ -282,7 +315,7 @@ export default function GenerateDocumentFromScratchPage() {
       )}
 
       {activeStep === 2 && pdfUrl && (
-        <Stack spacing={3} alignItems="center" py={4}>
+        <Stack spacing={4} alignItems="center" py={4}>
           <Alert severity="success" sx={{ width: "100%" }}>
             PDF Generated Successfully!
           </Alert>
@@ -303,6 +336,38 @@ export default function GenerateDocumentFromScratchPage() {
               Preview PDF
             </Button>
           </Stack>
+
+          <Divider sx={{ width: "100%", my: 2 }}>Store Document to Buyer</Divider>
+          
+          <Box sx={{ width: "100%", maxWidth: 400, textAlign: "center" }}>
+            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+              <InputLabel>Select Buyer</InputLabel>
+              <Select
+                value={selectedBuyerForSave}
+                label="Select Buyer"
+                onChange={e => setSelectedBuyerForSave(e.target.value)}
+              >
+                <MenuItem value=""><em>None</em></MenuItem>
+                {buyers.map(b => (
+                  <MenuItem key={b.id} value={b.id}>{b.buyer_name || b.name || "Unknown Buyer"}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button 
+              variant="contained" 
+              color="secondary" 
+              onClick={handleSaveToBuyer}
+              disabled={!selectedBuyerForSave || savingToBuyer}
+              fullWidth
+            >
+              {savingToBuyer ? <CircularProgress size={24} sx={{ mr: 1 }} /> : null}
+              Save to Selected Buyer
+            </Button>
+            {saveToBuyerSuccess && (
+              <Alert severity="success" sx={{ mt: 2 }}>{saveToBuyerSuccess}</Alert>
+            )}
+          </Box>
+
           <Button onClick={reset} sx={{ mt: 2 }}>
             Start Over
           </Button>
