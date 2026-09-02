@@ -20,6 +20,21 @@ interface PDFPreviewDrawerProps {
 }
 
 export default function PDFPreviewDrawer({ previewDoc, onClose }: PDFPreviewDrawerProps) {
+  let crmBaseUrl = "";
+  if (window.location.origin.includes("localhost:3000")) {
+    crmBaseUrl = "http://localhost:5000";
+  }
+
+  const getManualDownloadUrl = () => {
+    if (!previewDoc) return "";
+    return `${crmBaseUrl}/buyer-documents/download/${previewDoc.id}?language=${previewDoc.language || 'en'}`;
+  };
+
+  const getManualPreviewUrl = () => {
+    if (!previewDoc) return "";
+    return `${crmBaseUrl}/buyer-documents/preview/${previewDoc.id}?language=${previewDoc.language || 'en'}`;
+  };
+
   return (
     <Drawer
       anchor="right"
@@ -47,7 +62,7 @@ export default function PDFPreviewDrawer({ previewDoc, onClose }: PDFPreviewDraw
                 size="small" 
                 variant="outlined" 
                 startIcon={<DownloadIcon />}
-                href={previewDoc.is_manual ? `/buyer-documents/download/${previewDoc.file_path?.split(/[\\\\/]/).pop()}` : docApi.pdfUrl(previewDoc.id, previewDoc.version, true, previewDoc.language)}
+                href={previewDoc.is_manual ? getManualDownloadUrl() : docApi.pdfUrl(previewDoc.id, previewDoc.version, true, previewDoc.language)}
                 sx={{ color: '#0e2318', borderColor: '#0e2318', '&:hover': { bgcolor: '#0e2318', color: '#ffffff' } }}
               >
                 Download
@@ -55,25 +70,23 @@ export default function PDFPreviewDrawer({ previewDoc, onClose }: PDFPreviewDraw
               <Button 
                 size="small" 
                 variant="outlined" 
-                href={previewDoc.is_manual ? `/uploads/buyer_documents/${previewDoc.file_path?.split(/[\\\\/]/).pop()}` : docApi.pdfUrl(previewDoc.id, previewDoc.version, false, previewDoc.language)} 
+                href={previewDoc.is_manual ? getManualPreviewUrl() : docApi.pdfUrl(previewDoc.id, previewDoc.version, false, previewDoc.language)} 
                 target="_blank"
                 sx={{ color: '#c9a96e', borderColor: '#c9a96e', '&:hover': { bgcolor: '#c9a96e', color: '#ffffff' } }}
               >
                 Open in New Tab
               </Button>
-              <IconButton onClick={onClose} sx={{ color: '#6c757d' }}><CloseIcon /></IconButton>
+              <IconButton size="small" onClick={onClose}><CloseIcon /></IconButton>
             </Stack>
           </Box>
-          <Box sx={{ flexGrow: 1, bgcolor: '#e5e5e5' }}>
-            {previewDoc.is_manual ? (
-              <iframe 
-                src={`/uploads/buyer_documents/${previewDoc.file_path?.split(/[\\\\/]/).pop()}`}
-                style={{ width: '100%', height: '100%', border: 'none' }}
-                title="PDF Preview"
-              />
-            ) : (
-              <PDFEditor doc={previewDoc} />
-            )}
+          <Box sx={{ flexGrow: 1, position: 'relative' }}>
+            <PDFEditor 
+              pdfUrl={previewDoc.is_manual ? getManualPreviewUrl() : docApi.pdfUrl(previewDoc.id, previewDoc.version, false, previewDoc.language)}
+              documentId={previewDoc.id}
+              version={previewDoc.version}
+              isManual={previewDoc.is_manual}
+              language={previewDoc.language}
+            />
           </Box>
         </Box>
       )}

@@ -76,6 +76,17 @@ const buyerUpload = multer({
   }
 });
 
+const memoryUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed"));
+    }
+  }
+});
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -180,7 +191,7 @@ db.query(`
     )
   `, (err) => {
     if (err) { console.log("buyers table error:", err); return; }
-    console.log("âœ… buyers table ready");
+    console.log("✅ buyers table ready");
 
     // auto-create buyer_documents table
     db.query(`
@@ -191,7 +202,10 @@ db.query(`
         product_name VARCHAR(255) NULL,
         document_type VARCHAR(255) NULL,
         file_name VARCHAR(255) NOT NULL,
-        file_path VARCHAR(255) NOT NULL,
+        file_path VARCHAR(255) NULL,
+        file_binary LONGBLOB NULL,
+        file_path_zh VARCHAR(255) NULL,
+        file_zh_binary LONGBLOB NULL,
         uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         uploaded_by VARCHAR(255) NULL,
         FOREIGN KEY (buyer_id) REFERENCES buyers(id) ON DELETE CASCADE
@@ -628,79 +642,108 @@ app.post('/buyers', (req, res) => {
   });
 });
 
-// POST â€” upload buyer documents (called after buyer creation)
-app.post("/buyer-documents/upload", buyerUpload.array("files"), (req, res) => {
+// POST — upload buyer documents (called after buyer creation)
+app.post("/buyer-documents/upload", memoryUpload.fields([{ name: 'file', maxCount: 1 }, { name: 'file_zh', maxCount: 1 }]), (req, res) => {
   const { buyer_id, company_name, product_name, document_type, uploaded_by } = req.body;
   if (!buyer_id) return res.status(400).json({ error: "Buyer ID is required" });
 
-  const uploadedFiles = req.files || [];
-  const errors = [];
-  const successfulDocs = [];
-  const promises = [];
+  const file = req.files && req.files['file'] ? req.files['file'][0] : null;
+  const fileZh = req.files && req.files['file_zh'] ? req.files['file_zh'][0] : null;
 
-  for (const file of uploadedFiles) {
-    // 1. Validate PDF magic bytes
-    try {
-      const buffer = fs.readFileSync(file.path);
-      if (buffer.length < 4 || buffer.slice(0, 4).toString('ascii') !== '%PDF') {
-        fs.unlinkSync(file.path);
-        errors.push({ filename: file.originalname, error: "The uploaded file is not a valid PDF document." });
-        continue;
-      }
-    } catch (e) {
-      try { fs.unlinkSync(file.path); } catch (err) {}
-      errors.push({ filename: file.originalname, error: "The uploaded file is not a valid PDF document." });
-      continue;
-    }
-
-    // 2. Valid file, insert into DB
-    const sql = `
-      INSERT INTO buyer_documents (buyer_id, company_name, product_name, document_type, file_name, file_path, uploaded_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-    const params = [
-      buyer_id, 
-      company_name || null, 
-      product_name || null, 
-      document_type || null, 
-      file.originalname, 
-      file.filename, 
-      uploaded_by || null
-    ];
-    
-    promises.push(new Promise((resolve, reject) => {
-      db.query(sql, params, (err, result) => {
-        if (err) {
-          try { fs.unlinkSync(file.path); } catch (unlinkErr) {}
-          reject({ filename: file.originalname, error: err.message });
-        } else {
-          successfulDocs.push(file.originalname);
-          resolve();
-        }
-      });
-    }));
+  if (!file) {
+    return res.status(400).json({ error: "No primary English PDF provided." });
   }
 
-  Promise.allSettled(promises).then((results) => {
-    const rejected = results.filter(r => r.status === 'rejected').map(r => r.reason);
-    errors.push(...rejected);
+  // 1. Validate PDF magic bytes
+  try {
+    const buffer = file.buffer;
+    if (buffer.length < 4 || buffer.slice(0, 4).toString('ascii') !== '%PDF') {
+      return res.status(400).json({ error: "The uploaded file is not a valid PDF document." });
+    }
     
-    if (errors.length > 0) {
-      return res.status(400).json({ success: successfulDocs.length > 0, errors, message: "Some or all files failed validation." });
+    if (fileZh) {
+      const zhBuffer = fileZh.buffer;
+      if (zhBuffer.length < 4 || zhBuffer.slice(0, 4).toString('ascii') !== '%PDF') {
+        return res.status(400).json({ error: "The uploaded Chinese file is not a valid PDF document." });
+      }
+    }
+  } catch (e) {
+    return res.status(400).json({ error: "The uploaded file is not a valid PDF document." });
+  }
+
+  // 2. Valid file, insert into DB
+  const sql = `
+    INSERT INTO buyer_documents (buyer_id, company_name, product_name, document_type, file_name, file_path, file_binary, file_path_zh, file_zh_binary, uploaded_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  const params = [
+    buyer_id, 
+    company_name || null, 
+    product_name || null, 
+    document_type || null, 
+    file.originalname, 
+    file.originalname, // Fallback for file_path
+    file.buffer,
+    fileZh ? fileZh.originalname : null,
+    fileZh ? fileZh.buffer : null,
+    uploaded_by || null
+  ];
+  
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      return res.status(500).json({ success: false, message: "File failed to upload to DB.", error: err.message });
     }
     res.json({ success: true, message: "Documents uploaded successfully." });
   });
 });
 
-// GET â€” download buyer document
-app.get("/buyer-documents/download/:filename", (req, res) => {
-  const { filename } = req.params;
-  const filePath = path.join(__dirname, "uploads/buyer_documents", filename);
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send("Document not found");
-  }
-  const cleanName = filename.replace(/^\d+-\d+-/, "");
-  res.download(filePath, cleanName);
+// GET — download buyer document
+app.get("/buyer-documents/download/:id", (req, res) => {
+  const { id } = req.params;
+  const lang = req.query.language || 'en';
+  
+  db.query("SELECT file_name, file_binary, file_path_zh, file_zh_binary FROM buyer_documents WHERE id = ?", [id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) return res.status(404).send("Document not found");
+    
+    const doc = results[0];
+    let binary = doc.file_binary;
+    let fileName = doc.file_name;
+    
+    if (lang === 'zh' && doc.file_zh_binary) {
+      binary = doc.file_zh_binary;
+      fileName = doc.file_path_zh || fileName;
+    }
+    
+    if (!binary) return res.status(404).send("File binary not found in database.");
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(binary);
+  });
+});
+
+// GET — preview buyer document
+app.get("/buyer-documents/preview/:id", (req, res) => {
+  const { id } = req.params;
+  const lang = req.query.language || 'en';
+  
+  db.query("SELECT file_binary, file_zh_binary FROM buyer_documents WHERE id = ?", [id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) return res.status(404).send("Document not found");
+    
+    const doc = results[0];
+    let binary = doc.file_binary;
+    
+    if (lang === 'zh' && doc.file_zh_binary) {
+      binary = doc.file_zh_binary;
+    }
+    
+    if (!binary) return res.status(404).send("File binary not found in database.");
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.send(binary);
+  });
 });
 
 // GET â€” list buyer documents

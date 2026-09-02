@@ -100,33 +100,27 @@ export default function BuyerProfileDocumentsPage() {
   };
 
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
+  const [englishFile, setEnglishFile] = useState<File | null>(null);
+  const [chineseFile, setChineseFile] = useState<File | null>(null);
   const [uploadConfig, setUploadConfig] = useState({ company_name: '', product_name: '', document_type: '' });
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const files = Array.from(e.target.files);
-    const pdfs = files.filter(f => f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf");
-    if (pdfs.length !== files.length) {
-      setUploadError("Only PDF files are allowed.");
-    } else {
-      setUploadError("");
+  const handleEnglishFileChange = (e: any) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setEnglishFile(e.target.files[0]);
     }
-    setFilesToUpload([...filesToUpload, ...pdfs]);
-    e.target.value = '';
   };
 
-  const handleRemoveFile = (index: number) => {
-    const newFiles = [...filesToUpload];
-    newFiles.splice(index, 1);
-    setFilesToUpload(newFiles);
+  const handleChineseFileChange = (e: any) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setChineseFile(e.target.files[0]);
+    }
   };
 
   const submitUpload = async () => {
-    if (filesToUpload.length === 0) {
-      setUploadError("Please select at least one PDF file.");
+    if (!englishFile) {
+      setUploadError("Please select the primary English PDF file.");
       return;
     }
     setUploading(true);
@@ -139,21 +133,28 @@ export default function BuyerProfileDocumentsPage() {
     if (uploadConfig.document_type) formData.append("document_type", uploadConfig.document_type);
     formData.append("uploaded_by", "DocPlatform User");
 
-    filesToUpload.forEach(f => {
-      formData.append("files", f);
-    });
+    formData.append("file", englishFile, englishFile.name);
+    if (chineseFile) {
+      formData.append("file_zh", chineseFile, chineseFile.name);
+    }
 
     try {
-      const response = await fetch("/buyer-documents/upload", {
+      let crmBaseUrl = "";
+      if (window.location.origin.includes("localhost:3000")) {
+        crmBaseUrl = "http://localhost:5000";
+      }
+      const response = await fetch(`${crmBaseUrl}/buyer-documents/upload`, {
         method: "POST",
-        body: formData
+        body: formData,
+        headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` }
       });
       const data = await response.json();
       if (!data.success) {
-        setUploadError(data.errors ? data.errors.map((e: any) => e.error || e).join(", ") : data.message);
+        setUploadError(data.errors ? data.errors.map((e: any) => e.error || e).join(", ") : data.message || data.error);
       } else {
         setUploadModalOpen(false);
-        setFilesToUpload([]);
+        setEnglishFile(null);
+        setChineseFile(null);
         setUploadConfig({ company_name: '', product_name: '', document_type: '' });
         profile.refetch();
       }
@@ -594,7 +595,17 @@ export default function BuyerProfileDocumentsPage() {
                                 <Tooltip title="Preview Document" arrow>
                                   <IconButton 
                                     size="small"
-                                    onClick={(e) => handlePreviewMenuOpen(e, doc)}
+                                    onClick={(e) => {
+                                      if (doc.is_manual) {
+                                        if (doc.file_path_zh || doc.file_zh_binary) {
+                                          handlePreviewMenuOpen(e, doc);
+                                        } else {
+                                          setPreviewDoc({ ...doc, language: 'en' });
+                                        }
+                                      } else {
+                                        handlePreviewMenuOpen(e, doc);
+                                      }
+                                    }}
                                     sx={{ 
                                       width: 36, height: 36, borderRadius: 2,
                                       color: '#0e2318', 
@@ -630,7 +641,8 @@ export default function BuyerProfileDocumentsPage() {
                                     size="small"
                                     onClick={(e) => {
                                       if (doc.is_manual) {
-                                        window.location.href = `/buyer-documents/download/${doc.file_path?.split(/[\\\\/]/).pop()}`;
+                                        let crmBaseUrl = window.location.origin.includes("localhost:3000") ? "http://localhost:5000" : "";
+                                        window.location.href = `${crmBaseUrl}/buyer-documents/download/${doc.id}?language=en`;
                                       } else {
                                         handleDownloadMenuOpen(e, doc);
                                       }
@@ -767,27 +779,45 @@ export default function BuyerProfileDocumentsPage() {
             </Stack>
           </Box>
 
-          <Box sx={{ border: "2px dashed #ccc", borderRadius: "8px", p: 4, textAlign: "center", bgcolor: "#fafafa", mb: 2 }}>
-            <FolderOpenIcon sx={{ fontSize: 32, color: "#aaa", mb: 1 }} />
-            <Typography variant="body2" sx={{ color: "#555", mb: 2 }}>Drag and drop PDF files here or click to browse.</Typography>
-            <input type="file" multiple accept=".pdf,application/pdf" onChange={handleFileChange} style={{ display: "none" }} id="buyer-file-upload-docplatform" />
-            <Box component="label" htmlFor="buyer-file-upload-docplatform" sx={{ bgcolor: "#0e2318", color: "#c9a96e", px: 2, py: 1, borderRadius: 1, cursor: "pointer", display: "inline-block", fontWeight: 700, fontSize: "0.9rem" }}>
-              Select PDF Files
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <Box sx={{ flex: 1, border: "2px dashed #ccc", borderRadius: "8px", p: 3, textAlign: "center", bgcolor: "#fafafa" }}>
+              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700, color: '#0e2318' }}>English Version (Required)</Typography>
+              {!englishFile ? (
+                <>
+                  <input type="file" accept=".pdf,application/pdf" onChange={handleEnglishFileChange} style={{ display: "none" }} id="buyer-file-upload-en" />
+                  <Box component="label" htmlFor="buyer-file-upload-en" sx={{ bgcolor: "#0e2318", color: "#c9a96e", px: 2, py: 1, borderRadius: 1, cursor: "pointer", display: "inline-block", fontWeight: 700, fontSize: "0.8rem" }}>
+                    Select PDF
+                  </Box>
+                </>
+              ) : (
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1, bgcolor: "#f1f3f5", borderRadius: 1 }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <DescriptionIcon sx={{ color: '#c9a96e', fontSize: 18 }} /> {englishFile.name}
+                  </Typography>
+                  <IconButton size="small" onClick={() => setEnglishFile(null)} color="error"><CloseIcon fontSize="small" /></IconButton>
+                </Box>
+              )}
+            </Box>
+
+            <Box sx={{ flex: 1, border: "2px dashed #ccc", borderRadius: "8px", p: 3, textAlign: "center", bgcolor: "#fafafa" }}>
+              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700, color: '#0e2318' }}>Chinese Version (Optional)</Typography>
+              {!chineseFile ? (
+                <>
+                  <input type="file" accept=".pdf,application/pdf" onChange={handleChineseFileChange} style={{ display: "none" }} id="buyer-file-upload-zh" />
+                  <Box component="label" htmlFor="buyer-file-upload-zh" sx={{ bgcolor: "#0e2318", color: "#c9a96e", px: 2, py: 1, borderRadius: 1, cursor: "pointer", display: "inline-block", fontWeight: 700, fontSize: "0.8rem" }}>
+                    Select PDF
+                  </Box>
+                </>
+              ) : (
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1, bgcolor: "#f1f3f5", borderRadius: 1 }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <DescriptionIcon sx={{ color: '#c9a96e', fontSize: 18 }} /> {chineseFile.name}
+                  </Typography>
+                  <IconButton size="small" onClick={() => setChineseFile(null)} color="error"><CloseIcon fontSize="small" /></IconButton>
+                </Box>
+              )}
             </Box>
           </Box>
-          
-          {filesToUpload.length > 0 && (
-            <Stack spacing={1}>
-              {filesToUpload.map((f, i) => (
-                <Box key={i} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1, bgcolor: "#f1f3f5", borderRadius: 1 }}>
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    <DescriptionIcon sx={{ color: '#c9a96e', fontSize: 18 }} /> {f.name}
-                  </Typography>
-                  <IconButton size="small" onClick={() => handleRemoveFile(i)} color="error"><CloseIcon fontSize="small" /></IconButton>
-                </Box>
-              ))}
-            </Stack>
-          )}
         </DialogContent>
         <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1, bgcolor: '#f8f9fa' }}>
           <Button onClick={() => setUploadModalOpen(false)} disabled={uploading} color="inherit">Cancel</Button>

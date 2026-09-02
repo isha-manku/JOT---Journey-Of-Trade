@@ -135,7 +135,7 @@ export const docApi = {
     }).then(r => r.data);
   },
 
-  uploadBuyerDocument: (buyer_id: string | number, file: File | Blob, filename: string) => {
+  uploadBuyerDocument: (buyer_id: string | number, file: File | Blob, filename: string, fileZh?: File | Blob, filenameZh?: string) => {
     let crmBaseUrl = "";
     if (api.defaults.baseURL && api.defaults.baseURL.startsWith("http")) {
       crmBaseUrl = api.defaults.baseURL.replace(/\/doc-api\/?$/, "");
@@ -148,7 +148,10 @@ export const docApi = {
     const formData = new FormData();
     formData.append("buyer_id", String(buyer_id));
     formData.append("document_type", "Generated Document");
-    formData.append("files", file, filename);
+    formData.append("file", file, filename);
+    if (fileZh && filenameZh) {
+      formData.append("file_zh", fileZh, filenameZh);
+    }
 
     return axios.post(`${crmBaseUrl}/buyer-documents/upload`, formData, {
       headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` },
