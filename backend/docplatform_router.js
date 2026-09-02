@@ -198,26 +198,39 @@ router.get("/documents/:id/schema", authenticateCRMUser, async (req, res) => {
       "SELECT id, template_id, version FROM doc_document_schemas WHERE template_id = ? AND is_active = 1 ORDER BY version DESC LIMIT 1",
       [templateId]
     );
-    if (schemas.length === 0) {
-      return res.status(404).json({ error: "No active schema configured." });
-    }
-    const schema = schemas[0];
+    const schema = schemas.length > 0 ? schemas[0] : { id: 0, template_id: templateId, version: 1 };
 
-    const fields = await query(
-      "SELECT id, \`key\`, label, field_type, required, \`order\`, options, default_value, placeholder FROM doc_schema_fields WHERE schema_id = ? ORDER BY \`order\`",
-      [schema.id]
-    );
+    const templates = await query("SELECT engine_type FROM doc_templates WHERE id = ?", [templateId]);
+    const engineType = templates.length > 0 ? templates[0].engine_type : 'html';
 
-    fields.forEach(f => {
-      if (typeof f.options === "string") {
-        try {
-          f.options = JSON.parse(f.options);
-        } catch (e) {
-          f.options = [];
-        }
+    let fields = [];
+
+    if (engineType === 'docx') {
+      const versions = await query("SELECT placeholder_schema FROM doc_template_versions WHERE template_id = ? AND is_active = 1 ORDER BY version DESC LIMIT 1", [templateId]);
+      if (versions.length > 0 && versions[0].placeholder_schema) {
+        let parsed = typeof versions[0].placeholder_schema === 'string' ? JSON.parse(versions[0].placeholder_schema) : versions[0].placeholder_schema;
+        if (parsed.fields) fields = parsed.fields;
+        else if (Array.isArray(parsed)) fields = parsed.map((f, i) => ({ ...f, id: i, required: true, options: [] }));
       }
-      f.required = !!f.required;
-    });
+    } else {
+      if (schemas.length === 0) {
+        return res.status(404).json({ error: "No active schema configured." });
+      }
+      fields = await query(
+        "SELECT id, `key`, label, field_type, required, `order`, options, default_value, placeholder FROM doc_schema_fields WHERE schema_id = ? ORDER BY `order`",
+        [schema.id]
+      );
+      fields.forEach(f => {
+        if (typeof f.options === "string") {
+          try {
+            f.options = JSON.parse(f.options);
+          } catch (e) {
+            f.options = [];
+          }
+        }
+        f.required = !!f.required;
+      });
+    }
 
     res.json({
       id: schema.id,

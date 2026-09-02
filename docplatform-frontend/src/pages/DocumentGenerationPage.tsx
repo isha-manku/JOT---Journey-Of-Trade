@@ -97,9 +97,12 @@ export default function DocumentGenerationPage() {
           {editDocQ.data ? (
             <>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>{editDocQ.data.document_number}</Typography>
-              <Typography variant="body2" color="text.secondary">Current Version: v{editDocQ.data.latest_version}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Current Version: v{editDocQ.data.latest_version}
+                {editValuesQ.data?.created_by ? ` (Last edited by: ${editValuesQ.data.created_by})` : ''}
+              </Typography>
               <Typography variant="body2" color="primary.main" sx={{ mt: 1 }}>
-                Saving changes will create Version v{editDocQ.data.latest_version + 1}
+                Saving changes will create Version v{editDocQ.data.latest_version + 1} under your name.
               </Typography>
             </>
           ) : (
