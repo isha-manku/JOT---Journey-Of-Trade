@@ -212,7 +212,13 @@ db.query(`
       )
     `, (err) => {
       if (err) { console.log("buyer_documents table error:", err); return; }
-      console.log("âœ… buyer_documents table ready");
+      console.log("✅ buyer_documents table ready");
+      
+      // Auto-migrate old schema
+      db.query("ALTER TABLE buyer_documents ADD COLUMN file_binary LONGBLOB NULL", () => {});
+      db.query("ALTER TABLE buyer_documents ADD COLUMN file_path_zh VARCHAR(255) NULL", () => {});
+      db.query("ALTER TABLE buyer_documents ADD COLUMN file_zh_binary LONGBLOB NULL", () => {});
+      db.query("ALTER TABLE buyer_documents MODIFY COLUMN file_path VARCHAR(255) NULL", () => {});
     });
   });
 
