@@ -691,6 +691,7 @@ app.post("/buyer-documents/upload", memoryUpload.fields([{ name: 'file', maxCoun
   
   db.query(sql, params, (err, result) => {
     if (err) {
+      console.error("Upload DB Error:", err);
       return res.status(500).json({ success: false, message: "File failed to upload to DB.", error: err.message });
     }
     res.json({ success: true, message: "Documents uploaded successfully." });

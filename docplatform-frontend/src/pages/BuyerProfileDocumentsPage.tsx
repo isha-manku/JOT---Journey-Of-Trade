@@ -150,7 +150,7 @@ export default function BuyerProfileDocumentsPage() {
       });
       const data = await response.json();
       if (!data.success) {
-        setUploadError(data.errors ? data.errors.map((e: any) => e.error || e).join(", ") : data.message || data.error);
+        setUploadError(data.errors ? data.errors.map((e: any) => e.error || e).join(", ") : `${data.message} ${data.error || ""}`);
       } else {
         setUploadModalOpen(false);
         setEnglishFile(null);

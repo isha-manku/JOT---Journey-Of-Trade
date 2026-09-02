@@ -59,7 +59,8 @@ def translate_context(context: dict) -> dict:
         combined = separator.join(translatable_values)
         try:
             translated_combined = translator_provider.translate(combined)
-            translated_parts = translated_combined.split("|||")
+            # Use regex to split since Google Translate might change ||| to fullwidth ｜｜｜ or add spaces
+            translated_parts = re.split(r'\s*(?:\|\|\||｜｜｜|\|\s*\|\s*\||｜\s*｜\s*｜)\s*', translated_combined)
             # Trim whitespace from each part
             translated_parts = [p.strip() for p in translated_parts]
             if len(translated_parts) == len(translatable_values):
