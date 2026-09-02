@@ -1,48 +1,23 @@
-const https = require('https');
-
-const agent = new https.Agent({ keepAlive: true });
+const translate = require('google-translate-api-x');
+const { translate: bingTranslate } = require('bing-translate-api');
 
 function translateLine(text) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve) => {
     if (!text.trim()) return resolve('');
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${encodeURIComponent(text)}`;
-
-    const req = https.get(url, { agent, timeout: 5000 }, (res) => {
-      let body = '';
-      res.on('data', chunk => body += chunk);
-      res.on('end', () => {
-        if (res.statusCode !== 200) {
-          return resolve(text); // Fallback to original text on error to avoid crashing
-        }
-        try {
-          const parsed = JSON.parse(body);
-          let translatedText = '';
-          if (parsed && parsed[0]) {
-            parsed[0].forEach(item => {
-              if (item[0]) translatedText += item[0];
-            });
-          }
-          if (translatedText) {
-             resolve(translatedText);
-          } else {
-             resolve(text);
-          }
-        } catch (e) {
-          resolve(text); // Fallback
-        }
-      });
-    });
-
-    req.on('timeout', () => {
-      req.destroy();
-      resolve(text); // Fallback on timeout
-    });
-
-    req.on('error', () => {
-      resolve(text); // Fallback on network error
-    });
-
-    req.end();
+    try {
+      const res = await translate(text, { to: 'zh-CN' });
+      if (res && res.text) return resolve(res.text);
+    } catch (e) {
+      console.error("google-translate-api-x failed, falling back to bing:", e.message);
+      try {
+        const bingRes = await bingTranslate(text, null, 'zh-Hans');
+        if (bingRes && bingRes.translation) return resolve(bingRes.translation);
+      } catch (bingErr) {
+        console.error("bing-translate-api also failed:", bingErr.message);
+      }
+    }
+    // Fallback to original text if both fail
+    resolve(text);
   });
 }
 

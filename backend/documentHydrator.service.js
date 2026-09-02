@@ -369,7 +369,7 @@ class DocumentHydratorService {
         const zip = new PizZip(templateBuffer);
         let xml = zip.file("word/document.xml").asText();
 
-        if (schemaMappings && schemaMappings.length > 0) {
+        if (schemaMappings && schemaMappings.length > 0 && schemaMappings.some(m => m.target_placeholder_value)) {
           const groupedMappings = {};
           schemaMappings.forEach(mapping => {
             const target = mapping.target_placeholder_value;
