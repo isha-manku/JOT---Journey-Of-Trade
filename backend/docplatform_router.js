@@ -237,17 +237,36 @@ router.get("/documents/:id/schema", authenticateCRMUser, async (req, res) => {
 // POST /documents/generate - Generate Version 1
 router.post("/documents/generate", authenticateCRMUser, async (req, res) => {
   try {
-    const {
+    let {
+      template_id, buyer_id,
       company_id, product_id, document_type_id,
       buyer_name, company_name, country, phone, email,
       form_values
     } = req.body;
 
-    if (!company_id || !product_id || !document_type_id || !buyer_name || !company_name || !phone) {
-      return res.status(422).json({ error: "Missing required generation fields." });
-    }
+    let template = null;
+    let tempVersion = null;
+    let schema = null;
+    let finalBuyerId = buyer_id;
 
-    // 1. Resolve template
+    if (template_id && finalBuyerId) {
+      // 1. Resolve template by direct ID (used for scratch documents)
+      const templates = await query("SELECT id, name FROM doc_templates WHERE id = ?", [template_id]);
+      if (templates.length === 0) return res.status(404).json({ error: "Template not found." });
+      template = templates[0];
+      
+      const versions = await query("SELECT id, version FROM doc_template_versions WHERE template_id = ? ORDER BY version DESC LIMIT 1", [template.id]);
+      if (versions.length === 0) return res.status(404).json({ error: "No template version configured." });
+      tempVersion = versions[0];
+      
+      const schemas = await query("SELECT id FROM doc_document_schemas WHERE template_id = ? ORDER BY version DESC LIMIT 1", [template.id]);
+      if (schemas.length > 0) schema = schemas[0];
+    } else {
+      if (!company_id || !product_id || !document_type_id || !buyer_name || !company_name || !phone) {
+        return res.status(422).json({ error: "Missing required generation fields." });
+      }
+
+      // 1. Resolve template
     const templates = await query(
       "SELECT id, name FROM doc_templates WHERE company_id = ? AND product_id = ? AND document_type_id = ? AND is_active = 1",
       [company_id, product_id, document_type_id]
@@ -276,9 +295,11 @@ router.post("/documents/generate", authenticateCRMUser, async (req, res) => {
       return res.status(404).json({ error: "No active schema configured." });
     }
     const schema = schemas[0];
+    }
 
     // 4. Resolve or create buyer (CRM safety integration)
-    let buyer = null;
+    if (!finalBuyerId) {
+      let buyer = null;
     const cNameLower = company_name.toLowerCase();
     const bNameLower = buyer_name.toLowerCase();
     const emailLower = email ? email.toLowerCase() : "";
@@ -327,15 +348,17 @@ router.post("/documents/generate", authenticateCRMUser, async (req, res) => {
         "INSERT INTO buyers (buyer_name, company_name, country, email, phone, address, notes) VALUES (?,?,?,?,?,?,?)",
         [buyer_name, company_name, country || "", email || "", phone || "", "", "Added via Document Generation"]
       );
-      buyerId = result.insertId;
+      finalBuyerId = result.insertId;
+    }
     }
 
     // Update buyer product terms
-    const productRows = await query("SELECT name FROM doc_products WHERE id = ?", [product_id]);
-    if (productRows.length > 0) {
-      const productName = productRows[0].name;
-      // Reload buyer products list
-      const freshBuyer = (await query("SELECT products FROM buyers WHERE id = ?", [buyerId]))[0];
+    if (product_id) {
+      const productRows = await query("SELECT name FROM doc_products WHERE id = ?", [product_id]);
+      if (productRows.length > 0) {
+        const productName = productRows[0].name;
+        // Reload buyer products list
+        const freshBuyer = (await query("SELECT products FROM buyers WHERE id = ?", [finalBuyerId]))[0];
       let productsList = [];
       if (freshBuyer.products) {
         try {
@@ -378,12 +401,13 @@ router.post("/documents/generate", authenticateCRMUser, async (req, res) => {
         });
       }
 
-      await query("UPDATE buyers SET products = ? WHERE id = ?", [JSON.stringify(productsList), buyerId]);
+        await query("UPDATE buyers SET products = ? WHERE id = ?", [JSON.stringify(productsList), finalBuyerId]);
+      }
     }
 
-    // 5. Generate document number
-    const docTypes = await query("SELECT code FROM doc_document_types WHERE id = ?", [document_type_id]);
-    const docCode = docTypes[0].code;
+    // 5. Create generated document record
+    const docTypes = await query("SELECT code FROM doc_document_types WHERE id = ?", [document_type_id || (template ? template.document_type_id : null)]);
+    const docCode = docTypes.length > 0 ? docTypes[0].code : "SCRATCH";
     const countResult = await query("SELECT COUNT(*) as count FROM doc_generated_documents");
     const count = countResult[0].count;
     const documentNumber = `${docCode}-${String(count + 1).padStart(6, "0")}`;
@@ -392,7 +416,7 @@ router.post("/documents/generate", authenticateCRMUser, async (req, res) => {
     const docUuid = uuid();
     await query(
       "INSERT INTO doc_generated_documents (id, document_number, template_id, buyer_id) VALUES (?,?,?,?)",
-      [docUuid, documentNumber, template.id, buyerId]
+      [docUuid, documentNumber, template.id, finalBuyerId]
     );
 
     // 7. Insert version 1
@@ -400,7 +424,7 @@ router.post("/documents/generate", authenticateCRMUser, async (req, res) => {
     const createdBy = req.user.username;
     await query(
       "INSERT INTO doc_generated_document_versions (id, document_id, version, template_version_id, schema_id, form_values, created_by) VALUES (?,?,?,?,?,?,?)",
-      [verUuid, docUuid, 1, tempVersion.id, schema.id, JSON.stringify(form_values), createdBy]
+      [verUuid, docUuid, 1, tempVersion.id, schema ? schema.id : null, JSON.stringify(form_values), createdBy]
     );
 
     // 8. Log audit trail
