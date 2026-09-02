@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  Paper, Typography, Button, Box, CircularProgress, Alert, Stepper, Step, StepLabel, Stack
+  Paper, Typography, Button, Box, CircularProgress, Alert, Stepper, Step, StepLabel, Stack,
+  Select, MenuItem, FormControl, InputLabel, TextField, Checkbox, FormControlLabel, Divider
 } from "@mui/material";
 import { CloudUpload as CloudUploadIcon } from "@mui/icons-material";
 import DynamicForm from "../components/DynamicForm";
-import { docApi } from "../api";
+import { docApi, templateApi } from "../api";
 import { DocumentSchema } from "../types";
 
 const STEPS = ["Upload Template", "Fill Fields", "Download"];
@@ -17,6 +18,20 @@ export default function GenerateDocumentFromScratchPage() {
   const [error, setError] = useState("");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  
+  const [saveTemplate, setSaveTemplate] = useState(false);
+  const [saveForm, setSaveForm] = useState({ name: "", company_name: "", product_name: "", document_type_name: "" });
+
+  useEffect(() => {
+    templateApi.list().then(data => {
+      if (Array.isArray(data)) {
+        setTemplates(data.filter(t => t.is_active));
+      }
+    }).catch(console.error);
+  }, []);
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -27,40 +42,79 @@ export default function GenerateDocumentFromScratchPage() {
       
       setFile(selectedFile);
       setError("");
-      setLoading(true);
-      
-      try {
-        const response = await docApi.extractScratch(selectedFile);
-        // Map the array of fields to the DocumentSchema format used by DynamicForm
-        const mappedSchema: DocumentSchema = {
-          id: 0,
-          template_id: 0,
-          version: 1,
-          fields: response.schema.map((f: any, i: number) => ({
-            id: i,
-            key: f.key,
-            label: f.label,
-            field_type: f.type || "text",
-            required: true,
-            order: i,
-            options: [],
-          }))
-        };
-        
-        if (mappedSchema.fields.length === 0) {
-          setError("No placeholders found in the uploaded document. Ensure tags are formatted like {{field_name}}.");
-          setFile(null);
-        } else {
-          setSchema(mappedSchema);
-          setStep(1);
-        }
-      } catch (err: any) {
-        setError(err?.response?.data?.error || err.message || "Failed to extract fields.");
-        setFile(null);
-      } finally {
-        setLoading(false);
-      }
     }
+  };
+
+  const processFile = async (fileToProcess: File) => {
+    setLoading(true);
+    setError("");
+    
+    try {
+      if (saveTemplate && saveForm.name && saveForm.company_name && saveForm.product_name && saveForm.document_type_name) {
+        const res = await templateApi.create(saveForm);
+        const newTemplateId = res.id || (res.template && res.template.id);
+        if (newTemplateId) {
+          await templateApi.uploadDocx(newTemplateId, fileToProcess);
+        }
+      }
+
+      const response = await docApi.extractScratch(fileToProcess);
+      // Map the array of fields to the DocumentSchema format used by DynamicForm
+      const mappedSchema: DocumentSchema = {
+        id: 0,
+        template_id: 0,
+        version: 1,
+        fields: response.schema.map((f: any, i: number) => ({
+          id: i,
+          key: f.key,
+          label: f.label,
+          field_type: f.type || "text",
+          required: true,
+          order: i,
+          options: [],
+        }))
+      };
+      
+      if (mappedSchema.fields.length === 0) {
+        setError("No placeholders found in the uploaded document. Ensure tags are formatted like {{field_name}}.");
+        setFile(null);
+      } else {
+        setSchema(mappedSchema);
+        setStep(1);
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err.message || "Failed to process template.");
+      setFile(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUseExisting = async () => {
+    if (!selectedTemplateId) return;
+    setLoading(true);
+    setError("");
+    try {
+      const blob = await templateApi.downloadDocx(selectedTemplateId);
+      const downloadedFile = new File([blob], "template.docx", { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      setFile(downloadedFile);
+      await processFile(downloadedFile);
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err.message || "Failed to download template.");
+      setLoading(false);
+    }
+  };
+
+  const handleUploadNew = async () => {
+    if (!file) {
+      setError("Please select a .docx file first.");
+      return;
+    }
+    if (saveTemplate && (!saveForm.name || !saveForm.company_name || !saveForm.product_name || !saveForm.document_type_name)) {
+      setError("Please fill in all template details to save.");
+      return;
+    }
+    await processFile(file);
   };
 
   const handleGenerate = async (values: Record<string, unknown>) => {
@@ -106,29 +160,108 @@ export default function GenerateDocumentFromScratchPage() {
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
       {activeStep === 0 && (
-        <Box sx={{ textAlign: "center", py: 6, border: "2px dashed", borderColor: "divider", borderRadius: 2 }}>
-          <input
-            accept=".docx"
-            style={{ display: "none" }}
-            id="raised-button-file"
-            type="file"
-            onChange={handleFileSelect}
-          />
-          <label htmlFor="raised-button-file">
-            <Button
-              variant="outlined"
-              component="span"
-              startIcon={loading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
-              disabled={loading}
-              size="large"
+        <Stack spacing={4}>
+          <Box sx={{ p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
+            <Typography variant="h6" gutterBottom>Option 1: Use Existing Template</Typography>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <FormControl fullWidth size="small">
+                <InputLabel>Select Template</InputLabel>
+                <Select
+                  value={selectedTemplateId}
+                  label="Select Template"
+                  onChange={e => setSelectedTemplateId(e.target.value)}
+                >
+                  <MenuItem value=""><em>None</em></MenuItem>
+                  {templates.map(t => (
+                    <MenuItem key={t.id} value={t.id}>
+                      {t.name} ({t.company_name} - {t.document_type_name})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Button 
+                variant="contained" 
+                onClick={handleUseExisting} 
+                disabled={!selectedTemplateId || loading}
+              >
+                {loading && selectedTemplateId ? <CircularProgress size={24} /> : "Use Template"}
+              </Button>
+            </Stack>
+          </Box>
+
+          <Divider>OR</Divider>
+
+          <Box sx={{ p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2, textAlign: "center" }}>
+            <Typography variant="h6" gutterBottom>Option 2: Upload New Template</Typography>
+            <Box sx={{ py: 3 }}>
+              <input
+                accept=".docx"
+                style={{ display: "none" }}
+                id="raised-button-file"
+                type="file"
+                onChange={handleFileSelect}
+              />
+              <label htmlFor="raised-button-file">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  startIcon={<CloudUploadIcon />}
+                  disabled={loading}
+                  size="large"
+                >
+                  {file ? file.name : "Select Word Document (.docx)"}
+                </Button>
+              </label>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                Upload a Word document containing {"{{tags}}"} to create a form.
+              </Typography>
+            </Box>
+
+            <Box sx={{ textAlign: "left", mt: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox 
+                    checked={saveTemplate} 
+                    onChange={e => setSaveTemplate(e.target.checked)} 
+                    disabled={loading}
+                  />
+                }
+                label="Save template for future use"
+              />
+              {saveTemplate && (
+                <Stack spacing={2} sx={{ mt: 2 }}>
+                  <TextField 
+                    size="small" label="Template Name" required
+                    value={saveForm.name} onChange={e => setSaveForm({...saveForm, name: e.target.value})}
+                  />
+                  <TextField 
+                    size="small" label="Company Name" required
+                    value={saveForm.company_name} onChange={e => setSaveForm({...saveForm, company_name: e.target.value})}
+                  />
+                  <TextField 
+                    size="small" label="Product Name" required
+                    value={saveForm.product_name} onChange={e => setSaveForm({...saveForm, product_name: e.target.value})}
+                  />
+                  <TextField 
+                    size="small" label="Document Type" required
+                    value={saveForm.document_type_name} onChange={e => setSaveForm({...saveForm, document_type_name: e.target.value})}
+                  />
+                </Stack>
+              )}
+            </Box>
+
+            <Button 
+              variant="contained" 
+              color="primary" 
+              sx={{ mt: 3 }} 
+              onClick={handleUploadNew}
+              disabled={!file || loading}
             >
-              Upload Word Document (.docx)
+              {loading && !selectedTemplateId ? <CircularProgress size={24} sx={{ mr: 1 }} /> : null}
+              Process Uploaded Template
             </Button>
-          </label>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            Upload a Word document containing {"{{tags}}"} to create a form.
-          </Typography>
-        </Box>
+          </Box>
+        </Stack>
       )}
 
       {activeStep === 1 && schema && (

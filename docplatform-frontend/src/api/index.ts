@@ -136,6 +136,71 @@ export const docApi = {
   },
 };
 
+export const templateApi = {
+  list: () => {
+    let crmBaseUrl = "";
+    if (api.defaults.baseURL && api.defaults.baseURL.startsWith("http")) {
+      crmBaseUrl = api.defaults.baseURL.replace(/\/doc-api\/?$/, "");
+    } else if (window.location.origin.includes("localhost:3000")) {
+      crmBaseUrl = "";
+    } else {
+      crmBaseUrl = window.location.origin;
+    }
+    return axios.get(`${crmBaseUrl}/settings/templates`, {
+      headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` },
+      withCredentials: true
+    }).then(r => r.data);
+  },
+  
+  create: (data: { name: string, company_name: string, product_name: string, document_type_name: string }) => {
+    let crmBaseUrl = "";
+    if (api.defaults.baseURL && api.defaults.baseURL.startsWith("http")) {
+      crmBaseUrl = api.defaults.baseURL.replace(/\/doc-api\/?$/, "");
+    } else if (window.location.origin.includes("localhost:3000")) {
+      crmBaseUrl = "";
+    } else {
+      crmBaseUrl = window.location.origin;
+    }
+    return axios.post(`${crmBaseUrl}/settings/templates`, data, {
+      headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` },
+      withCredentials: true
+    }).then(r => r.data);
+  },
+
+  uploadDocx: (id: string | number, file: File) => {
+    let crmBaseUrl = "";
+    if (api.defaults.baseURL && api.defaults.baseURL.startsWith("http")) {
+      crmBaseUrl = api.defaults.baseURL.replace(/\/doc-api\/?$/, "");
+    } else if (window.location.origin.includes("localhost:3000")) {
+      crmBaseUrl = "";
+    } else {
+      crmBaseUrl = window.location.origin;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    return axios.post(`${crmBaseUrl}/settings/templates/${id}/upload-docx`, formData, {
+      headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` },
+      withCredentials: true
+    }).then(r => r.data);
+  },
+
+  downloadDocx: (id: string | number) => {
+    let crmBaseUrl = "";
+    if (api.defaults.baseURL && api.defaults.baseURL.startsWith("http")) {
+      crmBaseUrl = api.defaults.baseURL.replace(/\/doc-api\/?$/, "");
+    } else if (window.location.origin.includes("localhost:3000")) {
+      crmBaseUrl = "";
+    } else {
+      crmBaseUrl = window.location.origin;
+    }
+    return axios.get(`${crmBaseUrl}/settings/templates/${id}/docx`, {
+      headers: { "Authorization": `Bearer ${localStorage.getItem("crm_token")}` },
+      withCredentials: true,
+      responseType: 'blob'
+    }).then(r => r.data);
+  }
+};
+
 export const sellerApi = {
   profile: (sellerId: string | number) =>
     axios.get<SellerProfile>(`/sellers/${sellerId}/profile`).then(r => r.data),
