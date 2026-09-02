@@ -79,14 +79,16 @@ export default function PDFPreviewDrawer({ previewDoc, onClose }: PDFPreviewDraw
               <IconButton size="small" onClick={onClose}><CloseIcon /></IconButton>
             </Stack>
           </Box>
-          <Box sx={{ flexGrow: 1, position: 'relative' }}>
-            <PDFEditor 
-              pdfUrl={previewDoc.is_manual ? getManualPreviewUrl() : docApi.pdfUrl(previewDoc.id, previewDoc.version, false, previewDoc.language)}
-              documentId={previewDoc.id}
-              version={previewDoc.version}
-              isManual={previewDoc.is_manual}
-              language={previewDoc.language}
-            />
+          <Box sx={{ flexGrow: 1, position: 'relative', bgcolor: '#e5e5e5' }}>
+            {previewDoc.is_manual ? (
+              <iframe 
+                src={getManualPreviewUrl()}
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title="PDF Preview"
+              />
+            ) : (
+              <PDFEditor doc={previewDoc} />
+            )}
           </Box>
         </Box>
       )}
