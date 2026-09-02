@@ -460,7 +460,7 @@ function Dashboard() {
           <div className="jot-card">
             <div className="jot-card-head">
               <h3>Recent Buyers</h3>
-              <button className="view-btn" onClick={() => window.location.href = "/buyers"}>
+              <button className="view-btn" onClick={() => navigate("/buyers")}>
                 View All Buyers <FiChevronRight size={13} />
               </button>
             </div>
@@ -486,7 +486,7 @@ function Dashboard() {
                       <td>{buyer.email || "—"}</td>
                       <td>{buyer.country || "—"}</td>
                       <td>
-                       <button className="jot-icon-btn" title="View" onClick={() => navigate(`/buyers/${buyer.id}/documents`)}>
+                       <button className="jot-icon-btn" title="View" onClick={() => navigate("/buyers")}>
                           <FiEye size={14} />
                         </button>
                       </td>
@@ -517,7 +517,7 @@ function Dashboard() {
               <span className="qa-label">Create Inquiry</span>
               <FiChevronRight size={15} className="qa-arrow" />
             </button>
-            <button className="quick-action-btn" onClick={() => window.location.href = "/generate"}>
+            <button className="quick-action-btn" onClick={() => navigate("/generate")}>
               <span className="qa-icon qa-icon-doc"><FiUpload size={18} /></span>
               <span className="qa-label">Generate Document</span>
               <FiChevronRight size={15} className="qa-arrow" />
