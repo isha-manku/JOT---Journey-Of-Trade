@@ -8,7 +8,20 @@ const PizZip = require("pizzip");
 const Docxtemplater = require("docxtemplater");
 const path = require("path");
 const multer = require("multer");
+const multerS3 = require("multer-s3");
+const { S3Client, DeleteObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { router: settingsRouter } = require("./settings_router");
+
+// Initialize S3 (Cloudflare R2) Client
+const s3 = new S3Client({
+  region: "auto",
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+});
 
 // Ensure message_reads table exists
 db.query(
@@ -26,17 +39,12 @@ db.query(
 );
 
 // â”€â”€ Multer Storage Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const dir = path.join(__dirname, "uploads/seller_documents");
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: function (req, file, cb) {
+const storage = multerS3({
+  s3: s3,
+  bucket: process.env.R2_BUCKET_NAME,
+  key: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
+    cb(null, "seller_documents/" + uniqueSuffix + "-" + file.originalname);
   }
 });
 const upload = multer({
@@ -50,24 +58,18 @@ const upload = multer({
   }
 });
 
-// Buyer Documents Multer Config
-const buyerStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const dir = path.join(__dirname, "uploads/buyer_documents");
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: function (req, file, cb) {
+// Buyer Documents Multer Config (S3)
+const buyerStorage = multerS3({
+  s3: s3,
+  bucket: process.env.R2_BUCKET_NAME,
+  key: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
+    cb(null, "buyer_documents/" + uniqueSuffix + "-" + file.originalname);
   }
 });
 const buyerUpload = multer({
   storage: buyerStorage,
   fileFilter: (req, file, cb) => {
-    // Only accept PDFs by mime type and extension
     if (file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf")) {
       cb(null, true);
     } else {
@@ -508,7 +510,7 @@ app.post("/sellers/:id/documents", upload.array("documents"), (req, res) => {
         seller.name,
         seller.product,
         file.originalname,
-        file.filename,
+        file.key || file.filename,
         uploaded_by
       ]);
       db.query(insertDocsSql, [values], (err) => {
@@ -599,20 +601,35 @@ app.post("/seller-documents/:id/delete", (req, res) => {
 });
 
 // â”€â”€ Download endpoint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-app.get("/seller-documents/download/:filename", (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(__dirname, "uploads/seller_documents", filename);
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send("File not found");
-  }
+app.get(["/seller-documents/download/:filename", "/seller-documents/download/:folder/:filename"], async (req, res) => {
+  const filename = req.params.folder ? `${req.params.folder}/${req.params.filename}` : req.params.filename;
   
-  db.query("SELECT file_name FROM seller_documents WHERE file_path = ?", [filename], (err, result) => {
-    let serveName = filename;
-    if (!err && result.length > 0) {
-      serveName = result[0].file_name;
+  // If filename doesn't contain a slash, it might be an old local file (before S3 migration)
+  if (!filename.includes('/')) {
+    const filePath = path.join(__dirname, "uploads/seller_documents", filename);
+    if (fs.existsSync(filePath)) {
+      return db.query("SELECT file_name FROM seller_documents WHERE file_path = ?", [filename], (err, result) => {
+        let serveName = filename;
+        if (!err && result.length > 0) serveName = result[0].file_name;
+        return res.download(filePath, serveName);
+      });
     }
-    res.download(filePath, serveName);
-  });
+  }
+
+  // Handle S3 Download with Presigned URL
+  try {
+    const command = new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: filename
+    });
+    
+    // Generate a URL that expires in 1 hour
+    const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+    res.redirect(url);
+  } catch (error) {
+    console.error("S3 Download Error:", error);
+    res.status(500).send("Error generating download link");
+  }
 });
 // ============================================================
 //  JOT CRM â€” Updated Buyers Routes (server.js / routes/buyers.js)
@@ -649,7 +666,7 @@ app.post('/buyers', (req, res) => {
 });
 
 // POST — upload buyer documents (called after buyer creation)
-app.post("/buyer-documents/upload", memoryUpload.fields([{ name: 'file', maxCount: 1 }, { name: 'file_zh', maxCount: 1 }]), (req, res) => {
+app.post("/buyer-documents/upload", buyerUpload.fields([{ name: 'file', maxCount: 1 }, { name: 'file_zh', maxCount: 1 }]), (req, res) => {
   const { buyer_id, company_name, product_name, document_type, uploaded_by } = req.body;
   if (!buyer_id) return res.status(400).json({ error: "Buyer ID is required" });
 
@@ -660,24 +677,7 @@ app.post("/buyer-documents/upload", memoryUpload.fields([{ name: 'file', maxCoun
     return res.status(400).json({ error: "No primary English PDF provided." });
   }
 
-  // 1. Validate PDF magic bytes
-  try {
-    const buffer = file.buffer;
-    if (buffer.length < 4 || buffer.slice(0, 4).toString('ascii') !== '%PDF') {
-      return res.status(400).json({ error: "The uploaded file is not a valid PDF document." });
-    }
-    
-    if (fileZh) {
-      const zhBuffer = fileZh.buffer;
-      if (zhBuffer.length < 4 || zhBuffer.slice(0, 4).toString('ascii') !== '%PDF') {
-        return res.status(400).json({ error: "The uploaded Chinese file is not a valid PDF document." });
-      }
-    }
-  } catch (e) {
-    return res.status(400).json({ error: "The uploaded file is not a valid PDF document." });
-  }
-
-  // 2. Valid file, insert into DB
+  // Insert into DB. We store the S3 key in file_path and file_path_zh.
   const sql = `
     INSERT INTO buyer_documents (buyer_id, company_name, product_name, document_type, file_name, file_path, file_binary, file_path_zh, file_zh_binary, uploaded_by)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -688,10 +688,11 @@ app.post("/buyer-documents/upload", memoryUpload.fields([{ name: 'file', maxCoun
     product_name || null, 
     document_type || null, 
     file.originalname, 
-    file.originalname, // Fallback for file_path
-    file.buffer,
+    file.key || file.originalname,
+    null, // file_binary (stored in S3 now)
     fileZh ? fileZh.originalname : null,
-    fileZh ? fileZh.buffer : null,
+    fileZh ? (fileZh.key || fileZh.originalname) : null, // file_path_zh
+    null, // file_zh_binary
     uploaded_by || null
   ];
   
@@ -709,20 +710,38 @@ app.get("/buyer-documents/download/:id", (req, res) => {
   const { id } = req.params;
   const lang = req.query.language || 'en';
   
-  db.query("SELECT file_name, file_binary, file_path_zh, file_zh_binary FROM buyer_documents WHERE id = ?", [id], (err, results) => {
+  db.query("SELECT file_name, file_path, file_binary, file_path_zh, file_zh_binary FROM buyer_documents WHERE id = ?", [id], async (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     if (results.length === 0) return res.status(404).send("Document not found");
     
     const doc = results[0];
     let binary = doc.file_binary;
     let fileName = doc.file_name;
+    let s3Path = doc.file_path; // For new S3 uploads, file_binary is null and file_path has the key
     
-    if (lang === 'zh' && doc.file_zh_binary) {
+    if (lang === 'zh' && (doc.file_zh_binary || doc.file_path_zh)) {
       binary = doc.file_zh_binary;
-      fileName = doc.file_path_zh || fileName;
+      fileName = doc.file_path_zh ? (doc.file_path_zh.split('/').pop() || doc.file_path_zh) : fileName;
+      s3Path = doc.file_path_zh;
     }
     
-    if (!binary) return res.status(404).send("File binary not found in database.");
+    // If we have an S3 path and NO binary (meaning it was uploaded to S3)
+    if (s3Path && !binary) {
+      try {
+        const command = new GetObjectCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: s3Path
+        });
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        return res.redirect(url);
+      } catch (error) {
+        console.error("S3 Download Error:", error);
+        return res.status(500).send("Error generating S3 download link");
+      }
+    }
+    
+    // Fallback to legacy database binary
+    if (!binary) return res.status(404).send("File not found in storage or database.");
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -735,18 +754,35 @@ app.get("/buyer-documents/preview/:id", (req, res) => {
   const { id } = req.params;
   const lang = req.query.language || 'en';
   
-  db.query("SELECT file_binary, file_zh_binary FROM buyer_documents WHERE id = ?", [id], (err, results) => {
+  db.query("SELECT file_path, file_binary, file_path_zh, file_zh_binary FROM buyer_documents WHERE id = ?", [id], async (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     if (results.length === 0) return res.status(404).send("Document not found");
     
     const doc = results[0];
     let binary = doc.file_binary;
+    let s3Path = doc.file_path;
     
-    if (lang === 'zh' && doc.file_zh_binary) {
+    if (lang === 'zh' && (doc.file_zh_binary || doc.file_path_zh)) {
       binary = doc.file_zh_binary;
+      s3Path = doc.file_path_zh;
     }
     
-    if (!binary) return res.status(404).send("File binary not found in database.");
+    // If it's in S3
+    if (s3Path && !binary) {
+      try {
+        const command = new GetObjectCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: s3Path
+        });
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        return res.redirect(url); // Redirecting to S3 pre-signed URL opens the PDF natively in the browser
+      } catch (error) {
+        console.error("S3 Preview Error:", error);
+        return res.status(500).send("Error generating S3 preview link");
+      }
+    }
+    
+    if (!binary) return res.status(404).send("File not found in storage or database.");
 
     res.setHeader('Content-Type', 'application/pdf');
     res.send(binary);
@@ -821,15 +857,18 @@ app.post("/companies", (req, res) => {
 // =============================================================================
 //  TEMPLATES
 // =============================================================================
-const templateStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "templates/"),
-  filename:    (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
+const templateStorage = multerS3({
+  s3: s3,
+  bucket: process.env.R2_BUCKET_NAME,
+  key: (req, file, cb) => {
+    cb(null, "templates/" + Date.now() + path.extname(file.originalname));
+  }
 });
 const templateUpload = multer({ storage: templateStorage });
 
 app.post("/upload-template", templateUpload.single("file"), (req, res) => {
   db.query("INSERT INTO templates (name,file_path) VALUES (?,?)",
-    [req.body.name, req.file.path], (err) => {
+    [req.body.name, req.file.key || req.file.path], (err) => {
       if (err) return res.send(err);
       res.send("Template Uploaded");
     });
