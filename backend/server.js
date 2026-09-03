@@ -1700,16 +1700,18 @@ app.use(express.static(path.join(__dirname, 'public/crm')));
 
 // Catch-all for CRM frontend React Router (must be last)
 app.use((req, res, next) => {
-  const skip = ['/api', '/docplatform', '/doc-api', '/uploads', '/settings',
-    '/buyers', '/sellers', '/inquiries', '/companies', '/products',
-    '/ports', '/notifications', '/dashboard', '/auth', '/analytics'];
-  if (skip.some(p => req.url.startsWith(p))) return next();
-  const indexPath = path.join(__dirname, 'public/crm/index.html');
-  if (require('fs').existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(503).send('CRM is still starting up. Please refresh in 30 seconds.');
+  if (req.method === 'GET' && req.accepts('html')) {
+    const skip = ['/docplatform', '/doc-api', '/uploads'];
+    if (skip.some(p => req.url.startsWith(p))) return next();
+    
+    const indexPath = path.join(__dirname, 'public/crm/index.html');
+    if (require('fs').existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    } else {
+      return res.status(503).send('CRM is still starting up. Please refresh in 30 seconds.');
+    }
   }
+  next();
 });
 
 app.listen(5000, () => {
