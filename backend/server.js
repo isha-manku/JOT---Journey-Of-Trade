@@ -791,7 +791,14 @@ app.get("/buyer-documents/preview/:id", (req, res) => {
 
 // GET â€” list buyer documents
 app.get("/buyer-documents/:buyer_id", (req, res) => {
-  db.query("SELECT * FROM buyer_documents WHERE buyer_id = ? AND is_deleted = 0 ORDER BY uploaded_at DESC", [req.params.buyer_id], (err, results) => {
+  const query = `
+    SELECT id, buyer_id, company_name, product_name, document_type, 
+           file_name, file_path, file_path_zh, uploaded_by, uploaded_at, is_deleted 
+    FROM buyer_documents 
+    WHERE buyer_id = ? AND is_deleted = 0 
+    ORDER BY uploaded_at DESC
+  `;
+  db.query(query, [req.params.buyer_id], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
