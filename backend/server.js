@@ -94,6 +94,27 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/fonts", express.static(path.join(__dirname, "public/fonts")));
+
+// Serve CRM Frontend static files
+app.use(express.static(path.join(__dirname, 'public/crm')));
+
+// Intercept browser navigations to known SPA routes BEFORE they hit API endpoints
+const spaRoutes = [
+  '/dashboard', '/buyers', '/sellers', '/inquiries', '/seller-inquiries',
+  '/companies', '/products', '/ports', '/notifications', '/auth',
+  '/analytics', '/login', '/register', '/settings'
+];
+app.use((req, res, next) => {
+  if (req.method === 'GET' && req.headers.accept && req.headers.accept.includes('text/html')) {
+    if (req.path === '/' || spaRoutes.some(route => req.path === route || req.path.startsWith(route + '/'))) {
+      const indexPath = path.join(__dirname, 'public/crm/index.html');
+      if (require('fs').existsSync(indexPath)) {
+        return res.sendFile(indexPath);
+      }
+    }
+  }
+  next();
+});
 app.use("/uploads", (req, res) => {
   res.status(404).send(`
     <html style="background:#f8f9fa;">
@@ -1694,26 +1715,6 @@ db.query(createCustomerLogsTable, (err) => {
     db.query("ALTER TABLE doc_generated_document_versions ADD COLUMN edited_count INT DEFAULT 0", (err) => { if (!err) console.log("Added edited_count to doc_generated_document_versions"); });
   }
 });
-
-// Serve CRM Frontend static files
-app.use(express.static(path.join(__dirname, 'public/crm')));
-
-// Catch-all for CRM frontend React Router (must be last)
-app.use((req, res, next) => {
-  if (req.method === 'GET' && req.accepts('html')) {
-    const skip = ['/docplatform', '/doc-api', '/uploads'];
-    if (skip.some(p => req.url.startsWith(p))) return next();
-    
-    const indexPath = path.join(__dirname, 'public/crm/index.html');
-    if (require('fs').existsSync(indexPath)) {
-      return res.sendFile(indexPath);
-    } else {
-      return res.status(503).send('CRM is still starting up. Please refresh in 30 seconds.');
-    }
-  }
-  next();
-});
-
 app.listen(5000, () => {
   console.log('ðŸš€ Server running on port 5000');
   require('./notification_cron').initCron();
