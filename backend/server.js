@@ -99,14 +99,12 @@ app.use("/fonts", express.static(path.join(__dirname, "public/fonts")));
 app.use(express.static(path.join(__dirname, 'public/crm')));
 
 // Intercept browser navigations to known SPA routes BEFORE they hit API endpoints
-const spaRoutes = [
-  '/dashboard', '/buyers', '/sellers', '/inquiries', '/seller-inquiries',
-  '/companies', '/products', '/ports', '/notifications', '/auth',
-  '/analytics', '/login', '/register', '/settings'
-];
 app.use((req, res, next) => {
   if (req.method === 'GET' && req.headers.accept && req.headers.accept.includes('text/html')) {
-    if (req.path === '/' || spaRoutes.some(route => req.path === route || req.path.startsWith(route + '/'))) {
+    const isDownloadOrPreview = req.path.includes('/download') || req.path.includes('/preview') || req.path.startsWith('/uploads');
+    const isDocPlatform = req.path.startsWith('/doc-api') || req.path.startsWith('/docplatform');
+    
+    if (!isDownloadOrPreview && !isDocPlatform) {
       const indexPath = path.join(__dirname, 'public/crm/index.html');
       if (require('fs').existsSync(indexPath)) {
         return res.sendFile(indexPath);
