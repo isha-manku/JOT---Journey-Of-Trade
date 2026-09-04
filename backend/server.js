@@ -643,13 +643,12 @@ app.get(["/seller-documents/download/:filename", "/seller-documents/download/:fo
       Bucket: process.env.R2_BUCKET_NAME,
       Key: filename
     });
-    
-    // Generate a URL that expires in 1 hour
-    const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-    res.redirect(url);
+    const response = await s3.send(command);
+    res.setHeader('Content-Type', 'application/pdf');
+    response.Body.pipe(res);
   } catch (error) {
     console.error("S3 Download Error:", error);
-    res.status(500).send("Error generating download link");
+    res.status(500).send("Error fetching download link");
   }
 });
 // ============================================================
@@ -753,11 +752,14 @@ app.get("/buyer-documents/download/:id", (req, res) => {
           Bucket: process.env.R2_BUCKET_NAME,
           Key: s3Path
         });
-        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-        return res.redirect(url);
+        const response = await s3.send(command);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        response.Body.pipe(res);
+        return;
       } catch (error) {
         console.error("S3 Download Error:", error);
-        return res.status(500).send("Error generating S3 download link");
+        return res.status(500).send("Error fetching S3 download link");
       }
     }
     
@@ -795,11 +797,13 @@ app.get("/buyer-documents/preview/:id", (req, res) => {
           Bucket: process.env.R2_BUCKET_NAME,
           Key: s3Path
         });
-        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-        return res.redirect(url); // Redirecting to S3 pre-signed URL opens the PDF natively in the browser
+        const response = await s3.send(command);
+        res.setHeader('Content-Type', 'application/pdf');
+        response.Body.pipe(res);
+        return;
       } catch (error) {
         console.error("S3 Preview Error:", error);
-        return res.status(500).send("Error generating S3 preview link");
+        return res.status(500).send("Error fetching S3 document for preview");
       }
     }
     
